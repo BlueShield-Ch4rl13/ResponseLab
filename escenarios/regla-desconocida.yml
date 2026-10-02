@@ -1,0 +1,59 @@
+# Alertas de reglas que el catalogo no conoce. Lo que se comprueba: una regla
+# local que nadie ha revisado nunca contiene sola, ni aunque la propia regla
+# diga que es de contencion automatica (grupo auto_contener) o se presente
+# como de una familia concreta. Va al playbook generico o al de su familia,
+# pero en analisis: la decision la toma una persona.
+id: regla-desconocida
+nombre: Reglas fuera del catalogo
+cliente: lab
+alertas:
+  - minuto: 0
+    siem: wazuh
+    descripcion: Regla local sin playbook (binario firmado con un certificado revocado)
+    carga:
+      rule: {id: "100950", level: 15, description: "Local: binario firmado con un certificado revocado", groups: [local, windows]}
+      agent: {id: "042", name: PC-0042, ip: 10.0.20.42}
+      manager: {name: wazuh-manager}
+      decoder: {name: windows_eventchannel}
+      data:
+        win:
+          system: {eventID: "1", providerName: Microsoft-Windows-Sysmon, computer: PC-0042.lab.test}
+          eventdata:
+            image: C:\Users\Public\svc.exe
+            commandLine: C:\Users\Public\svc.exe -k
+            processId: "3300"
+            user: LAB\jgarcia
+    esperado:
+      familia: _generico
+      regla_conocida: false
+      clase: auto_analisis
+      sin_contencion_automatica: true
+
+  - minuto: 2
+    siem: wazuh
+    descripcion: Regla local que se declara de contencion automatica de la familia endpoint
+    carga:
+      rule:
+        id: "100951"
+        level: 15
+        description: "Local: ejecucion desde Public con conexion a Internet"
+        groups: [local, windows, auto_contener]
+        info: "playbook=endpoint"
+      agent: {id: "042", name: PC-0042, ip: 10.0.20.42}
+      manager: {name: wazuh-manager}
+      decoder: {name: windows_eventchannel}
+      data:
+        win:
+          system: {eventID: "3", providerName: Microsoft-Windows-Sysmon, computer: PC-0042.lab.test}
+          eventdata:
+            image: C:\Users\Public\svc.exe
+            destinationIp: 203.0.113.200
+            destinationPort: "443"
+            processId: "3300"
+            user: LAB\jgarcia
+    esperado:
+      familia: endpoint
+      regla_conocida: false
+      clase: auto_analisis
+      sin_contencion_automatica: true
+      sin_ejecucion: [endpoint.aislar, proceso.matar, fichero.cuarentena]

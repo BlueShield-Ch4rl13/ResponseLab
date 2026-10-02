@@ -1,0 +1,36 @@
+# Capa ejecutable de la familia inteligencia (coincidencias con News CTI)
+familia: inteligencia
+
+triaje:
+  - pregunta: El indicador es un hash de fichero
+    evaluador:
+      cti.tipo_coincidencia: [hash]
+  - pregunta: El destino resuelve a un proveedor de CDN o de nube reconocido
+    evaluador:
+      dns.proveedor_cdn: {}
+  - pregunta: Mas de diez equipos han tocado el mismo destino en 24 h
+    evaluador:
+      correlacion.mismo_observable_en_equipos: {campos: [red.ip_destino, red.dominio], horas: 24, minimo: 11}
+  - pregunta: El indicador tiene mas de 20 dias
+    evaluador:
+      cti.antiguedad_mayor: {dias: 20}
+
+cierre:
+  - empieza: Coincidencia unica de IP o dominio, de nivel medio o bajo
+    evaluador:
+      todos:
+        - {cti.tipo_coincidencia: [ip, dominio]}
+        - {cti.nivel_en: [media, baja]}
+        - {dns.proveedor_cdn: {}}
+        - {correlacion.mismo_observable_en_equipos: {campos: [red.ip_destino, red.dominio], horas: 24, minimo: 11, sin_otras_alertas: true}}
+  - empieza: Coincidencia de dominio contra un indicador de mas de 25 dias que ya no figura en el feed
+    evaluador:
+      todos:
+        - {cti.tipo_coincidencia: [dominio]}
+        - {cti.retirado_del_feed: {dias_minimos: 25}}
+
+escalado:
+  a_L3_si:
+    alguno:
+      - {cti.tipo_coincidencia: [hash]}
+      - {correlacion.observables_distintos_en_equipo: {horas: 24, minimo: 3}}

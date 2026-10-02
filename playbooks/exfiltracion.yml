@@ -1,0 +1,17 @@
+# Capa ejecutable de la familia exfiltracion (salida de informacion)
+familia: exfiltracion
+
+triaje:
+  - pregunta: El destino figura en el catalogo de servicios aprobados con contrato de tratamiento
+    evaluador:
+      lista.valor_en: {lista: servicios_aprobados, campo: red.dominio}
+  - pregunta: El activo de origen maneja datos personales o informacion clasificada segun el inventario
+    evaluador:
+      inventario.etiqueta: {etiquetas: [datos_personales, clasificado]}
+  - pregunta: La cuenta tiene baja o cambio de empresa anunciado
+    evaluador:
+      directorio.cuenta_en_lista: {lista: bajas_anunciadas}
+
+escalado:
+  a_L3_si:
+    inventario.etiqueta: {etiquetas: [datos_personales, clasificado]}

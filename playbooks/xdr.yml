@@ -1,0 +1,19 @@
+# Capa ejecutable de la familia xdr (manipulacion de la telemetria y de las defensas)
+familia: xdr
+
+triaje:
+  - pregunta: Hay ventana de cambio o migracion de EDR abierta en el ITSM que cubra este equipo
+    evaluador:
+      inventario.ventana_abierta: {tipo: cambio_edr}
+  - pregunta: El equipo acumulaba alertas de otras familias antes del hueco
+    evaluador:
+      correlacion.otras_familias: {horas: 24}
+  - pregunta: El driver cargado figura en la lista de drivers vulnerables conocidos
+    evaluador:
+      alguno:
+        - {lista.valor_en: {lista: drivers_vulnerables, campo: fichero.sha256}}
+        - {evento.regla_en: [xdr_004_driver_vulnerable_byovd]}
+
+escalado:
+  a_L3_si:
+    evento.regla_en: [xdr_001_desinstalacion_sensor_edr, xdr_004_driver_vulnerable_byovd, xdr_006_arranque_modo_seguro]

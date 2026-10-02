@@ -1,0 +1,39 @@
+# DCShadow contra el controlador de dominio. Es la alerta mas grave del
+# catalogo de Active Directory y, a la vez, la que menos se puede contener
+# sola: aislar el DC deja sin autenticacion a toda la organizacion. Lo que se
+# comprueba: pide aprobacion para aislar y para recoger evidencia, y no ejecuta
+# sobre el DC nada por su cuenta, aunque la regla sea de contencion automatica:
+# el DC esta en la lista de protegidos del cliente.
+id: controlador-dominio
+nombre: DCShadow contra el controlador de dominio
+cliente: lab
+mitre: [T1207]
+alertas:
+  - minuto: 0
+    siem: wazuh
+    descripcion: Un puesto se registra como controlador de dominio (DCShadow)
+    carga:
+      rule: {id: "101128", level: 15, description: "DCShadow - registro de un controlador de dominio falso", groups: [detection_lab, soc_ad], mitre: {id: [T1207]}}
+      agent: {id: "001", name: DC01, ip: 10.0.30.5}
+      manager: {name: wazuh-manager}
+      decoder: {name: windows_eventchannel}
+      data:
+        win:
+          system: {eventID: "4742", providerName: Microsoft-Windows-Security-Auditing, channel: Security, computer: DC01.lab.test}
+          eventdata:
+            subjectUserName: jgarcia
+            subjectDomainName: LAB
+            targetUserName: PC-0042$
+            targetDomainName: LAB
+            servicePrincipalNames: "GC/PC-0042.lab.test/lab.test E3514235-4B06-11D1-AB04-00C04FC2DCD2/6b3f1f3c-0000-4000-8000-000000000042/lab.test"
+    esperado:
+      familia: ad
+      clase: auto_contener
+      severidad_minima: 4
+      nunca_automatica: [endpoint.aislar, proceso.matar, evidencia.triage_forense]
+      aprobaciones: [endpoint.aislar, evidencia.triage_forense]
+      sin_ejecucion: [endpoint.aislar, proceso.matar, evidencia.triage_forense]
+      notificar: true
+
+final:
+  incidentes: 1

@@ -1,0 +1,93 @@
+# Ransomware en un puesto de finanzas: desactivar defensas, borrar copias, cifrar.
+# Lo que se comprueba: la secuencia eleva la contencion a automatica, el equipo
+# se aisla UNA vez aunque lleguen mas alertas del mismo ataque, vssadmin.exe
+# (binario del sistema que el atacante usa) no se pone en cuarentena, y corren
+# los plazos de RGPD y NIS2 porque el equipo trata datos personales.
+id: ransomware-puesto
+nombre: Ransomware en un puesto de finanzas
+cliente: lab
+mitre: [T1562.001, T1490, T1486]
+alertas:
+  - minuto: 0
+    siem: wazuh
+    descripcion: Defender desactivado por PowerShell lanzado desde un ejecutable en Temp
+    carga:
+      rule: {id: "101216", level: 10, description: Defensas de seguridad deshabilitadas, groups: [detection_lab, soc_endpoint], mitre: {id: [T1562.001]}}
+      agent: {id: "007", name: CORP-FIN-07, ip: 10.0.20.57}
+      manager: {name: wazuh-manager}
+      decoder: {name: windows_eventchannel}
+      data:
+        win:
+          system: {eventID: "1", providerName: Microsoft-Windows-Sysmon, computer: CORP-FIN-07.lab.test}
+          eventdata:
+            image: C:\Windows\System32\WindowsPowerShell\v1.0\powershell.exe
+            commandLine: powershell.exe -nop -w hidden Set-MpPreference -DisableRealtimeMonitoring $true
+            parentImage: C:\Users\jgarcia\AppData\Local\Temp\upd.exe
+            processId: "6120"
+            processGuid: "{3f1c0a2b-1111-2222-3333-444455556666}"
+            utcTime: "2026-10-01 09:00:00.000"
+            user: LAB\jgarcia
+    esperado:
+      familia: endpoint
+      clase: auto_analisis
+      sin_secuencias: true
+      modos: {endpoint.aislar: aprobacion}
+      sin_ejecucion: [endpoint.aislar]
+
+  - minuto: 4
+    siem: wazuh
+    descripcion: Borrado de copias sombra con vssadmin
+    carga:
+      rule: {id: "101211", level: 15, description: Destruccion de copias de seguridad y puntos de restauracion, groups: [detection_lab, soc_endpoint], mitre: {id: [T1490]}}
+      agent: {id: "007", name: CORP-FIN-07, ip: 10.0.20.57}
+      manager: {name: wazuh-manager}
+      decoder: {name: windows_eventchannel}
+      data:
+        win:
+          system: {eventID: "1", providerName: Microsoft-Windows-Sysmon, computer: CORP-FIN-07.lab.test}
+          eventdata:
+            image: C:\Windows\System32\vssadmin.exe
+            commandLine: vssadmin.exe delete shadows /all /quiet
+            parentImage: C:\Users\jgarcia\AppData\Local\Temp\upd.exe
+            processId: "6388"
+            processGuid: "{3f1c0a2b-1111-2222-3333-777788889999}"
+            utcTime: "2026-10-01 09:04:00.000"
+            user: LAB\jgarcia
+            hashes: SHA1=4c3b2a1f0e9d8c7b6a5f4e3d2c1b0a9f8e7d6c5b,SHA256=7e1b4c6f0a2d9e8b3c5a7f1e9d2b4c6a8f0e1d3c5b7a9e2f4d6c8b0a1e3f5d7c
+    esperado:
+      familia: endpoint
+      clase: auto_contener
+      secuencias: [ransomware]
+      escalado: guardia
+      severidad_minima: 4
+      modos: {endpoint.aislar: automatica, evidencia.triage_forense: automatica}
+      nunca_automatica: [fichero.cuarentena, flota.bloquear_hash]
+      ejecuciones: {endpoint.aislar: simulada, evidencia.triage_forense: simulada}
+      notificar: true
+
+  - minuto: 6
+    siem: wazuh
+    descripcion: Cifrado masivo (ficheros .locked creados por upd.exe)
+    carga:
+      rule: {id: "101226", level: 15, description: Cifrado masivo de ficheros por ransomware, groups: [detection_lab, soc_endpoint], mitre: {id: [T1486]}}
+      agent: {id: "007", name: CORP-FIN-07, ip: 10.0.20.57}
+      manager: {name: wazuh-manager}
+      decoder: {name: windows_eventchannel}
+      data:
+        win:
+          system: {eventID: "11", providerName: Microsoft-Windows-Sysmon, computer: CORP-FIN-07.lab.test}
+          eventdata:
+            image: C:\Users\jgarcia\AppData\Local\Temp\upd.exe
+            targetFilename: C:\Users\jgarcia\Documents\nominas-2026.xlsx.locked
+            processId: "5544"
+            processGuid: "{3f1c0a2b-1111-2222-3333-000011112222}"
+            utcTime: "2026-10-01 09:06:00.000"
+            user: LAB\jgarcia
+    esperado:
+      clase: auto_contener
+      secuencias: [ransomware]
+      ejecuciones: {endpoint.aislar: omitida}
+
+final:
+  incidentes: 1
+  plazos: [rgpd, nis2]

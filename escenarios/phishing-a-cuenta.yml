@@ -1,0 +1,64 @@
+# Del clic en un correo de phishing al registro de un MFA nuevo en la cuenta,
+# en un cliente con Sentinel y Entra ID. Lo que se comprueba: el clic solo no
+# revoca nada; el segundo factor nuevo de la misma persona en la misma hora
+# completa la secuencia phishing_a_cuenta, que revoca las sesiones sin esperar
+# (radio sesion, reversible) y deja en aprobacion todo lo que afecta a la
+# cuenta entera.
+id: phishing-a-cuenta
+nombre: Phishing que acaba en un MFA nuevo en la cuenta
+cliente: acme
+mitre: [T1566.002, T1098.005]
+alertas:
+  - minuto: 0
+    siem: sentinel
+    descripcion: La usuaria pulsa la URL de un correo de phishing (Proofpoint TAP)
+    carga:
+      object:
+        properties:
+          title: "DL - Usuario pulsa una URL de phishing bloqueada o permitida"
+          severity: High
+          status: New
+          additionalData: {techniques: [T1566.002], alertsCount: 1}
+          alerts:
+            - properties: {alertDisplayName: "DL - Usuario pulsa una URL de phishing bloqueada o permitida", severity: High}
+          relatedEntities:
+            - kind: Account
+              properties: {accountName: lmartin, upnSuffix: acme.test, aadUserId: 7f9e2c1a-0000-4000-8000-000000000001}
+            - kind: Url
+              properties: {url: "https://acme-portal-login.example/o365/auth?u=lmartin"}
+            - kind: MailMessage
+              properties: {internetMessageId: "<CAF41d2@mail.proveedor-falso.example>", p1Sender: facturas@proveedor-falso.example, recipient: lmartin@acme.test, subject: Factura pendiente de pago}
+    esperado:
+      familia: correo
+      clase: auto_analisis
+      sin_secuencias: true
+      nunca_automatica: [correo.bloquear_remitente]
+
+  - minuto: 12
+    siem: sentinel
+    descripcion: Metodo MFA nuevo registrado tras un inicio de sesion de riesgo
+    carga:
+      object:
+        properties:
+          title: "DL - Metodo MFA registrado tras un inicio de sesion de riesgo"
+          severity: Medium
+          status: New
+          additionalData: {techniques: [T1098.005], alertsCount: 1}
+          alerts:
+            - properties: {alertDisplayName: "DL - Metodo MFA registrado tras un inicio de sesion de riesgo", severity: Medium}
+          relatedEntities:
+            - kind: Account
+              properties: {accountName: lmartin, upnSuffix: acme.test, aadUserId: 7f9e2c1a-0000-4000-8000-000000000001}
+            - kind: Ip
+              properties: {address: 198.51.100.140}
+    esperado:
+      familia: cloud
+      clase: auto_contener
+      secuencias: [phishing_a_cuenta]
+      escalado: L3
+      severidad_minima: 4
+      modos: {identidad.revocar_sesiones: automatica}
+      nunca_automatica: [identidad.retirar_consentimiento]
+      ejecuciones: {identidad.revocar_sesiones: simulada}
+      conectores: {identidad.revocar_sesiones: entra}
+      notificar: true

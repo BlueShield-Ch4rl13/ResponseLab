@@ -1,0 +1,41 @@
+# Capa ejecutable de la familia endpoint (ejecucion y persistencia en Windows)
+familia: endpoint
+
+triaje:
+  - pregunta: El proceso padre es el agente de distribucion de software del parque y hay ventana de despliegue abierta
+    evaluador:
+      todos:
+        - {lista.valor_en: {lista: agentes_distribucion, campo: proceso.padre_nombre}}
+        - {inventario.ventana_abierta: {tipo: despliegue}}
+  - pregunta: La misma senal aparece hoy en mas de veinte equipos en la misma hora
+    evaluador:
+      correlacion.misma_regla_en_equipos: {minutos: 60, minimo: 20}
+  - pregunta: Es la primera vez que ese hash se ejecuta en todo el parque
+    evaluador:
+      correlacion.primera_vez: {campo: proceso.sha256}
+    nota: Cuenta lo que el motor ha visto en alertas, no toda la telemetria. Para "primera vez en el parque" de verdad, consulta el SIEM.
+  - pregunta: El equipo acumula alertas de otras familias en las ultimas 24 h
+    evaluador:
+      correlacion.otras_familias: {horas: 24}
+  - pregunta: El evento es borrado de copias sombra o cifrado masivo
+    evaluador:
+      evento.regla_en: [soc_edr_003_borrado_copias_sombra, soc_edr_007_cifrado_masivo]
+
+cierre:
+  - empieza: Ejecucion desde ruta de usuario o creacion de servicio (soc_edr_012, proc_service_create_scexe)
+    evaluador:
+      todos:
+        - {evento.regla_en: [soc_edr_012_ejecucion_desde_temp, proc_service_create_scexe]}
+        - {lista.valor_en: {lista: agentes_distribucion, campo: proceso.padre_nombre}}
+        - {lista.valor_en: {lista: software_aprobado, campo: proceso.sha256}}
+        - {inventario.ventana_abierta: {tipo: despliegue}}
+        - {correlacion.misma_regla_en_equipos: {minutos: 240, minimo: 6}}
+    nota: La firma del binario se sustituye por su hash en el catalogo de software aprobado, que es una comprobacion mas fuerte.
+
+escalado:
+  a_L3_si:
+    evento.regla_en: [soc_edr_003_borrado_copias_sombra, soc_edr_007_cifrado_masivo, soc_edr_011_pipe_c2]
+  a_guardia_si:
+    alguno:
+      - {evento.regla_en: [soc_edr_007_cifrado_masivo]}
+      - {inventario.etiqueta: {etiquetas: [servidor_ficheros]}}

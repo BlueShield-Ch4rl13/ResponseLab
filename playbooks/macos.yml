@@ -1,0 +1,35 @@
+# Capa ejecutable de la familia macos (endpoint macOS)
+familia: macos
+
+triaje:
+  - pregunta: El proceso padre es el agente de gestion del parque y hay ventana de despliegue abierta
+    evaluador:
+      todos:
+        - {lista.valor_en: {lista: agentes_gestion_mac, campo: proceso.padre_nombre}}
+        - {inventario.ventana_abierta: {tipo: despliegue}}
+  - pregunta: SIP esta deshabilitado o Gatekeeper se desactivo en la misma sesion
+    evaluador:
+      alguno:
+        - {evento.regla_en: [mac_gatekeeper_deshabilitado]}
+        - {correlacion.regla_en_equipo: {reglas: [mac_gatekeeper_deshabilitado], minutos: 240}}
+  - pregunta: El equipo pertenece a direccion o guarda claves de firma de aplicaciones
+    evaluador:
+      inventario.etiqueta: {etiquetas: [direccion, claves_firma]}
+  - pregunta: Es la primera vez que ese binario se ejecuta en todo el parque
+    evaluador:
+      correlacion.primera_vez: {campo: proceso.sha256}
+
+cierre:
+  - empieza: Descarga y ejecucion desde /tmp, /var/folders o la cache del gestor (mac_descarga_y_ejecucion)
+    evaluador:
+      todos:
+        - {evento.regla_en: [mac_descarga_y_ejecucion]}
+        - {lista.valor_en: {lista: agentes_gestion_mac, campo: proceso.padre_nombre}}
+        - {lista.valor_en: {lista: team_ids_aprobados, campo: proceso.team_id}}
+        - {inventario.ventana_abierta: {tipo: mantenimiento}}
+
+escalado:
+  a_L3_si:
+    alguno:
+      - {evento.regla_en: [mac_volcado_llavero, mac_gatekeeper_deshabilitado]}
+      - {inventario.etiqueta: {etiquetas: [claves_firma]}}

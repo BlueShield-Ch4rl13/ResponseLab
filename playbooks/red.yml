@@ -1,0 +1,33 @@
+# Capa ejecutable de la familia red (trafico, mando y control)
+familia: red
+
+triaje:
+  - pregunta: El destino resuelve por PTR a un proveedor de CDN o de nube y mas de diez equipos del parque hablan con el
+    evaluador:
+      todos:
+        - {dns.proveedor_cdn: {}}
+        - {correlacion.mismo_observable_en_equipos: {campos: [red.ip_destino, red.dominio], horas: 24, minimo: 11}}
+  - pregunta: El indicador aparece en una sola lista y su primera aparicion es de hace mas de 30 dias
+    evaluador:
+      todos:
+        - {cti.una_sola_fuente: {}}
+        - {cti.antiguedad_mayor: {dias: 30}}
+  - pregunta: El proceso que abre la conexion no esta firmado o es la primera vez que se ve en el parque
+    evaluador:
+      correlacion.primera_vez: {campo: proceso.imagen}
+  - pregunta: El mismo equipo acumula alertas de otras familias en las ultimas 24 h
+    evaluador:
+      correlacion.otras_familias: {horas: 24}
+
+cierre:
+  - empieza: Coincidencia unica de reputacion
+    evaluador:
+      todos:
+        - {cti.una_sola_fuente: {}}
+        - {cti.tipo_coincidencia: [ip]}
+        - {dns.proveedor_cdn: {}}
+        - {correlacion.mismo_observable_en_equipos: {campos: [red.ip_destino], horas: 24, minimo: 11, sin_otras_alertas: true}}
+
+escalado:
+  a_L3_si:
+    evento.regla_en: [soc_net_005_webshell]

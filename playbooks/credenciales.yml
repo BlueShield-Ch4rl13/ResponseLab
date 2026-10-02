@@ -1,0 +1,20 @@
+# Capa ejecutable de la familia credenciales (volcado y robo de credenciales)
+familia: credenciales
+
+triaje:
+  - pregunta: Hay un ticket de mantenimiento abierto para ese equipo
+    evaluador:
+      inventario.ventana_abierta: {tipo: mantenimiento}
+    nota: El ticket de mantenimiento se declara en el perfil del cliente como ventana (lo exporta su ITSM).
+  - pregunta: El usuario afectado pertenece a un grupo administrativo
+    evaluador:
+      directorio.cuenta_en_lista: {lista: administradores}
+  - pregunta: El equipo es un controlador de dominio o un servidor de aplicacion
+    evaluador:
+      inventario.etiqueta: {etiquetas: [controlador_dominio, servidor_aplicacion]}
+
+escalado:
+  a_L3_si:
+    alguno:
+      - {inventario.etiqueta: {etiquetas: [controlador_dominio]}}
+      - {directorio.cuenta_en_lista: {lista: administradores}}

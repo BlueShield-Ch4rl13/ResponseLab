@@ -1,0 +1,19 @@
+# Familia de reserva. Una alerta cuya regla no esta en el catalogo, o cuya
+# familia no tiene playbook, no se pierde: llega aqui, se enriquece, abre caso y
+# se escala a L2. Nunca contiene nada: sin saber que es, no hay accion segura.
+familia: _generico
+nombre: Generico (regla o familia sin playbook)
+descripcion: |
+  Alerta de una regla que el catalogo no conoce o de una familia sin playbook.
+  Se trata como analisis: enriquecimiento, caso y escalado a L2. La clase se
+  limita a auto_analisis aunque el SIEM la marque como critica, porque
+  contener sin saber que se contiene es exactamente el fallo que este proyecto
+  existe para evitar.
+enriquecimiento:
+  - {fuente: cti_local, sobre: [ip, dominio, hash, url]}
+  - {fuente: inventario, sobre: [agente]}
+evidencia:
+  - {descripcion: Revisar el evento original y localizar la regla que lo genero, comando: "Busqueda del identificador de la alerta en el SIEM", donde: siem}
+requiere_persona:
+  - {situacion: Toda la alerta, motivo: No hay playbook para esta regla o familia}
+escalado: {a: L2, plazo_min: 30}

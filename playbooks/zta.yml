@@ -1,0 +1,39 @@
+# Capa ejecutable de la familia zta (desviaciones del modelo de confianza cero)
+familia: zta
+
+triaje:
+  - pregunta: La desviacion esta cubierta por una excepcion aprobada y en vigor
+    evaluador:
+      inventario.excepcion_vigente: {}
+  - pregunta: La excepcion existe pero esta caducada
+    evaluador:
+      inventario.excepcion_caducada: {}
+  - pregunta: La desviacion aparece en un unico activo y no en el resto de su grupo
+    evaluador:
+      correlacion.unico_equipo: {horas: 168}
+  - pregunta: La alerta es borrado del registro de auditoria sin apagado ordenado posterior
+    evaluador:
+      evento.regla_en: [zta_vis_001_borrado_registro_auditoria, DET-WIN-003]
+    nota: El apagado ordenado posterior lo comprueba el analista.
+
+cierre:
+  - empieza: Protocolo en claro (zta_net_001) hacia un activo que figura en el inventario de sistemas heredados
+    evaluador:
+      todos:
+        - {evento.regla_en: [zta_net_001_protocolo_en_claro]}
+        - {inventario.excepcion_vigente: {objetivo: red.ip_destino, segmento: red.ip_origen}}
+  - empieza: Montaje de almacenamiento extraible (zta_dev_001) cuyo numero de serie figura en la lista de soportes cifrados
+    evaluador:
+      todos:
+        - {evento.regla_en: [zta_dev_001_almacenamiento_extraible]}
+        - {lista.par_en: {lista: soportes_cifrados, campos: {serie: dispositivo.serie, titular: usuario.nombre}}}
+  - empieza: Instalacion de paquete desde repositorio no aprobado (zta_sup_002)
+    evaluador:
+      todos:
+        - {evento.regla_en: [zta_sup_002_paquete_repositorio_no_aprobado]}
+        - {inventario.etiqueta: {etiquetas: [desarrollo]}}
+        - {lista.valor_en: {lista: espejos_paquetes, campo: red.dominio}}
+
+escalado:
+  a_L3_si:
+    evento.regla_en: [zta_vis_001_borrado_registro_auditoria, DET-WIN-003]

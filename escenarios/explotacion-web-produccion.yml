@@ -1,0 +1,59 @@
+# Inyeccion SQL que acaba en una shell en el servidor web de produccion. Lo que
+# se comprueba: la secuencia explotacion_web eleva la alerta y escala a L3,
+# pero en un servidor de produccion no se mata el proceso sin una persona (el
+# playbook lo exceptua por inventario) y bloquear el origen en el WAF, que
+# afecta a toda la organizacion, siempre espera aprobacion. La evidencia si se
+# recoge sola: es lo que la persona va a necesitar para decidir.
+id: explotacion-web-produccion
+nombre: Explotacion web con shell en un servidor de produccion
+cliente: lab
+mitre: [T1190, T1059.004, T1505.003]
+alertas:
+  - minuto: 0
+    siem: wazuh
+    descripcion: Inyeccion SQL con sqlmap que devuelve 200
+    carga:
+      rule: {id: "101086", level: 12, description: "Inyeccion SQL en parametros de la peticion HTTP", groups: [detection_lab, soc_web, web, accesslog], mitre: {id: [T1190]}}
+      agent: {id: "021", name: SRV-WEB-01, ip: 10.0.30.21}
+      manager: {name: wazuh-manager}
+      decoder: {name: web-accesslog}
+      data:
+        srcip: 198.51.100.23
+        url: "/productos.php?id=1%27%20UNION%20SELECT%20usuario,clave%20FROM%20usuarios--"
+        id: "200"
+        protocol: GET
+      full_log: '198.51.100.23 - - [01/Oct/2026:10:00:00 +0200] "GET /productos.php?id=1%27%20UNION%20SELECT%20usuario,clave%20FROM%20usuarios-- HTTP/1.1" 200 5123 "-" "sqlmap/1.8.4#stable (https://sqlmap.org)"'
+    esperado:
+      familia: web
+      clase: auto_analisis
+      escalado: L3
+      sin_secuencias: true
+      nunca_automatica: [waf.bloquear_origen]
+      sin_contencion_automatica: true
+
+  - minuto: 3
+    siem: wazuh
+    descripcion: php-fpm lanza /bin/sh (Tetragon)
+    carga:
+      rule: {id: "101121", level: 15, description: "Shell lanzada por el proceso del servidor web tras explotacion", groups: [detection_lab, soc_web], mitre: {id: [T1059.004, T1190, T1505.003]}}
+      agent: {id: "021", name: SRV-WEB-01, ip: 10.0.30.21}
+      manager: {name: wazuh-manager}
+      decoder: {name: json}
+      data:
+        process_exec:
+          process: {pid: 48211, binary: /bin/sh, arguments: "-c id;uname -a;cat /etc/passwd", start_time: "2026-10-01T08:03:02.881Z", exec_id: U1JWLVdFQi0wMTo0ODIxMQ==, uid: 33}
+          parent: {binary: /usr/sbin/php-fpm8.2, pid: 1204}
+    esperado:
+      familia: web
+      clase: auto_contener
+      secuencias: [explotacion_web]
+      escalado: L3
+      severidad_minima: 4
+      nunca_automatica: [proceso.matar, waf.bloquear_origen]
+      sin_ejecucion: [proceso.matar, waf.bloquear_origen]
+      modos: {proceso.matar: aprobacion, evidencia.triage_forense: automatica}
+      ejecuciones: {evidencia.triage_forense: simulada}
+      notificar: true
+
+final:
+  incidentes: 1

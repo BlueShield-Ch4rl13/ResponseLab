@@ -1,0 +1,16 @@
+#!/bin/sh
+# Lanzador de ResponseLab para el active response de Wazuh (agente Linux).
+# El nombre del fichero es la accion: responselab-aislar -> aislar.
+# Todos los lanzadores son iguales; la logica esta en responselab_ar.py.
+# Permisos: root:wazuh 750 (los instala siem/wazuh/instalar-agente-linux.sh).
+DIR=$(cd "$(dirname "$0")" && pwd -P)
+ACCION=$(basename "$0")
+ACCION=${ACCION#responselab-}
+for PY in /usr/bin/python3 /usr/local/bin/python3 /usr/libexec/platform-python /bin/python3; do
+    if [ -x "$PY" ]; then
+        exec "$PY" "$DIR/responselab_ar.py" "$ACCION"
+    fi
+done
+printf '{"responselab_ar":{"accion":"%s","estado":"fallida","detalle":"no hay python3 en el equipo","v":1}}\n' \
+    "$ACCION" >> "$DIR/../../logs/active-responses.log"
+exit 1

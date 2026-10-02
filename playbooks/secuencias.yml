@@ -1,0 +1,114 @@
+# Secuencias: reglas de respuesta sobre varias alertas
+#
+# Una alerta suelta casi nunca es el incidente; la secuencia si. El playbook de
+# endpoint de DetectionLab lo dice asi: "En esta familia el caso rara vez lo
+# hace una alerta; lo hace la secuencia". Estas reglas son esa idea escrita
+# para que la aplique una maquina.
+#
+# Como se leen:
+#   objetivo     equipo | usuario: que tienen que compartir las alertas
+#   ventana_min  todas dentro de esta ventana
+#   pasos        lista de grupos; un grupo se cumple si alguna alerta casa con
+#                alguno de sus elementos. Un elemento es el nombre de una regla
+#                (clave o fichero sin extension), "familia:<f>" o "tecnica:<T>".
+#   minimo       cuantos grupos tienen que cumplirse
+#   efecto       severidad, escalar_a (L2 | L3 | guardia), clase y a quien avisar
+#
+# Sobre "clase: auto_contener": eleva la alerta que completa la secuencia (y
+# solo esa) a contencion automatica. Las invariantes siguen mandando: nada de
+# radio cuenta u organizacion se ejecuta solo aunque lo pida una secuencia, y
+# el cliente puede desactivarlo con politica.escalado_por_correlacion: false.
+
+secuencias:
+
+  - id: ransomware
+    nombre: Preparacion y ejecucion de ransomware
+    descripcion: |
+      Desactivar defensas, borrar copias y cifrar. Dos de los tres pasos en
+      el mismo equipo en seis horas ya no admiten otra lectura.
+    objetivo: equipo
+    ventana_min: 360
+    pasos:
+      - [soc_edr_004_defensas_deshabilitadas, xdr_001_desinstalacion_sensor_edr, xdr_002_exclusiones_antivirus, xdr_003_reglas_asr_desactivadas, xdr_006_arranque_modo_seguro]
+      - [soc_edr_003_borrado_copias_sombra]
+      - [soc_edr_007_cifrado_masivo]
+    minimo: 2
+    efecto: {severidad: 4, escalar_a: guardia, clase: auto_contener}
+
+  - id: intrusion_ssh
+    nombre: De la fuerza bruta SSH a la persistencia
+    descripcion: |
+      La cadena de la demo de Infra-SocAnalyst (hydra, shell, /etc/shadow,
+      descarga, cron), con las reglas equivalentes de DetectionLab y de
+      SplunkLab para que case venga del sensor que venga.
+    objetivo: equipo
+    ventana_min: 180
+    pasos:
+      - ["110060", DET-LNX-001, "100101"]
+      - ["110010", lin_reverse_shell, lin_download_pipe_shell, lin_base64_decode_exec]
+      - ["110020", lin_read_shadow]
+      - ["110030", lin_chmod_tmp_exec]
+      - ["110050", lin_cron_persistence, lin_ssh_authorized_keys, lin_ld_preload]
+    minimo: 3
+    efecto: {severidad: 4, escalar_a: L3, clase: auto_contener}
+
+  - id: phishing_a_cuenta
+    nombre: Del correo al acceso con la cuenta
+    descripcion: |
+      Clic o adjunto seguido, en la misma hora y por la misma persona, de un
+      acceso anomalo, un segundo factor nuevo o una regla de reenvio. Es el
+      momento de revocar sesiones sin esperar a nadie.
+    objetivo: usuario
+    ventana_min: 60
+    pasos:
+      - [soc_mail_005_url_pulsada, soc_mail_004_adjunto_sospechoso, soc_mail_008_html_smuggling]
+      - [soc_cld_004_token_robado, soc_cld_008_origen_anonimizado, soc_cld_002_metodo_mfa_registrado, soc_mail_006_regla_buzon_externa]
+    minimo: 2
+    efecto: {severidad: 4, escalar_a: L3, clase: auto_contener}
+
+  - id: credenciales_a_movimiento
+    nombre: Robo de credenciales seguido de movimiento lateral
+    objetivo: equipo
+    ventana_min: 1440
+    pasos:
+      - ["familia:credenciales", soc_edr_001_volcado_lsass, soc_edr_002_acceso_lsass_sysmon]
+      - [soc_ad_006_pass_the_hash, soc_ad_008_psexec_remoto, soc_ad_009_wmi_winrm_remoto, ad_019_coercion_ntlm]
+    minimo: 2
+    efecto: {severidad: 4, escalar_a: L3}
+
+  - id: explotacion_web
+    nombre: Explotacion web que llega a ejecutar codigo
+    objetivo: equipo
+    ventana_min: 30
+    pasos:
+      - [web_001_inyeccion_sql, web_004_ssrf_metadatos_nube, web_005_deserializacion_insegura, web_006_subida_fichero_ejecutable, web_007_inyeccion_de_comandos, web_008_inyeccion_jndi_log4shell, web_013_inyeccion_plantillas_ssti, DET-WEB-005]
+      - [web_012_shell_tras_explotacion, soc_net_005_webshell]
+    minimo: 2
+    efecto: {severidad: 4, escalar_a: L3, clase: auto_contener}
+
+  - id: ceguera_y_actividad
+    nombre: Telemetria manipulada y actividad en el mismo equipo
+    descripcion: |
+      Quien desactiva el sensor y despues hace algo no se ha equivocado de
+      equipo. Se avisa a guardia: las horas sin datos son las que importan.
+    objetivo: equipo
+    ventana_min: 1440
+    pasos:
+      - ["familia:xdr"]
+      - ["familia:endpoint", "familia:credenciales", "familia:red", "familia:ad", "familia:exfiltracion"]
+    minimo: 2
+    efecto: {severidad: 4, escalar_a: guardia}
+
+  - id: acceso_y_exfiltracion
+    nombre: Acceso indebido seguido de salida de informacion
+    descripcion: |
+      Si la misma identidad roba credenciales o accede de forma anomala y
+      despues saca datos, el reloj del RGPD y de NIS2 ya corre: se avisa al
+      DPD y a la asesoria juridica desde la primera alerta.
+    objetivo: usuario
+    ventana_min: 1440
+    pasos:
+      - ["familia:credenciales", "familia:cloud", "familia:ad"]
+      - ["familia:exfiltracion"]
+    minimo: 2
+    efecto: {severidad: 4, escalar_a: L3, avisar: [dpd, asesoria_juridica]}

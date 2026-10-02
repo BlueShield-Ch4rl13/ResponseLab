@@ -1,0 +1,24 @@
+# Capa ejecutable de la familia ad (Active Directory y movimiento lateral)
+# La razon de cada decision esta en ecosistema/detectionlab/playbooks/ad.yml.
+# Aqui solo se dice que preguntas de triaje sabe contestar la maquina y con que
+# datos. Las que no estan aqui quedan como tarea del analista.
+familia: ad
+
+triaje:
+  - pregunta: El equipo de origen esta en la unidad organizativa de puestos de administracion y hay ventana de cambio abierta
+    evaluador:
+      todos:
+        - {inventario.etiqueta: {etiquetas: [puesto_administracion]}}
+        - {inventario.ventana_abierta: {tipo: cambio}}
+  - pregunta: El objeto tocado es krbtgt, AdminSDHolder, un grupo de nivel 0, una plantilla de certificado o el propio DC
+    evaluador:
+      alguno:
+        - {evento.campo_contiene: {campo: objeto_ad, valores: [krbtgt, adminsdholder, "domain admins", "enterprise admins", "schema admins", "certificate templates", "domain controllers"]}}
+        - {evento.campo_contiene: {campo: usuario.nombre, valores: [krbtgt]}}
+        - {inventario.etiqueta: {etiquetas: [controlador_dominio]}}
+
+escalado:
+  a_guardia_si:
+    alguno:
+      - {evento.regla_en: [soc_ad_003_dcsync, soc_ad_004_golden_ticket, ad_018_extraccion_ntds, soc_ad_012_abuso_adcs]}
+      - {evento.campo_contiene: {campo: objeto_ad, valores: [krbtgt]}}

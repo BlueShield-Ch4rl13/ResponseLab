@@ -1,0 +1,38 @@
+# Capa ejecutable de la familia linux (endpoint y servidor Linux)
+familia: linux
+
+triaje:
+  - pregunta: El proceso padre es el gestor de paquetes o el agente de configuracion del parque y hay ventana de mantenimiento abierta
+    evaluador:
+      todos:
+        - {lista.valor_en: {lista: gestores_linux, campo: proceso.padre_nombre}}
+        - {inventario.ventana_abierta: {tipo: mantenimiento}}
+  - pregunta: El mismo comando aparece hoy en varios equipos del mismo grupo y en la misma hora
+    evaluador:
+      correlacion.misma_regla_en_equipos: {minutos: 60, minimo: 3}
+  - pregunta: La sesion no entro por el bastion
+    evaluador:
+      negar: {lista.ip_en_rango: {lista: bastiones, campo: red.ip_origen}}
+  - pregunta: La cuenta que ejecuta es de servicio y no deberia tener shell interactiva
+    evaluador:
+      directorio.cuenta_en_lista: {lista: cuentas_servicio}
+  - pregunta: El equipo es servidor de produccion expuesto a Internet
+    evaluador:
+      todos:
+        - {inventario.etiqueta: {etiquetas: [servidor_produccion]}}
+        - {inventario.etiqueta: {etiquetas: [expuesto_internet]}}
+
+cierre:
+  - empieza: Ejecucion o chmod +x sobre un fichero en /tmp, /var/tmp o /dev/shm (lin_chmod_tmp_exec)
+    evaluador:
+      todos:
+        - {evento.regla_en: [lin_chmod_tmp_exec]}
+        - {lista.valor_en: {lista: gestores_linux, campo: proceso.padre_nombre}}
+        - {inventario.ventana_abierta: {tipo: mantenimiento}}
+        - {correlacion.misma_regla_en_equipos: {minutos: 240, minimo: 3}}
+
+escalado:
+  a_L3_si:
+    alguno:
+      - {evento.regla_en: [lin_ld_preload, lin_reverse_shell]}
+      - {todos: [{evento.regla_en: [lin_read_shadow, "110020"]}, {inventario.etiqueta: {etiquetas: [servidor_produccion]}}]}

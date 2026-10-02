@@ -1,0 +1,32 @@
+# Capa ejecutable de la familia web (ataques contra aplicaciones web)
+familia: web
+
+triaje:
+  - pregunta: La c-ip pertenece al rango del escaner autorizado y la hora cae dentro de su ventana publicada
+    evaluador:
+      todos:
+        - {lista.ip_en_rango: {lista: escaneres_autorizados, campo: red.ip_origen}}
+        - {inventario.ventana_abierta: {tipo: escaneo, objetivo: ninguno}}
+  - pregunta: El WAF bloqueo la peticion y la respuesta es 403
+    evaluador:
+      evento.campo_valor: {campo: http.estado, valores: ["403"]}
+  - pregunta: La respuesta es 200 y su tamano se desvia de la mediana de ese endpoint
+    evaluador:
+      evento.campo_valor: {campo: http.estado, valores: ["200"]}
+    nota: Aproximacion. Un 200 a un patron de explotacion ya es motivo para subir; la desviacion de tamano la comprueba el analista.
+  - pregunta: El proceso del servidor web engendro un hijo en los 10 minutos siguientes
+    evaluador:
+      correlacion.regla_en_equipo: {reglas: [web_012_shell_tras_explotacion, soc_net_005_webshell], minutos: 10}
+  - pregunta: Aparecio un fichero nuevo bajo la raiz publicada en la misma ventana
+    evaluador:
+      correlacion.regla_en_equipo: {reglas: [web_006_subida_fichero_ejecutable], minutos: 10}
+  - pregunta: La version del componente figura en la lista KEV
+    evaluador:
+      cti.kev: {}
+
+escalado:
+  a_L3_si:
+    alguno:
+      - {evento.regla_en: [web_012_shell_tras_explotacion, web_006_subida_fichero_ejecutable]}
+      - {correlacion.regla_en_equipo: {reglas: [web_012_shell_tras_explotacion, soc_net_005_webshell], minutos: 30}}
+      - {evento.campo_valor: {campo: http.estado, valores: ["200"]}}

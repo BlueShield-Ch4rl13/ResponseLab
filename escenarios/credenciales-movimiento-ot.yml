@@ -1,0 +1,92 @@
+# Movimiento lateral hacia la planta en un cliente industrial con Elastic,
+# CrowdStrike y FortiGate. Un administrador comprometido entra por PsExec en
+# un puesto de ingenieria, vuelca LSASS alli y salta a un HMI de la red OT.
+# Lo que se comprueba: la secuencia credenciales_a_movimiento escala a L3 y el
+# puesto de ingenieria se aisla solo, con el EDR de terceros del cliente; el
+# HMI, protegido por inventario, no se toca sin una persona aunque la tecnica
+# sea la misma, y rundll32.exe (binario del sistema que usa el atacante) no se
+# pone en cuarentena ni se bloquea en la flota.
+id: credenciales-movimiento-ot
+nombre: Credenciales robadas y salto a la red OT
+cliente: norte
+mitre: [T1569.002, T1003.001, T1021.002]
+alertas:
+  - minuto: 0
+    siem: elastic
+    descripcion: PsExec contra el puesto de ingenieria ING-07
+    carga:
+      rule: {id: 3c1e2a90-0000-4000-8000-000000000196, name: "DL - Ejecucion remota tipo PsExec"}
+      alerts:
+        - kibana.alert.rule.name: "DL - Ejecucion remota tipo PsExec"
+          kibana.alert.rule.rule_id: 3c1e2a90-0000-4000-8000-000000000196
+          kibana.alert.severity: high
+          kibana.alert.rule.threat:
+            - framework: MITRE ATT&CK
+              technique: [{id: T1569, subtechnique: [{id: T1569.002}]}]
+          host: {name: ING-07, ip: [10.20.5.17]}
+          user: {name: adm-jlopez, domain: NORTE}
+          source: {ip: 10.20.3.44}
+          event: {code: "7045", provider: Service Control Manager}
+          winlog:
+            channel: System
+            event_id: "7045"
+            event_data: {ServiceName: PSEXESVC, ImagePath: "%SystemRoot%\\PSEXESVC.exe", AccountName: LocalSystem}
+    esperado:
+      familia: ad
+      clase: auto_analisis
+      sin_secuencias: true
+      sin_contencion_automatica: true
+
+  - minuto: 18
+    siem: elastic
+    descripcion: Volcado de LSASS con comsvcs.dll lanzado desde PSEXESVC
+    carga:
+      rule: {id: 3c1e2a90-0000-4000-8000-000000000206, name: "DL - Volcado de memoria de LSASS"}
+      alerts:
+        - kibana.alert.rule.name: "DL - Volcado de memoria de LSASS"
+          kibana.alert.severity: critical
+          host: {name: ING-07, ip: [10.20.5.17]}
+          user: {name: adm-jlopez, domain: NORTE}
+          process:
+            pid: 7720
+            entity_id: "{6c3f8a1e-7720-4000-8000-0000000000a7}"
+            executable: C:\Windows\System32\rundll32.exe
+            command_line: "rundll32.exe C:\\Windows\\System32\\comsvcs.dll, MiniDump 712 C:\\Windows\\Temp\\l.dmp full"
+            parent: {executable: C:\Windows\PSEXESVC.exe}
+            hash: {sha256: 9f2d8c6a1b0e4f3a5c7d9e1f2a4b6c8d0e2f4a6b8c0d2e4f6a8b0c2d4e6f8a0b}
+    esperado:
+      familia: endpoint
+      clase: auto_contener
+      secuencias: [credenciales_a_movimiento]
+      escalado: L3
+      severidad_minima: 4
+      modos: {endpoint.aislar: automatica}
+      nunca_automatica: [fichero.cuarentena, flota.bloquear_hash]
+      ejecuciones: {endpoint.aislar: simulada}
+      conectores: {endpoint.aislar: crowdstrike}
+      notificar: true
+
+  - minuto: 25
+    siem: elastic
+    descripcion: PsExec desde ING-07 contra el HMI-02 de la linea de envasado
+    carga:
+      rule: {id: 3c1e2a90-0000-4000-8000-000000000196, name: "DL - Ejecucion remota tipo PsExec"}
+      alerts:
+        - kibana.alert.rule.name: "DL - Ejecucion remota tipo PsExec"
+          kibana.alert.severity: high
+          host: {name: HMI-02, ip: [10.50.1.12]}
+          user: {name: adm-jlopez, domain: NORTE}
+          source: {ip: 10.20.5.17}
+          event: {code: "7045", provider: Service Control Manager}
+          winlog:
+            channel: System
+            event_id: "7045"
+            event_data: {ServiceName: PSEXESVC, ImagePath: "%SystemRoot%\\PSEXESVC.exe", AccountName: LocalSystem}
+    esperado:
+      familia: ad
+      sin_contencion_automatica: true
+      nunca_automatica: [endpoint.aislar, proceso.matar]
+      sin_ejecucion: [endpoint.aislar, proceso.matar]
+
+final:
+  incidentes: 2

@@ -1,0 +1,41 @@
+# El escaner de vulnerabilidades autorizado pasa por la web en su ventana
+# publicada (jueves 22:00-23:59, hora de Madrid) y, a la vez, alguien de fuera
+# hace lo mismo. Lo que se comprueba: el triaje reconoce al escaner y baja la
+# severidad, pero la alerta NO se cierra sola: la condicion de cierre de
+# DetectionLab exige ademas que ninguna ruta fuera del inventario de la
+# aplicacion haya devuelto 200, y eso no viaja en la alerta. Rango y ventana
+# solos no bastan, porque el propio escaner comprometido seria el sitio ideal
+# desde el que atacar. El escaneo de fuera no recibe ninguna rebaja.
+id: escaner-autorizado
+nombre: Escaner autorizado y escaneo externo en la misma ventana
+cliente: lab
+# Jueves 1 de octubre de 2026, 22:30 en Madrid (UTC+2): dentro de la ventana
+inicio: "2026-10-01T20:30:00Z"
+mitre: [T1595.003]
+alertas:
+  - minuto: 0
+    siem: splunk
+    descripcion: Escaneo de rutas desde el escaner autorizado (SplunkLab)
+    carga:
+      search_name: DET-WEB-001 Escaneo de rutas
+      result: {clientip: 10.0.30.50, host: SRV-WEB-01, count: "412", status: "404", uri_path: /admin/.env, sourcetype: "nginx:access"}
+    esperado:
+      familia: web
+      triaje: {escaner autorizado: si}
+      cierre_propuesto: [escaner de vulnerabilidades autorizado]
+      estado: en_curso
+      severidad_maxima: 1
+      sin_contencion_automatica: true
+
+  - minuto: 1
+    siem: splunk
+    descripcion: El mismo escaneo desde una IP de Internet
+    carga:
+      search_name: DET-WEB-001 Escaneo de rutas
+      result: {clientip: 203.0.113.77, host: SRV-WEB-01, count: "389", status: "404", uri_path: /wp-login.php, sourcetype: "nginx:access"}
+    esperado:
+      familia: web
+      triaje: {escaner autorizado: "no"}
+      estado: en_curso
+      severidad_minima: 2
+      sin_contencion_automatica: true

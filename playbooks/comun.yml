@@ -1,0 +1,166 @@
+# Capa ejecutable comun a todas las familias
+#
+# DetectionLab escribe la contencion en prosa. Esta tabla casa cada frase con
+# una accion del catalogo (acciones/catalogo.yml). La comparacion se hace sobre
+# el texto normalizado (sin tildes, mayusculas ni puntuacion), asi que una coma
+# cambiada aguas arriba no rompe nada.
+#
+# Si DetectionLab anade una accion nueva que no esta aqui, NO se pierde ni se
+# adivina: el motor la convierte en tarea manual del caso y tools/validar.py la
+# lista como "accion sin mapear" para que alguien decida que ejecuta.
+#
+# Campos opcionales por entrada:
+#   parametros   se pasan tal cual al conector
+#   solo_reglas  la accion solo aplica si la alerta viene de una de estas
+#                reglas (clave o nombre de fichero sin extension)
+
+contencion:
+
+  # Equipo
+  - texto: Aislar el endpoint en la red, dejando solo la comunicacion con el manager
+    accion: endpoint.aislar
+  - texto: Aislar el endpoint de origen en la red, dejando solo la comunicacion con el manager
+    accion: endpoint.aislar
+  - texto: Aislar el servidor en la red, dejando solo la comunicacion con el manager
+    accion: endpoint.aislar
+  - texto: Aislar el equipo en la red, dejando solo la comunicacion con el manager
+    accion: endpoint.aislar
+  - texto: Aislar el controlador de dominio
+    accion: endpoint.aislar
+  - texto: Aislar el endpoint en la red, aplicando y verificando el aislamiento fuera del agente
+    accion: red.aislar_equipo
+  - texto: Aislar el endpoint en la red, unicamente para el borrado del registro de auditoria
+    accion: endpoint.aislar
+    solo_reglas: [zta_vis_001_borrado_registro_auditoria]
+  - texto: Bloquear el destino en el proxy de salida solo para el equipo afectado
+    accion: red.bloquear_destino_equipo
+  - texto: Marcar el equipo como telemetria no fiable en el inventario, con la fecha de inicio del hueco
+    accion: inventario.marcar_no_fiable
+
+  # Proceso
+  - texto: Matar el proceso por su ProcessGuid
+    accion: proceso.matar
+  - texto: Matar el proceso de la herramienta por su ProcessGuid
+    accion: proceso.matar
+  - texto: Matar el proceso que sostiene la conexion por su ProcessGuid
+    accion: proceso.matar
+  - texto: Matar el proceso por PID y hora de arranque
+    accion: proceso.matar
+  - texto: Matar el proceso hijo lanzado por el servidor web, por PID y hora de arranque
+    accion: proceso.matar
+
+  # Fichero y persistencia
+  - texto: Poner el fichero en cuarentena moviendolo a la ruta de custodia, conservando hash y ruta original
+    accion: fichero.cuarentena
+  - texto: Poner en cuarentena el fichero cuyo hash coincidio
+    accion: fichero.cuarentena
+  - texto: Poner el binario en cuarentena moviendolo al almacen de custodia, conservando hash y atributos extendidos
+    accion: fichero.cuarentena
+  - texto: Poner en cuarentena el fichero aparecido bajo la raiz publicada, sacandolo del arbol servido y conservando ruta y hash
+    accion: fichero.cuarentena
+  - texto: Deshabilitar la tarea programada o el valor Run creado, exportando antes su definicion
+    accion: persistencia.deshabilitar
+  - texto: Descargar y retirar el elemento de persistencia (launchctl bootout mas mover el plist)
+    accion: persistencia.deshabilitar
+  - texto: Congelar el fichero de persistencia copiandolo al almacen de evidencia y fijando retencion
+    accion: evidencia.conservar_fichero
+
+  # Evidencia y caso
+  - texto: Congelar el estado del objeto de directorio tocado en el caso
+    accion: evidencia.instantanea_ad
+  - texto: Fijar retencion extendida sobre los registros del periodo afectado
+    accion: evidencia.retener
+  - texto: Fijar retencion extendida sobre los indices, el registro del proxy y el del correo que cubren la ventana
+    accion: evidencia.retener
+  - texto: Fijar retencion extendida sobre la telemetria anterior al hueco
+    accion: evidencia.retener
+  - texto: Anotar en el caso los permisos concedidos y dejar preparada su retirada
+    accion: caso.nota
+  - texto: Abrir o actualizar la tarea de obligacion con su plazo y responsable
+    accion: caso.tarea_obligacion
+  - texto: Abrir o actualizar la tarea de desviacion contra el propietario del activo, con la evidencia y el plazo del plan
+    accion: caso.tarea_desviacion
+  - texto: Marcar las credenciales del usuario y del equipo para rotacion
+    accion: credenciales.marcar_rotacion
+
+  # Identidad
+  - texto: Revocar las sesiones y los tokens de refresco de la identidad
+    accion: identidad.revocar_sesiones
+  - texto: Marcar la identidad como en riesgo para forzar reautenticacion con MFA en el siguiente acceso
+    accion: identidad.marcar_riesgo
+  - texto: Retirar el consentimiento de la aplicacion o anular la credencial anadida al service principal
+    accion: identidad.retirar_consentimiento
+  - texto: Retirar la clave publica anadida a authorized_keys, guardando antes el fichero completo
+    accion: cuenta.retirar_clave_ssh
+
+  # Correo
+  - texto: Retirar el mensaje de todos los buzones que lo recibieron mediante borrado reversible
+    accion: correo.retirar_mensaje
+  - texto: Deshabilitar la regla de reenvio externa creada, guardando antes su definicion completa
+    accion: correo.deshabilitar_regla
+  - texto: Deshabilitar la regla de reenvio automatico creada, guardando antes su definicion completa
+    accion: correo.deshabilitar_regla
+  - texto: Anadir la URL concreta a la lista de bloqueo del reescritor de enlaces del proveedor
+    accion: correo.bloquear_url
+  - texto: Bloquear el dominio o la IP remitente en la pasarela de correo
+    accion: correo.bloquear_remitente
+
+  # Perimetro, WAF y flota
+  - texto: Bloquear el destino en el cortafuegos perimetral para toda la organizacion
+    accion: perimetro.bloquear_destino
+  - texto: Bloquear el destino de la subida en el proxy corporativo
+    accion: perimetro.bloquear_destino
+  - texto: Publicar en el WAF la regla de bloqueo para la c-ip o el patron de origen
+    accion: waf.bloquear_origen
+  - texto: Bloquear la ejecucion del hash en todo el parque mediante politica de control de aplicaciones
+    accion: flota.bloquear_hash
+  - texto: Desplegar la regla de bloqueo del driver vulnerable en la politica de la flota
+    accion: flota.bloquear_hash
+
+  # Kubernetes
+  - texto: Acordonar el nodo donde corre el pod
+    accion: k8s.acordonar_nodo
+  - texto: Aplicar una NetworkPolicy de denegacion de salida sobre las etiquetas del pod
+    accion: k8s.aislar_pod
+  - texto: Retirar el RoleBinding o ClusterRoleBinding creado en la escalada, guardando su manifiesto
+    accion: k8s.retirar_rolebinding
+  - texto: Escalar el workload a cero replicas
+    accion: k8s.escalar_cero
+
+  # Aplicacion web
+  - texto: Invalidar la sesion o el token JWT concreto abusado
+    accion: aplicacion.invalidar_sesion
+
+
+# Excepciones que aplican a toda accion de un tipo, en cualquier familia.
+# DetectionLab las escribe en prosa en el campo "excepcion" de cada accion
+# ("Si el inventario marca el equipo como servidor de produccion, NO se
+# aisla"). Aqui se convierten en evaluadores: si alguno se cumple, la accion no
+# se ejecuta sola, se prepara y espera aprobacion.
+excepciones_por_accion:
+  endpoint.aislar:
+    - {inventario.etiqueta: {etiquetas: [servidor_produccion]}}
+  red.aislar_equipo:
+    - {inventario.etiqueta: {etiquetas: [servidor_produccion]}}
+  proceso.matar:
+    - {inventario.etiqueta: {etiquetas: [servidor_produccion]}}
+    - {lista.valor_en: {lista: aplicaciones_negocio, campo: proceso.sha256}}
+    - {lista.valor_en: {lista: aplicaciones_negocio, campo: proceso.imagen_nombre}}
+  fichero.cuarentena:
+    - {lista.valor_en: {lista: aplicaciones_negocio, campo: fichero.sha256}}
+
+
+# Evidencia que se recoge sola en las familias de equipo, ademas de las tareas
+# manuales que cada playbook de DetectionLab describe. Solo en las clases que
+# se indican: lanzar un triage forense por cada alerta de nivel medio llenaria
+# los discos del parque para nada.
+evidencia_automatica:
+  endpoint:      [{accion: evidencia.triage_forense, clases: [auto_contener]}]
+  credenciales:  [{accion: evidencia.triage_forense, clases: [auto_contener]}]
+  linux:         [{accion: evidencia.triage_forense, clases: [auto_contener]}]
+  macos:         [{accion: evidencia.triage_forense, clases: [auto_contener]}]
+  ad:            [{accion: evidencia.triage_forense, clases: [auto_contener]}]
+  web:           [{accion: evidencia.triage_forense, clases: [auto_contener]}]
+  red:           [{accion: evidencia.triage_forense, clases: [auto_contener]}]
+  exfiltracion:  [{accion: evidencia.triage_forense, clases: [auto_contener]}]
+  xdr:           [{accion: evidencia.paquete_investigacion, clases: [auto_contener, auto_analisis]}]

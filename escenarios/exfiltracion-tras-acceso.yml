@@ -1,0 +1,67 @@
+# Acceso desde una red de anonimizacion y, media hora despues, una regla que
+# reenvia el correo a un buzon personal. Cliente financiero con Sentinel y
+# Splunk a la vez: la primera alerta llega de un SIEM y la segunda del otro, y
+# la correlacion por usuario las une igual. Lo que se comprueba: la secuencia
+# acceso_y_exfiltracion avisa al DPD y a la asesoria juridica desde ese
+# momento, la regla de reenvio se deshabilita sola (radio objeto, reversible),
+# el bloqueo perimetral del destino espera a una persona y corren los plazos
+# de RGPD, NIS2 y DORA.
+id: exfiltracion-tras-acceso
+nombre: Acceso anonimo y reenvio del correo a un buzon personal
+cliente: acme
+mitre: [T1090.003, T1114.003, T1020]
+alertas:
+  - minuto: 0
+    siem: sentinel
+    descripcion: Inicio de sesion de pruiz desde una red de anonimizacion
+    carga:
+      object:
+        properties:
+          title: "DL - Inicio de sesion desde una red de anonimizacion"
+          severity: High
+          status: New
+          additionalData: {techniques: [T1090.003], alertsCount: 1}
+          alerts:
+            - properties: {alertDisplayName: "DL - Inicio de sesion desde una red de anonimizacion", severity: High}
+          relatedEntities:
+            - kind: Account
+              properties: {accountName: pruiz, upnSuffix: acme.test, aadUserId: 2b1c9d0e-0000-4000-8000-000000000002}
+            - kind: Ip
+              properties: {address: 198.51.100.77}
+    esperado:
+      familia: cloud
+      clase: auto_analisis
+      sin_secuencias: true
+
+  - minuto: 35
+    siem: splunk
+    descripcion: Regla de buzon que reenvia todo a un dominio personal (Splunk)
+    carga:
+      search_name: "DL - Reenvio automatico de correo a dominio personal"
+      results_link: "https://splunk.acme.test:8000/app/TA-detection-lab/search?q=%7Cloadjob%20scheduler__admin__search__RMD5"
+      result:
+        sourcetype: "o365:management:activity"
+        user: pruiz@acme.test
+        UserId: pruiz@acme.test
+        Operation: New-InboxRule
+        ObjectId: pruiz@acme.test\Sincronizar
+        "Parameters{}.Name": [Name, ForwardTo, MarkAsRead, StopProcessingRules]
+        "Parameters{}.Value": [Sincronizar, "pablo.ruiz.casa@correo-personal.example", "True", "True"]
+        src_ip: 198.51.100.77
+        severity: critical
+        tecnica: "T1020,T1114.003"
+    esperado:
+      familia: exfiltracion
+      clase: auto_contener
+      secuencias: [acceso_y_exfiltracion]
+      escalado: L3
+      severidad_minima: 4
+      avisar_ademas: [dpd, asesoria_juridica]
+      modos: {correo.deshabilitar_regla: automatica}
+      nunca_automatica: [perimetro.bloquear_destino]
+      ejecuciones: {correo.deshabilitar_regla: simulada}
+      conectores: {correo.deshabilitar_regla: exchange}
+      notificar: true
+
+final:
+  plazos: [rgpd, nis2, dora]

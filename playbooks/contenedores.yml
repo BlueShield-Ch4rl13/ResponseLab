@@ -1,0 +1,19 @@
+# Capa ejecutable de la familia contenedores (Kubernetes y runtime)
+familia: contenedores
+
+triaje:
+  - pregunta: El namespace figura como no productivo en el inventario
+    evaluador:
+      lista.valor_en: {lista: k8s_namespaces_no_productivos, campo: k8s.namespace}
+  - pregunta: El pod monta hostPath sobre /, /etc, /var/run o el socket del runtime
+    evaluador:
+      evento.regla_en: [k8s_montaje_hostpath, cont_socket_runtime_accedido, cont_escape_a_namespaces_host]
+    nota: Aproximacion por regla. Las tres reglas solo saltan con esos montajes o con acceso al socket.
+  - pregunta: La imagen no procede del registro corporativo o su digest no coincide con el firmado
+    evaluador:
+      lista.prefijo_no_en: {lista: registros_corporativos, campo: k8s.imagen}
+    nota: Comprueba el origen de la imagen; la firma del digest queda para el analista.
+
+escalado:
+  a_L3_si:
+    evento.regla_en: [cont_escape_a_namespaces_host, cont_socket_runtime_accedido, k8s_montaje_hostpath]

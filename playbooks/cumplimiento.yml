@@ -1,0 +1,17 @@
+# Capa ejecutable de la familia cumplimiento (obligaciones regulatorias)
+familia: cumplimiento
+
+triaje:
+  - pregunta: Existe una excepcion aprobada y en vigor para este activo
+    evaluador:
+      inventario.excepcion_vigente: {}
+  - pregunta: El activo esta en el alcance de la certificacion
+    evaluador:
+      inventario.etiqueta: {etiquetas: [alcance_certificacion]}
+  - pregunta: Quedan menos de 24 h del plazo regulatorio
+    evaluador:
+      regulatorio.plazo_menor_horas: {horas: 24}
+
+escalado:
+  a_L3_si:
+    regulatorio.plazo_menor_horas: {horas: 24}

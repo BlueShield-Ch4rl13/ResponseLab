@@ -1,0 +1,103 @@
+# Intrusion por SSH en el servidor de la DMZ: la cadena de la demo de
+# Infra-SocAnalyst (hydra, shell, /etc/shadow, cron) vista por Wazuh, Falco y
+# Tetragon. Lo que se comprueba: dos alertas sueltas no bastan para contener un
+# servidor; a la tercera la secuencia intrusion_ssh eleva a contencion
+# automatica y escala a L3, y el equipo se aisla una sola vez aunque la cadena
+# siga llegando. Y la evidencia: la copia del crontab modificado va sola a
+# custodia, la de /etc/shadow no (copiar un almacen de credenciales multiplica
+# el secreto; que se leyo ya consta en la alerta).
+id: intrusion-ssh-dmz
+nombre: Intrusion por SSH en un servidor de la DMZ
+cliente: lab
+mitre: [T1110, T1059.004, T1003.008, T1053.003]
+alertas:
+  - minuto: 0
+    siem: wazuh
+    descripcion: Fuerza bruta SSH desde Internet (hydra)
+    carga:
+      rule: {id: "110060", level: 10, description: "SOC: fuerza bruta SSH (multiples fallos del mismo origen)", groups: [syslog, sshd, authentication_failures, ids], mitre: {id: [T1110]}}
+      agent: {id: "012", name: victima-dmz, ip: 10.0.10.20}
+      manager: {name: wazuh-manager}
+      decoder: {name: sshd}
+      data: {srcip: 203.0.113.45, srcport: "51514", dstuser: root}
+      full_log: "sshd[2211]: Failed password for root from 203.0.113.45 port 51514 ssh2"
+    esperado:
+      familia: linux
+      clase: auto_analisis
+      sin_secuencias: true
+      sin_contencion_automatica: true
+
+  - minuto: 6
+    siem: wazuh
+    descripcion: Shell interactiva de root abierta por sshd (Falco)
+    carga:
+      rule: {id: "110010", level: 10, description: "SOC/Falco: shell interactiva detectada", groups: [falco, soc], mitre: {id: [T1059.004]}}
+      agent: {id: "012", name: victima-dmz, ip: 10.0.10.20}
+      manager: {name: wazuh-manager}
+      decoder: {name: json}
+      data:
+        rule: Run shell untrusted
+        priority: Notice
+        output_fields:
+          proc.name: bash
+          proc.exepath: /usr/bin/bash
+          proc.cmdline: bash -i
+          proc.pid: 2304
+          proc.pexepath: /usr/sbin/sshd
+          proc.pname: sshd
+          user.name: root
+    esperado:
+      familia: linux
+      sin_secuencias: true
+      sin_contencion_automatica: true
+
+  - minuto: 9
+    siem: wazuh
+    descripcion: Lectura de /etc/shadow (Tetragon)
+    carga:
+      rule: {id: "110020", level: 12, description: "SOC: acceso a /etc/shadow (volcado de credenciales)", groups: [tetragon, soc], mitre: {id: [T1003.008]}}
+      agent: {id: "012", name: victima-dmz, ip: 10.0.10.20}
+      manager: {name: wazuh-manager}
+      decoder: {name: json}
+      data:
+        process_kprobe:
+          function_name: security_file_permission
+          process: {pid: 2391, binary: /usr/bin/cat, arguments: /etc/shadow, start_time: "2026-10-01T03:21:44.102Z", exec_id: dmljdGltYS1kbXo6MjM5MQ==}
+          parent: {binary: /usr/bin/bash, pid: 2304}
+          args:
+            - file_arg: {path: /etc/shadow}
+    esperado:
+      familia: linux
+      clase: auto_contener
+      secuencias: [intrusion_ssh]
+      escalado: L3
+      severidad_minima: 4
+      modos: {endpoint.aislar: automatica, evidencia.conservar_fichero: aprobacion}
+      nunca_automatica: [cuenta.retirar_clave_ssh]
+      ejecuciones: {endpoint.aislar: simulada}
+      conectores: {endpoint.aislar: wazuh}
+      notificar: true
+
+  - minuto: 14
+    siem: wazuh
+    descripcion: Persistencia en el crontab de root (Tetragon)
+    carga:
+      rule: {id: "110050", level: 10, description: "SOC/Tetragon: modificacion de tareas cron (persistencia)", groups: [tetragon, soc], mitre: {id: [T1053.003]}}
+      agent: {id: "012", name: victima-dmz, ip: 10.0.10.20}
+      manager: {name: wazuh-manager}
+      decoder: {name: json}
+      data:
+        process_kprobe:
+          function_name: security_file_permission
+          process: {pid: 2450, binary: /usr/bin/tee, arguments: "-a /var/spool/cron/crontabs/root", start_time: "2026-10-01T03:26:10.550Z", exec_id: dmljdGltYS1kbXo6MjQ1MA==}
+          parent: {binary: /usr/bin/bash, pid: 2304}
+          args:
+            - file_arg: {path: /var/spool/cron/crontabs/root}
+    esperado:
+      clase: auto_contener
+      secuencias: [intrusion_ssh]
+      modos: {evidencia.conservar_fichero: automatica}
+      ejecuciones: {endpoint.aislar: omitida, evidencia.conservar_fichero: simulada}
+
+final:
+  incidentes: 1

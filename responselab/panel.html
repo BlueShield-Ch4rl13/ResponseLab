@@ -1,0 +1,138 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>ResponseLab · Panel</title>
+<style>
+  :root { --fondo:#f6f7f9; --panel:#ffffff; --texto:#1f2430; --suave:#5b6474; --borde:#dfe3ea;
+          --acento:#0f766e; --peligro:#b42318; --aviso:#b54708; --ok:#027a48; --info:#175cd3; }
+  @media (prefers-color-scheme: dark) {
+    :root { --fondo:#0f1218; --panel:#171b23; --texto:#e6e9ef; --suave:#98a2b3; --borde:#2a303b;
+            --acento:#2dd4bf; --peligro:#f97066; --aviso:#fdb022; --ok:#32d583; --info:#84adff; }
+  }
+  * { box-sizing: border-box; }
+  body { margin:0; font:14px/1.5 system-ui, -apple-system, "Segoe UI", sans-serif; background:var(--fondo); color:var(--texto); }
+  header { display:flex; flex-wrap:wrap; gap:.75rem; align-items:center; padding:.75rem 1rem; background:var(--panel);
+           border-bottom:1px solid var(--borde); position:sticky; top:0; }
+  header h1 { font-size:1rem; margin:0 1rem 0 0; letter-spacing:.02em; }
+  header input { padding:.4rem .5rem; border:1px solid var(--borde); border-radius:6px; background:var(--fondo); color:var(--texto); }
+  button { padding:.35rem .7rem; border:1px solid var(--borde); border-radius:6px; background:var(--panel); color:var(--texto); cursor:pointer; }
+  button.primario { background:var(--acento); color:#fff; border-color:var(--acento); }
+  button.peligro { color:var(--peligro); border-color:var(--peligro); }
+  main { display:grid; grid-template-columns: minmax(0,1fr) minmax(0,1.4fr); gap:1rem; padding:1rem; }
+  @media (max-width: 900px) { main { grid-template-columns: 1fr; } }
+  section { background:var(--panel); border:1px solid var(--borde); border-radius:10px; padding:1rem; min-width:0; }
+  h2 { font-size:.95rem; margin:0 0 .75rem; }
+  table { width:100%; border-collapse:collapse; }
+  td, th { text-align:left; padding:.4rem .3rem; border-bottom:1px solid var(--borde); vertical-align:top; overflow-wrap:anywhere; }
+  th { color:var(--suave); font-weight:600; font-size:.8rem; }
+  tr.fila:hover { background:var(--fondo); cursor:pointer; }
+  .chip { display:inline-block; padding:0 .45rem; border-radius:999px; font-size:.75rem; border:1px solid var(--borde); }
+  .s4 { color:var(--peligro); border-color:var(--peligro); } .s3 { color:var(--aviso); border-color:var(--aviso); }
+  .s2 { color:var(--info); border-color:var(--info); } .ok { color:var(--ok); } .error { color:var(--peligro); }
+  .suave { color:var(--suave); } pre { white-space:pre-wrap; font-size:.8rem; background:var(--fondo); padding:.5rem; border-radius:6px; }
+  #aviso { padding:.5rem 1rem; color:var(--peligro); }
+</style>
+</head>
+<body>
+<header>
+  <h1>ResponseLab</h1>
+  <label>Cliente <input id="cliente" size="10" autocomplete="off"></label>
+  <label>Token <input id="token" type="password" size="28" autocomplete="off"></label>
+  <button class="primario" id="cargar">Cargar</button>
+  <span class="suave" id="estado"></span>
+</header>
+<div id="aviso"></div>
+<main>
+  <section>
+    <h2>Aprobaciones pendientes</h2>
+    <table><thead><tr><th>Acción</th><th>Motivo</th><th></th></tr></thead><tbody id="aprobaciones"></tbody></table>
+    <h2 style="margin-top:1.5rem">Incidentes</h2>
+    <table><thead><tr><th>Sev.</th><th>Incidente</th><th>Estado</th><th>Escalar</th></tr></thead><tbody id="incidentes"></tbody></table>
+  </section>
+  <section id="detalle"><h2>Detalle</h2><p class="suave">Selecciona un incidente.</p></section>
+</main>
+<script>
+"use strict";
+const $ = (id) => document.getElementById(id);
+const esc = (t) => String(t ?? "").replace(/[&<>"']/g, (c) => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
+function guardado(k) { try { return sessionStorage.getItem(k) || ""; } catch (e) { return ""; } }
+function guardar(k, v) { try { sessionStorage.setItem(k, v); } catch (e) {} }
+$("cliente").value = guardado("rl_cliente") || (location.hash.slice(1).split("/")[0] || "");
+$("token").value = guardado("rl_token");
+
+async function api(ruta, metodo = "GET", cuerpo) {
+  const r = await fetch(`/v1/${encodeURIComponent($("cliente").value)}${ruta}`, {
+    method: metodo, headers: {"Authorization": "Bearer " + $("token").value, "Content-Type": "application/json"},
+    body: cuerpo ? JSON.stringify(cuerpo) : undefined });
+  const datos = await r.json().catch(() => ({}));
+  if (!r.ok) throw new Error(datos.error || r.status);
+  return datos;
+}
+
+async function cargar() {
+  guardar("rl_cliente", $("cliente").value); guardar("rl_token", $("token").value);
+  $("aviso").textContent = "";
+  try {
+    const [aps, incs] = await Promise.all([api("/aprobaciones?estado=pendiente"), api("/incidentes")]);
+    $("aprobaciones").innerHTML = aps.map((a) => `<tr>
+      <td><b>${esc(a.paso.nombre)}</b><br><span class="suave">${esc(JSON.stringify(a.paso.objetivo))}</span></td>
+      <td>${esc(a.motivo)}<br><span class="suave">caduca ${esc(a.caduca.slice(0,16))} · ${esc(a.incidente_id)}</span></td>
+      <td><button class="primario" data-ap="${esc(a.id)}" data-op="aprobar">Aprobar</button>
+          <button class="peligro" data-ap="${esc(a.id)}" data-op="rechazar">Rechazar</button></td></tr>`).join("")
+      || `<tr><td colspan="3" class="suave">Nada pendiente.</td></tr>`;
+    $("incidentes").innerHTML = incs.map((i) => `<tr class="fila" data-inc="${esc(i.id)}">
+      <td><span class="chip s${i.severidad}">${i.severidad}</span></td>
+      <td><b>${esc(i.titulo)}</b><br><span class="suave">${esc(i.entidad_tipo)}: ${esc(i.entidad)} · ${esc(i.familias.join(", "))} · ${i.n_alertas} alerta(s)</span></td>
+      <td>${esc(i.estado)}</td><td>${esc(i.escalado_a)}<br><span class="suave">${esc(i.plazo.slice(11,16))}</span></td></tr>`).join("")
+      || `<tr><td colspan="4" class="suave">Sin incidentes.</td></tr>`;
+    $("estado").textContent = "actualizado " + new Date().toLocaleTimeString();
+    const inc = location.hash.slice(1).split("/")[1];
+    if (inc) detalle(inc);
+  } catch (e) { $("aviso").textContent = "No se pudo cargar: " + e.message; }
+}
+
+async function detalle(id) {
+  location.hash = `${$("cliente").value}/${id}`;
+  try {
+    const d = await api(`/incidentes/${encodeURIComponent(id)}`);
+    const i = d.incidente;
+    $("detalle").innerHTML = `<h2>${esc(i.titulo)}</h2>
+      <p><span class="chip s${i.severidad}">severidad ${i.severidad}</span> ${esc(i.estado)} · escalar a <b>${esc(i.escalado_a)}</b>
+         · ${esc(i.entidad_tipo)} ${esc(i.entidad)} ${i.caso_externo ? "· caso " + esc(i.caso_externo) : ""}
+         <button data-inc-op="asumir">Asumir</button> <button data-inc-op="cerrar">Cerrar</button></p>
+      ${i.plazos_regulatorios.length ? `<p><b>Plazos regulatorios:</b> ${i.plazos_regulatorios.map((p) => esc(p.marco + " " + p.hito + " → " + p.vence)).join(" · ")}</p>` : ""}
+      <h2>Alertas</h2><table>${d.alertas.map((a) => `<tr><td>${esc(a.momento.slice(0,19))}</td><td><b>${esc(a.plan.regla?.titulo || a.regla_clave)}</b>
+         <br><span class="suave">${esc(a.familia)} · ${esc(a.clase)}</span><pre>${esc(a.plan.resumen || "")}</pre></td></tr>`).join("")}</table>
+      <h2>Ejecuciones</h2><table>${d.ejecuciones.map((e) => `<tr><td><b>${esc(e.accion)}</b> via ${esc(e.conector)}<br>
+         <span class="suave">${esc(e.origen)} · ${esc(e.actor)} · ${esc(e.creada.slice(0,19))}</span></td>
+         <td class="${e.estado === "error" ? "error" : "ok"}">${esc(e.estado)}</td><td>${esc(e.resultado?.detalle || "")}</td>
+         <td>${["ok","simulada","confirmada"].includes(e.estado) && !e.deshace ? `<button data-ej="${esc(e.id)}">Deshacer</button>` : ""}</td></tr>`).join("") || `<tr><td class="suave">Ninguna.</td></tr>`}</table>
+      <h2>Tareas</h2><table>${d.tareas.map((t) => `<tr><td>${esc(t.grupo)}</td><td><b>${esc(t.titulo)}</b><br><span class="suave">${esc(t.descripcion)}</span></td></tr>`).join("") || `<tr><td class="suave">Ninguna.</td></tr>`}</table>`;
+  } catch (e) { $("aviso").textContent = "No se pudo abrir el incidente: " + e.message; }
+}
+
+document.addEventListener("click", async (ev) => {
+  const t = ev.target.closest("[data-ap],[data-inc],[data-ej],[data-inc-op]");
+  if (!t) return;
+  try {
+    if (t.dataset.ap) {
+      const comentario = prompt(t.dataset.op === "aprobar" ? "Comentario de la aprobación:" : "Motivo del rechazo:") ?? "";
+      await api(`/aprobaciones/${encodeURIComponent(t.dataset.ap)}/${t.dataset.op}`, "POST", {comentario});
+      await cargar();
+    } else if (t.dataset.inc) { detalle(t.dataset.inc); }
+    else if (t.dataset.ej) {
+      if (confirm("¿Deshacer esta acción?")) { await api(`/ejecuciones/${encodeURIComponent(t.dataset.ej)}/deshacer`, "POST"); await cargar(); }
+    } else if (t.dataset.incOp) {
+      const id = location.hash.slice(1).split("/")[1];
+      await api(`/incidentes/${encodeURIComponent(id)}/${t.dataset.incOp}`, "POST", {}); await cargar();
+    }
+  } catch (e) { $("aviso").textContent = e.message; }
+});
+$("cargar").addEventListener("click", cargar);
+if ($("cliente").value && $("token").value) cargar();
+setInterval(() => { if ($("cliente").value && $("token").value) cargar(); }, 30000);
+</script>
+</body>
+</html>

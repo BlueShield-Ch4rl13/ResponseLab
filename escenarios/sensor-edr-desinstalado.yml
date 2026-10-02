@@ -1,0 +1,63 @@
+# Alguien para el sensor y despues deja persistencia en el mismo puesto. Lo
+# que se comprueba: la parada del sensor ya es de contencion automatica por si
+# misma; la actividad posterior en el mismo equipo completa la secuencia
+# ceguera_y_actividad y avisa a guardia, porque las horas sin telemetria son
+# las que importan; y bloquear un hash en toda la flota (radio organizacion)
+# nunca es automatico.
+id: sensor-edr-desinstalado
+nombre: Sensor EDR parado y persistencia en el mismo puesto
+cliente: lab
+mitre: [T1562.001, T1489, T1547.001]
+alertas:
+  - minuto: 0
+    siem: wazuh
+    descripcion: Parada del servicio de Sysmon desde una consola de administrador
+    carga:
+      rule: {id: "101235", level: 15, description: "Desinstalacion o parada del sensor EDR", groups: [detection_lab, soc_xdr], mitre: {id: [T1489, T1562.001]}}
+      agent: {id: "107", name: PC-0107, ip: 10.0.20.107}
+      manager: {name: wazuh-manager}
+      decoder: {name: windows_eventchannel}
+      data:
+        win:
+          system: {eventID: "1", providerName: Microsoft-Windows-Sysmon, computer: PC-0107.lab.test}
+          eventdata:
+            image: C:\Windows\System32\sc.exe
+            commandLine: sc.exe stop Sysmon64
+            parentImage: C:\Windows\System32\cmd.exe
+            processId: "4412"
+            processGuid: "{8a1b2c3d-4412-4000-8000-000000000107}"
+            utcTime: "2026-10-01 11:40:00.000"
+            user: LAB\mruiz
+    esperado:
+      familia: xdr
+      clase: auto_contener
+      nunca_automatica: [flota.bloquear_hash]
+      notificar: true
+
+  - minuto: 20
+    siem: wazuh
+    descripcion: Clave Run nueva que arranca un binario del perfil del usuario
+    carga:
+      rule: {id: "101230", level: 12, description: "Persistencia por claves de arranque del registro", groups: [detection_lab, soc_endpoint], mitre: {id: [T1547.001]}}
+      agent: {id: "107", name: PC-0107, ip: 10.0.20.107}
+      manager: {name: wazuh-manager}
+      decoder: {name: windows_eventchannel}
+      data:
+        win:
+          system: {eventID: "13", providerName: Microsoft-Windows-Sysmon, computer: PC-0107.lab.test}
+          eventdata:
+            image: C:\Users\mruiz\AppData\Local\Temp\inst.exe
+            targetObject: HKU\S-1-5-21-1004336348-1177238915-682003330-1107\Software\Microsoft\Windows\CurrentVersion\Run\OneDriveSync
+            details: C:\Users\mruiz\AppData\Roaming\odsync.exe
+            processId: "5120"
+            processGuid: "{8a1b2c3d-5120-4000-8000-000000000107}"
+            user: LAB\mruiz
+    esperado:
+      familia: endpoint
+      secuencias: [ceguera_y_actividad]
+      escalado: guardia
+      severidad_minima: 4
+      nunca_automatica: [flota.bloquear_hash]
+
+final:
+  incidentes: 1

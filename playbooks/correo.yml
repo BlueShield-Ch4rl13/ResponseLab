@@ -1,0 +1,30 @@
+# Capa ejecutable de la familia correo (phishing y abuso del canal de correo)
+familia: correo
+
+triaje:
+  - pregunta: Hay un inicio de sesion correcto del usuario que pulso, desde una IP nueva, en los 60 minutos siguientes
+    evaluador:
+      correlacion.familia_en_usuario: {familias: [cloud], minutos: 60}
+    nota: Aproxima "inicio de sesion desde IP nueva" por cualquier alerta de identidad del mismo usuario en la hora.
+  - pregunta: El remitente suplanta a un directivo y el destinatario tiene atribuciones de pago
+    evaluador:
+      todos:
+        - {evento.regla_en: [soc_mail_002_suplantacion_directivo]}
+        - {directorio.cuenta_en_lista: {lista: atribuciones_pago, campo: correo.buzon}}
+  - pregunta: El dominio remitente se registro hace menos de 30 dias
+    evaluador:
+      evento.regla_en: [soc_mail_001_dominio_reciente]
+
+cierre:
+  - empieza: Envio masivo interno (soc_mail_007) desde un buzon de la lista de emisores autorizados
+    evaluador:
+      todos:
+        - {evento.regla_en: [soc_mail_007_envio_masivo_interno]}
+        - {lista.valor_en: {lista: emisores_autorizados, campo: correo.remitente}}
+        - {inventario.ventana_abierta: {tipo: campana, objetivo: ninguno}}
+
+escalado:
+  a_L3_si:
+    alguno:
+      - {todos: [{evento.regla_en: [soc_mail_005_url_pulsada]}, {correlacion.familia_en_usuario: {familias: [cloud], minutos: 60}}]}
+      - {evento.regla_en: [soc_mail_006_regla_buzon_externa]}
