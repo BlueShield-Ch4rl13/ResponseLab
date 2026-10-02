@@ -1,0 +1,177 @@
+familia: red
+nombre: Trafico, mando y control
+descripcion: |
+    Beaconing, C2 sobre servicio legitimo, tunel DNS, interaccion con webshell
+    y exfiltracion por volumen, mas las coincidencias con las listas de
+    reputacion. Lo que distingue a esta familia conviene decirlo sin rodeos: la
+    mayoria de lo que llega es ruido. Un indicador de reputacion coincide
+    muchas veces por motivos aburridos - CDN compartidas, sinkholes de
+    investigadores, dominios reciclados, rangos de proveedores de nube - y por
+    eso en este repositorio las listas de IP y de dominio no alertan directas,
+    se explotan como caza programada. Lo que si sostiene un caso aqui no es el
+    destino sino el patron: un beacon se reconoce por la regularidad del
+    intervalo, no por con quien habla, y un tunel DNS por la entropia y el
+    volumen de las etiquetas, no por el dominio. La consecuencia practica es
+    doble: esta es la familia donde el cierre automatico tiene mas sitio, y la
+    senal buena casi nunca es una coincidencia aislada sino la repeticion.
+
+enriquecimiento:
+  - fuente: cti_local
+    sobre: [ip, dominio, url]
+    detalle: Coincidencia y, sobre todo, en cuantas listas distintas aparece el indicador
+  - fuente: resolucion_dns
+    sobre: [ip]
+    detalle: PTR y ASN, y si el destino resuelve a una CDN o a un proveedor de nube publica
+  - fuente: proxy
+    sobre: [dominio]
+    detalle: Categoria asignada y edad del dominio
+  - fuente: inventario
+    sobre: [agente]
+    detalle: Criticidad del equipo, propietario, si es servidor o puesto
+  - fuente: historico_siem
+    sobre: [ip, dominio]
+    detalle: Cuantos equipos del parque han hablado con ese destino en 30 dias
+
+evidencia:
+  - descripcion: Serie temporal de las conexiones al destino, con intervalos y desviacion tipica
+    comando: "streamstats por dest, calculo de delta entre eventos y stdev sobre la ventana"
+    donde: siem
+    nota: Es la evidencia que decide el caso de beaconing. El destino solo, no.
+  - descripcion: Volumen enviado y recibido, por separado
+    comando: "stats sum(bytes_out) sum(bytes_in) by src dest"
+    donde: siem
+  - descripcion: Proceso que abrio la conexion en el equipo
+    comando: "Sysmon EID 3 o eventos de Falco por IP de destino y hora"
+    donde: siem
+  - descripcion: Resolucion DNS previa y quien la pidio
+    comando: "search en el registro DNS por rrname en los 5 min anteriores"
+    donde: siem
+  - descripcion: Para tunel DNS, longitud y entropia de las etiquetas y numero de subdominios distintos en 1 h
+    comando: "stats dc(query) avg(len(label)) by parent_domain"
+    donde: siem
+  - descripcion: SNI y emisor del certificado presentado por el destino
+    comando: "Registro TLS del colector de red por sesion"
+    donde: siem
+
+triaje:
+  - pregunta: El destino resuelve por PTR a un proveedor de CDN o de nube y mas de diez equipos del parque hablan con el
+    fuente: resolucion_dns
+    si_afirmativo: bajar_severidad
+  - pregunta: El indicador aparece en una sola lista y su primera aparicion es de hace mas de 30 dias
+    fuente: cti_local
+    si_afirmativo: bajar_severidad
+    nota: "Los dominios reciclados envejecen mal en las listas: la coincidencia sobrevive al motivo que la creo."
+  - pregunta: El proceso que abre la conexion no esta firmado o es la primera vez que se ve en el parque
+    fuente: historico_siem
+    si_afirmativo: subir_severidad
+  - pregunta: La desviacion tipica del intervalo se mantiene por debajo del umbral durante mas de 6 h
+    fuente: evidencia
+    si_afirmativo: subir_severidad
+    nota: Es la regularidad, no el destino, lo que hace el caso.
+  - pregunta: El mismo equipo acumula alertas de otras familias en las ultimas 24 h
+    fuente: historico_siem
+    si_afirmativo: subir_severidad
+    nota: Una coincidencia de reputacion sola es ruido; la misma coincidencia en un equipo que ademas ejecuto algo raro es un caso.
+
+cierre_automatico:
+  - condicion: |
+        Coincidencia unica de reputacion - un solo indicador, en una sola
+        lista - contra una IP cuyo PTR y ASN corresponden a un proveedor de CDN
+        o de nube publica reconocido, cuando mas de diez equipos del parque han
+        hablado con ese mismo destino en las ultimas 24 h y ninguno de ellos
+        tiene otra alerta abierta.
+    justificacion: |
+        Una IP de CDN sirve a la vez contenido legitimo y el alojamiento de
+        cualquiera que pague: el indicador dice algo del contenido, no de la
+        IP, y por eso la coincidencia sola no distingue nada. Lo que hace
+        segura la condicion no es la CDN, es la compania: si medio parque habla
+        con ese destino, o es infraestructura compartida o es un incidente que
+        ya se esta viendo por otras diez reglas. Y el coste de equivocarse esta
+        acotado por el propio diseno del repositorio, porque la coincidencia
+        queda indexada igual en nivel bajo y la consulta de caza programada la
+        recoge: no se pierde, se saca de la cola.
+  - condicion: |
+        Beaconing (soc_net_001) hacia un destino que el proxy clasifica en la
+        categoria de actualizacion de software, abierto por un proceso firmado
+        que es el cliente de actualizacion de ese mismo fabricante, y con el
+        mismo patron presente en el resto de equipos del grupo.
+    justificacion: |
+        La telemetria de producto es regular por diseno, que es exactamente el
+        rasgo que la regla busca, asi que su falso positivo no es ocasional:
+        es continuo, y una cola con beaconing de actualizadores dentro entrena
+        al turno a descartar beaconing en general. Las tres condiciones hacen
+        falta juntas porque un C2 alojado en un servicio legitimo satisface la
+        primera sin esfuerzo; lo que no puede satisfacer es que el proceso sea
+        el cliente firmado del fabricante y que el resto del grupo presente el
+        mismo patron a la misma hora.
+
+contencion:
+  - accion: Bloquear el destino en el proxy de salida solo para el equipo afectado
+    alcance: Un par equipo-destino. No toca al resto de usuarios ni al perimetro.
+    radio: equipo
+    reversible: "si"
+    requiere_aprobacion: "no"
+    justificacion: |
+        Se deshace borrando una linea y no afecta a nadie mas que al equipo que
+        ya esta bajo sospecha. El peor caso es que ese equipo pierda acceso a un
+        sitio durante el triaje; a cambio, corta el canal sin tener que decidir
+        todavia si el destino es malicioso para toda la organizacion.
+  - accion: Aislar el endpoint en la red, dejando solo la comunicacion con el manager
+    alcance: El equipo afectado. No toca cuentas ni otros equipos.
+    radio: equipo
+    reversible: "si"
+    requiere_aprobacion: "no"
+    justificacion: |
+        Reversible en un comando y el peor caso son veinte minutos de trabajo.
+        Frente a eso, un canal de C2 establecido sigue recibiendo ordenes
+        mientras el turno decide.
+    excepcion: |
+        Si el inventario marca el equipo como servidor de produccion, NO se
+        aisla: se prepara la accion y se pide aprobacion. Esta excepcion es la
+        norma en la regla de webshell, que por definicion dispara en un
+        servidor publicado.
+  - accion: Matar el proceso que sostiene la conexion por su ProcessGuid
+    alcance: Un unico proceso identificado por GUID, no por nombre de imagen
+    radio: proceso
+    reversible: "no"
+    requiere_aprobacion: "no"
+    justificacion: |
+        No se deshace, pero el alcance es un proceso y el error se paga con un
+        servicio que hay que rearrancar. Y en beaconing sirve para algo mas que
+        contener: si el patron continua despues de matarlo, no era ese proceso.
+    excepcion: |
+        Si el binario esta firmado y en el catalogo de aplicaciones de negocio,
+        o el equipo es servidor de produccion, se prepara y espera.
+  - accion: Bloquear el destino en el cortafuegos perimetral para toda la organizacion
+    alcance: Todo el trafico saliente hacia ese destino, desde cualquier equipo
+    radio: organizacion
+    reversible: "si"
+    requiere_aprobacion: "si"
+    justificacion: |
+        Es la accion que mas se pide y la que mas dano hace mal aplicada. Si el
+        destino comparte direccion con una CDN - el caso mas frecuente de esta
+        familia, como dice la propia descripcion - el bloqueo tira servicios que
+        no tienen nada que ver, y el sintoma que ve negocio no se parece en
+        nada a la causa. Ademas el bloqueo perimetral sobrevive al incidente y
+        acaba en una lista que nadie revisa nunca. Se deja escrita la regla y
+        espera a que alguien acepte el alcance.
+
+requiere_persona:
+  - situacion: Bloquear el destino en el perimetro o en el DNS corporativo
+    motivo: Corta un servicio a los clientes si el destino esta compartido, y eso no se ve hasta que llaman.
+  - situacion: Aislar un segmento de red completo
+    motivo: Es una decision de disponibilidad, no de seguridad.
+  - situacion: Contactar con el proveedor de alojamiento o pedir la retirada del dominio
+    motivo: Tramite externo, con plazos y con implicaciones legales.
+  - situacion: Decidir que un beacon confirmado obliga a reconstruir el equipo
+    motivo: Decision de negocio, no tecnica.
+
+escalado:
+  a: L2
+  plazo_min: 30
+  a_L3_si: Hay interaccion con webshell, o beaconing sostenido cuyo proceso no esta firmado ni conocido en el parque
+  nota_plazo: |
+    El plazo es mas largo que en otras familias a proposito: el volumen de
+    coincidencias de reputacion no justifica acortar el turno de nadie. Lo que
+    si acorta el plazo no es la gravedad del indicador, es la repeticion en el
+    mismo equipo.

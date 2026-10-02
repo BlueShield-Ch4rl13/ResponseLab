@@ -1,0 +1,184 @@
+familia: cloud
+nombre: Identidad y plano de control en la nube
+descripcion: |
+    Consentimiento OAuth a aplicacion no verificada, registro de MFA tras
+    sesion de riesgo, password spraying, indicios de token robado, alta en rol
+    privilegiado, acceso condicional modificado, credencial anadida a un
+    service principal, origen anonimizado y SaaS no aprobado. Aqui no hay
+    endpoint que aislar. Lo que hay es una identidad, unas sesiones vivas y
+    unos tokens ya emitidos, y ninguna de esas cosas se apaga desconectando un
+    cable. Eso mueve la contencion a otro sitio: revocar sesiones y tokens de
+    refresco es reversible - el usuario vuelve a autenticarse - mientras que
+    deshabilitar la cuenta no lo es en terminos practicos. Y hay una segunda
+    distincion que el triaje tiene que hacer siempre, porque decide el orden de
+    las acciones: una sesion se corta, pero un permiso queda escrito en el
+    inquilino y sigue surtiendo efecto aunque el atacante pierda la sesion. Que
+    sesion hay que cortar y que permiso hay que retirar son dos preguntas
+    distintas.
+
+enriquecimiento:
+  - fuente: identidad_nube
+    sobre: [usuario]
+    detalle: Roles asignados, si son permanentes o por PIM, estado de MFA y dispositivos registrados
+  - fuente: cti_local
+    sobre: [ip]
+    detalle: Listas de intel/listas/ generadas desde News CTI
+  - fuente: geo_asn
+    sobre: [ip]
+    detalle: Proveedor, si es red de anonimizacion, nodo de salida o rango de nube publica
+  - fuente: inventario_aplicaciones
+    sobre: [aplicacion]
+    detalle: Si el identificador de aplicacion esta en el catalogo aprobado, quien lo aprobo y para que
+  - fuente: historico_siem
+    sobre: [usuario]
+    detalle: Linea base de paises, ASN y dispositivos de esa cuenta en 30 dias
+
+evidencia:
+  - descripcion: Sesiones vivas y tokens de refresco de la identidad, con hora de emision
+    comando: "Consulta de sesiones de la identidad en el proveedor, antes de revocar nada"
+    donde: api
+  - descripcion: Permisos concretos concedidos en el consentimiento, no el nombre de la aplicacion
+    comando: "Lectura de los oauth2PermissionGrants y appRoleAssignments del service principal"
+    donde: api
+    nota: El nombre de una aplicacion lo elige quien la registra. Los permisos no se pueden disfrazar.
+  - descripcion: Cambios en el inquilino hechos por esa identidad en las 24 h siguientes
+    comando: "search en auditlogs por initiatedBy, ordenado por tiempo"
+    donde: siem
+  - descripcion: Cadena completa del inicio de sesion
+    comando: "search en signinlogs por correlationId: IP, ASN, dispositivo, resultado de acceso condicional y claim de MFA"
+    donde: siem
+  - descripcion: Que ha leido la aplicacion o el service principal desde la concesion
+    comando: "Registro de acceso a datos por appId, agrupado por recurso"
+    donde: siem
+  - descripcion: Reglas de buzon y reenvios creados por esa identidad
+    comando: "Auditoria de New-InboxRule y Set-Mailbox por UserId"
+    donde: api
+    nota: Es el primer movimiento habitual despues de tomar una identidad, y cruza con la familia de correo.
+
+triaje:
+  - pregunta: La IP y el ASN estan en la linea base de esa cuenta en 30 dias
+    fuente: historico_siem
+    si_afirmativo: bajar_severidad
+  - pregunta: El inicio de sesion presenta claim de MFA reciente y dispositivo conforme
+    fuente: identidad_nube
+    si_afirmativo: bajar_severidad
+    nota: Reduce poco. El robo de token de sesion reproduce el claim de MFA que ya venia dentro, sin volver a pedir nada.
+  - pregunta: El rol asignado es de administracion global, de aplicaciones o de seguridad
+    fuente: identidad_nube
+    si_afirmativo: subir_severidad
+  - pregunta: La aplicacion que recibe consentimiento pide permisos de aplicacion y no delegados
+    fuente: evento
+    si_afirmativo: subir_severidad
+    nota: Los permisos de aplicacion siguen vivos aunque el usuario que consintio se vaya de la organizacion.
+  - pregunta: Se modifico o deshabilito una politica de acceso condicional sin ticket de cambio
+    fuente: itsm
+    si_afirmativo: subir_severidad
+    nota: Es la accion que desactiva el resto de controles, asi que se tria antes que lo que venga despues de ella.
+  - pregunta: La identidad es un service principal o una cuenta de emergencia
+    fuente: identidad_nube
+    si_afirmativo: subir_severidad
+
+cierre_automatico:
+  - condicion: |
+        Password spraying (soc_cld_003) cuyos fallos se concentran en una sola
+        cuenta y proceden de una unica IP que el inventario resuelve a un
+        dispositivo corporativo gestionado, con codigo de error de credencial
+        cacheada o expirada.
+    justificacion: |
+        El spraying se define por muchas cuentas y pocas contrasenas; una sola
+        cuenta fallando en bucle desde un equipo del parque es el patron
+        contrario - un cliente de correo o un servicio con la credencial antigua
+        guardada - y es la causa de la mayoria de los disparos de esta regla.
+        Lo que hace segura la condicion es exactamente la parte que parece
+        trivial: en cuanto aparece una segunda cuenta desde el mismo origen
+        deja de cumplirse y el caso sigue vivo, asi que la condicion no puede
+        tapar un spraying real ni por acumulacion ni por casualidad.
+  - condicion: |
+        Subida a SaaS no aprobado (soc_cld_010) cuando el servicio de destino
+        figura en el catalogo de aplicaciones con aprobacion vigente y contrato
+        de tratamiento, y el volumen queda por debajo del umbral de la regla de
+        exfiltracion.
+    justificacion: |
+        La aprobacion es un hecho registrado, con dueno y fecha, y lo que esta
+        regla persigue es el servicio que nadie aprobo. El limite de volumen
+        esta ahi porque una aplicacion aprobada tambien sirve para sacar datos:
+        ese caso no se cierra aqui, lo tiene que ver la familia de
+        exfiltracion, que no cierra sola. Sin ese limite la condicion seria una
+        via de salida legitimada; con el, el peor caso es que un uso aprobado
+        no genere caso, que es lo que se pretendia al aprobarlo.
+
+contencion:
+  - accion: Revocar las sesiones y los tokens de refresco de la identidad
+    alcance: Las sesiones de una identidad. No toca la contrasena, el estado de la cuenta ni sus permisos.
+    radio: equipo
+    reversible: "si"
+    requiere_aprobacion: "no"
+    justificacion: |
+        El peor caso es que un usuario legitimo tenga que volver a autenticarse
+        en sus dispositivos: un minuto de molestia y ninguna perdida de datos.
+        Frente a eso, una sesion robada sigue leyendo correo y descargando
+        ficheros mientras el caso espera turno, y a diferencia de un endpoint no
+        hay nada fisico que la detenga ni nadie que note que esta pasando.
+    excepcion: |
+        Si la identidad es un service principal, una cuenta de servicio o una
+        cuenta de emergencia, NO se revoca: se prepara y se pide aprobacion.
+        Revocar los tokens de un service principal tira todas las integraciones
+        que dependen de el, y revocar los de la cuenta de emergencia deja al
+        equipo sin la via de entrada que existe precisamente para los
+        incidentes.
+  - accion: Marcar la identidad como en riesgo para forzar reautenticacion con MFA en el siguiente acceso
+    alcance: Una identidad. Condiciona el acceso, no lo corta.
+    radio: equipo
+    reversible: "si"
+    requiere_aprobacion: "no"
+    justificacion: |
+        No cierra ninguna puerta, la condiciona: el falso positivo cuesta una
+        peticion de MFA a alguien que la puede responder, y el verdadero
+        positivo cuesta al atacante un factor que no tiene.
+  - accion: Anotar en el caso los permisos concedidos y dejar preparada su retirada
+    alcance: Se escribe en el caso, no se ejecuta ninguna retirada
+    radio: objeto
+    reversible: "si"
+    requiere_aprobacion: "no"
+    justificacion: |
+        Resolver el identificador de aplicacion, los permisos exactos y el
+        comando de retirada no rompe nada y es justo lo que se pierde cuando el
+        caso cambia de turno. Sin esto, la conversacion de la manana empieza
+        preguntando que aplicacion era.
+  - accion: Retirar el consentimiento de la aplicacion o anular la credencial anadida al service principal
+    alcance: El permiso escrito en el inquilino, con todo lo que dependa de el
+    radio: cuenta
+    reversible: "si"
+    requiere_aprobacion: "si"
+    justificacion: |
+        Esto no corta una sesion, corta un permiso, y por eso si detiene al
+        atacante aunque vuelva a entrar. Pero si la aplicacion resulta ser una
+        integracion de negocio, el corte no se nota en el SOC: se nota en un
+        proceso que deja de ejecutarse esa noche y que nadie relaciona con el
+        incidente. Ademas la rotacion planificada de secretos produce
+        exactamente esta alerta. Se prepara con el identificador de aplicacion
+        y el de la credencial ya resueltos, y se ejecuta en cuanto alguien
+        confirma que la aplicacion no es de negocio.
+
+requiere_persona:
+  - situacion: Deshabilitar la cuenta
+    motivo: Cortar el acceso a quien no debia tiene coste inmediato y visible.
+  - situacion: Restablecer la contrasena
+    motivo: |
+        Si la cuenta la usan servicios o dispositivos con la credencial
+        guardada, restablecerla los tira todos a la vez.
+  - situacion: Revertir la politica de acceso condicional modificada
+    motivo: |
+        Volver a la version anterior puede dejar fuera a quien la nueva
+        politica dejaba entrar. Hay que leer el cambio, no solo deshacerlo.
+  - situacion: Retirar el rol privilegiado asignado
+    motivo: |
+        Si la asignacion era legitima, quitarla en mitad de una tarea de
+        administracion la interrumpe sin dejar rastro para quien la sufre.
+  - situacion: Declarar el inquilino comprometido
+    motivo: Decision de negocio, con revision de todas las aplicaciones y todos los roles.
+
+escalado:
+  a: L2
+  plazo_min: 15
+  a_L3_si: Hay alta en un rol de administracion global, modificacion de acceso condicional o consentimiento con permisos de aplicacion

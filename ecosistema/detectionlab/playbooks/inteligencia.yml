@@ -1,0 +1,125 @@
+familia: inteligencia
+nombre: Coincidencias con la inteligencia de amenazas
+descripcion: |
+    Coincidencias contra las listas de News CTI. Lo que las distingue es que la
+    fiabilidad depende por completo del tipo de indicador, no de la regla: un
+    hash coincide o no coincide, mientras que una IP coincide muchas veces por
+    sinkholes, CDN compartidas y dominios reciclados. Por eso aqui el triaje no
+    empieza preguntando que paso, sino que clase de indicador es.
+
+enriquecimiento:
+  - fuente: cti_local
+    sobre: [ip, dominio, hash, url]
+    detalle: Amenaza, puntuacion, fuente y fecha de primera vista
+  - fuente: resolucion_dns
+    sobre: [ip, dominio]
+    detalle: PTR y ASN del destino, para separar CDN de infraestructura propia
+  - fuente: historico_siem
+    sobre: [agente]
+    detalle: Cuantos equipos mas han tocado el mismo indicador en 24 h
+  - fuente: inventario
+    sobre: [agente]
+    detalle: Criticidad del equipo y si es servidor
+
+evidencia:
+  - descripcion: Proceso que origino la conexion o escribio el fichero
+    comando: "Sysmon EID 1 y 3 correlados por ProcessGuid"
+    donde: siem
+  - descripcion: Antiguedad del indicador en la lista y su puntuacion
+    comando: "Lookup contra intel/listas/"
+    donde: manager
+  - descripcion: Cuantos equipos distintos del parque han tocado el indicador
+    comando: "dc(agent.name) filtrando por el valor del indicador en 24 h"
+    donde: siem
+
+triaje:
+  - pregunta: El indicador es un hash de fichero
+    fuente: evento
+    si_afirmativo: subir_severidad
+    nota: Un hash no comparte infraestructura con nada legitimo.
+  - pregunta: El destino resuelve a un proveedor de CDN o de nube reconocido
+    fuente: resolucion_dns
+    si_afirmativo: bajar_severidad
+  - pregunta: Mas de diez equipos han tocado el mismo destino en 24 h
+    fuente: historico_siem
+    si_afirmativo: bajar_severidad
+    nota: Infraestructura compartida, no objetivo dirigido.
+  - pregunta: El indicador tiene mas de 20 dias
+    fuente: cti_local
+    si_afirmativo: bajar_severidad
+
+cierre_automatico:
+  - condicion: |
+      Coincidencia unica de IP o dominio, de nivel medio o bajo, cuyo PTR y ASN
+      corresponden a un proveedor de CDN o de nube publica reconocido, con mas
+      de diez equipos del parque hablando con ese mismo destino en 24 h y
+      ninguno de ellos con otra alerta abierta.
+    justificacion: |
+      Es el patron exacto del indicador reciclado: el atacante alquilo una IP
+      que ahora sirve a cientos de sitios legitimos. Cerrarlo es correcto y no
+      cerrarlo es lo que hace que el turno deje de mirar esta clase de alerta.
+  - condicion: |
+      Coincidencia de dominio contra un indicador de mas de 25 dias que ya no
+      figura en el feed de la ultima sincronizacion.
+    justificacion: |
+      La lista se refresca a diario con caducidad de 30 dias. Un indicador que
+      salio del feed y sigue coincidiendo es un residuo de la lista, no una
+      deteccion.
+
+contencion:
+  - accion: Bloquear el destino en el proxy de salida solo para el equipo afectado
+    alcance: Un par equipo-destino
+    radio: equipo
+    reversible: "si"
+    requiere_aprobacion: "no"
+    justificacion: |
+      Se deshace borrando una linea y solo afecta al equipo que ya esta bajo
+      sospecha. Corta el canal sin tener que decidir todavia si el destino es
+      malicioso para toda la organizacion.
+  - accion: Poner en cuarentena el fichero cuyo hash coincidio
+    alcance: Un fichero en un equipo, movido al almacen de cuarentena
+    radio: objeto
+    reversible: "si"
+    requiere_aprobacion: "no"
+    justificacion: |
+      El fichero se conserva, no se borra, asi que la accion se deshace y la
+      evidencia sobrevive. Solo se aplica a coincidencias de hash, que son las
+      unicas fiables por si solas.
+  - accion: Aislar el endpoint en la red, dejando solo la comunicacion con el manager
+    alcance: El equipo afectado
+    radio: equipo
+    reversible: "si"
+    requiere_aprobacion: "no"
+    justificacion: |
+      Reversible en un comando y el peor caso son veinte minutos de trabajo
+      perdidos. Solo se aplica cuando el indicador es un hash o cuando el
+      equipo acumula varios indicadores distintos.
+    excepcion: |
+      Si el inventario marca el equipo como servidor de produccion, no se
+      aisla: se prepara y se pide aprobacion.
+  - accion: Bloquear el destino en el cortafuegos perimetral para toda la organizacion
+    alcance: Todo el trafico saliente de la organizacion hacia ese destino
+    radio: organizacion
+    reversible: "si"
+    requiere_aprobacion: "si"
+    justificacion: |
+      Reversible, pero el radio es toda la organizacion. Un destino mal
+      bloqueado corta un servicio a gente que no se entera de por que, y la
+      inteligencia de reputacion se equivoca lo suficiente como para que esa
+      decision no la tome una maquina.
+
+requiere_persona:
+  - situacion: Retirar un indicador de la lista por falso positivo repetido
+    motivo: |
+      Afecta a todas las detecciones futuras. Hay que confirmar que es ruido y
+      no una infeccion que nadie ha mirado.
+  - situacion: Bloquear en el perimetro o en el DNS corporativo
+    motivo: Radio de toda la organizacion.
+  - situacion: Declarar comprometido un equipo por una sola coincidencia de reputacion
+    motivo: |
+      Casi nunca es correcto. Hace falta una segunda senal independiente.
+
+escalado:
+  a: L2
+  plazo_min: 30
+  a_L3_si: La coincidencia es de hash o el equipo acumula tres indicadores distintos

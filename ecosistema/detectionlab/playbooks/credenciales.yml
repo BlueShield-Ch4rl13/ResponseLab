@@ -1,0 +1,97 @@
+familia: credenciales
+nombre: Volcado y robo de credenciales
+descripcion: |
+    Volcado de LSASS, colmenas del registro, DPAPI, credenciales de navegador,
+    ficheros de nube y SSH, gestores de contrasenas. Lo que las une no es la
+    tecnica sino la consecuencia: si la deteccion es real, el atacante ya tiene
+    material de autenticacion y el reloj corre contra la rotacion, no contra la
+    contencion del equipo. Aislar la maquina no devuelve la credencial.
+
+enriquecimiento:
+  - fuente: cti_local
+    sobre: [hash, ip]
+    detalle: Listas de intel/listas/ generadas desde News CTI
+  - fuente: inventario
+    sobre: [agente]
+    detalle: Criticidad del equipo, propietario, si es servidor o puesto
+  - fuente: directorio
+    sobre: [usuario]
+    detalle: Grupos del usuario, si es administrativa, ultimo cambio de contrasena
+  - fuente: historico_siem
+    sobre: [agente, usuario]
+    detalle: Otras alertas del mismo equipo o cuenta en las ultimas 24 h
+
+evidencia:
+  - descripcion: Arbol de procesos completo del proceso que accedio
+    comando: "Sysmon EID 1 filtrado por ProcessGuid ascendente, 3 niveles"
+    donde: siem
+  - descripcion: Conexiones de red del proceso en los 10 minutos previos y posteriores
+    comando: "Sysmon EID 3 por ProcessGuid"
+    donde: siem
+  - descripcion: Hash del binario y su primera aparicion en el parque
+    comando: "stats min(_time) dc(host) by Hashes"
+    donde: siem
+  - descripcion: Sesiones abiertas en el equipo en el momento del evento
+    comando: "query user"
+    donde: agente
+
+triaje:
+  - pregunta: El proceso que accede esta firmado por Microsoft y en System32
+    fuente: evento
+    si_afirmativo: bajar_severidad
+    nota: Reduce, no descarta. El sideloading de DLL usa binarios firmados.
+  - pregunta: Hay un ticket de mantenimiento abierto para ese equipo
+    fuente: itsm
+    si_afirmativo: bajar_severidad
+  - pregunta: El usuario afectado pertenece a un grupo administrativo
+    fuente: directorio
+    si_afirmativo: subir_severidad
+  - pregunta: El equipo es un controlador de dominio o un servidor de aplicacion
+    fuente: inventario
+    si_afirmativo: subir_severidad
+
+cierre_automatico: []
+# Deliberadamente vacio. Ninguna alerta de esta familia se cierra sola. Un
+# volcado de credenciales mal cerrado no se nota hasta el movimiento lateral, y
+# para entonces la ventana de rotacion ya se perdio. El coste de mirar un falso
+# positivo es diez minutos; el de cerrar un verdadero, un incidente completo.
+
+contencion:
+  - accion: Aislar el endpoint en la red, dejando solo la comunicacion con el manager
+    alcance: El equipo afectado. No toca cuentas ni otros equipos.
+    radio: equipo
+    reversible: "si"
+    requiere_aprobacion: "no"
+    justificacion: |
+        Reversible en un comando y el peor caso es que alguien pierda veinte
+        minutos de trabajo. Frente a eso, un volcado de LSASS sin contener sigue
+        exfiltrando mientras el turno lo tria.
+    excepcion: |
+        Si el inventario marca el equipo como servidor de produccion, NO se
+        aisla: se prepara la accion y se pide aprobacion. Aislar un servidor
+        automaticamente convierte un incidente de seguridad en una caida.
+  - accion: Marcar las credenciales del usuario y del equipo para rotacion
+    alcance: Se escribe en el caso, no se ejecuta la rotacion
+    radio: objeto
+    reversible: "si"
+    requiere_aprobacion: "no"
+    justificacion: Anotar no rompe nada, y es lo que se olvida cuando hay prisa.
+
+requiere_persona:
+  - situacion: Rotar la contrasena de la cuenta afectada
+    motivo: |
+        Si la cuenta es de servicio, rotarla tira las aplicaciones que la usan.
+        Hay que saber primero que depende de ella.
+  - situacion: Rotar krbtgt
+    motivo: |
+        Se hace dos veces con horas de separacion. Hacerlo mal invalida todos
+        los tickets del dominio a la vez.
+  - situacion: Deshabilitar la cuenta
+    motivo: Cortar el acceso a quien no debia tiene coste inmediato y visible.
+  - situacion: Reinstalar el equipo
+    motivo: Decision de negocio, no tecnica.
+
+escalado:
+  a: L2
+  plazo_min: 15
+  a_L3_si: El equipo es un controlador de dominio o la cuenta es administrativa

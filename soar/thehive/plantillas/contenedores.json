@@ -1,0 +1,193 @@
+{
+  "customFields": [],
+  "description": "Pod privilegiado, capacidades peligrosas, montaje de hostPath sensible, escalada por RoleBinding, lectura de secretos, exec interactivo, acceso al socket del runtime y escape a los namespaces del host. Lo que distingue a esta familia es que la unidad que dispara la alerta no es la unidad que se puede contener. Un pod es desechable por diseno: se mata y el controlador lo reprograma en segundos con la misma imagen, el mismo ServiceAccount y la misma configuracion insegura, asi que cualquier contencion aplicada sobre el pod es teatro. Tiene que subir un nivel - al workload, al RoleBinding, al nodo - o no contiene nada. La segunda particularidad es que casi toda la evidencia es efimera: cuando alguien abre el caso, el contenedor que la guardaba puede llevar veinte minutos sin existir. Recogerla lo primero no es una buena practica, es la unica oportunidad.\n\nGenerada por ResponseLab desde el playbook de DetectionLab (contenedores).",
+  "displayName": "ResponseLab · Kubernetes y runtime de contenedores",
+  "flag": false,
+  "name": "ResponseLab - contenedores",
+  "pap": 2,
+  "severity": 2,
+  "tags": [
+    "responselab",
+    "rl:familia=contenedores"
+  ],
+  "tasks": [
+    {
+      "description": "Como: kubectl get pod <pod> -n <ns> -o yaml y kubectl get <owner> -n <ns> -o yaml\nDonde: api",
+      "flag": false,
+      "group": "1. Evidencia",
+      "mandatory": false,
+      "order": 0,
+      "title": "Manifiesto del pod y de su propietario, antes de que se reprograme"
+    },
+    {
+      "description": "Como: kubectl logs <pod> -n <ns> --all-containers --timestamps\nDonde: api",
+      "flag": false,
+      "group": "1. Evidencia",
+      "mandatory": false,
+      "order": 1,
+      "title": "Registros del contenedor mientras el pod aun existe"
+    },
+    {
+      "description": "Como: search sourceIPs OR user.username=<sujeto> en el registro de auditoria de Kubernetes\nDonde: siem",
+      "flag": false,
+      "group": "1. Evidencia",
+      "mandatory": false,
+      "order": 2,
+      "title": "Todas las peticiones del mismo sujeto al API server en 1 h"
+    },
+    {
+      "description": "Como: Eventos de Falco o Tetragon filtrados por container.id\nDonde: siem",
+      "flag": false,
+      "group": "1. Evidencia",
+      "mandatory": false,
+      "order": 3,
+      "title": "Procesos y llamadas al sistema vistos desde el nodo"
+    },
+    {
+      "description": "Como: kubectl get rolebindings,clusterrolebindings -A -o json | filtro por el ServiceAccount\nDonde: api",
+      "flag": false,
+      "group": "1. Evidencia",
+      "mandatory": false,
+      "order": 4,
+      "title": "Permisos efectivos del ServiceAccount implicado"
+    },
+    {
+      "description": "Como: kubectl get pod <pod> -o jsonpath='{.status.containerStatuses[*].imageID}'\nDonde: api",
+      "flag": false,
+      "group": "1. Evidencia",
+      "mandatory": false,
+      "order": 5,
+      "title": "Digest de la imagen en ejecucion, no su etiqueta"
+    },
+    {
+      "description": "Fuente: k8s_api. Si es afirmativa, baja la severidad (un escalon como mucho).\nPregunta para el analista: la maquina no tiene datos para contestarla.",
+      "flag": false,
+      "group": "2. Triaje",
+      "mandatory": false,
+      "order": 6,
+      "title": "El sujeto es un ServiceAccount de la lista de controladores aprobados y la peticion llega desde la IP del pod de ese controlador"
+    },
+    {
+      "description": "Fuente: inventario. Si es afirmativa, baja la severidad (un escalon como mucho).\nResponseLab la contesta sola si hay datos; si queda pendiente, contestarla aqui.",
+      "flag": false,
+      "group": "2. Triaje",
+      "mandatory": false,
+      "order": 7,
+      "title": "El namespace figura como no productivo en el inventario"
+    },
+    {
+      "description": "Fuente: evento. Si es afirmativa, sube la severidad.\nResponseLab la contesta sola si hay datos; si queda pendiente, contestarla aqui.\nAhi la frontera del contenedor deja de existir y el alcance pasa a ser el nodo entero. Aproximacion por regla. Las tres reglas solo saltan con esos montajes o con acceso al socket.",
+      "flag": false,
+      "group": "2. Triaje",
+      "mandatory": false,
+      "order": 8,
+      "title": "El pod monta hostPath sobre /, /etc, /var/run o el socket del runtime"
+    },
+    {
+      "description": "Fuente: directorio. Si es afirmativa, sube la severidad.\nPregunta para el analista: la maquina no tiene datos para contestarla.",
+      "flag": false,
+      "group": "2. Triaje",
+      "mandatory": false,
+      "order": 9,
+      "title": "El sujeto es una identidad humana y actua fuera de la ventana de guardia"
+    },
+    {
+      "description": "Fuente: registro_imagenes. Si es afirmativa, sube la severidad.\nResponseLab la contesta sola si hay datos; si queda pendiente, contestarla aqui.\nComprueba el origen de la imagen; la firma del digest queda para el analista.",
+      "flag": false,
+      "group": "2. Triaje",
+      "mandatory": false,
+      "order": 10,
+      "title": "La imagen no procede del registro corporativo o su digest no coincide con el firmado"
+    },
+    {
+      "description": "Fuente: k8s_api. Si es afirmativa, sube la severidad.\nPregunta para el analista: la maquina no tiene datos para contestarla.\nUna peticion sola puede ser un error de configuracion; una serie es reconocimiento.",
+      "flag": false,
+      "group": "2. Triaje",
+      "mandatory": false,
+      "order": 11,
+      "title": "El mismo sujeto ha hecho otras peticiones al API server que la politica RBAC deberia haber denegado"
+    },
+    {
+      "description": "Alcance: El nodo deja de recibir cargas nuevas. No desaloja nada de lo que ya corre.\nRadio: objeto · Reversible: si\nAutomatica en clase auto_contener si la politica del cliente lo permite.\nAccion de ResponseLab: k8s.acordonar_nodo · se deshace con k8s.desacordonar_nodo\nExcepcion: Si quedan menos de tres nodos con capacidad, no se acordona: se prepara\ny se pide aprobacion. Acordonar el ultimo nodo con sitio equivale a\nparar el cluster por la via lenta.\n\nPor que: Es la unica accion de esta familia cuyo peor caso es que el planificador\nreparta trabajo con un nodo menos durante unos minutos: no corta ningun\nservicio en marcha ni desaloja nada. Y cubre el riesgo especifico de un\nescape, que es que el nodo comprometido siga recibiendo cargas de\ntrabajo nuevas con secretos nuevos.\n",
+      "flag": false,
+      "group": "3. Contencion",
+      "mandatory": false,
+      "order": 12,
+      "title": "Acordonar el nodo donde corre el pod"
+    },
+    {
+      "description": "Alcance: Los pods que coincidan con esas etiquetas. No toca el namespace ni el resto del cluster.\nRadio: objeto · Reversible: si\nAutomatica en clase auto_contener si la politica del cliente lo permite.\nAccion de ResponseLab: k8s.aislar_pod · se deshace con k8s.liberar_pod\nExcepcion: Si el namespace es productivo, se prepara y se pide aprobacion. Y si el\nCNI del cluster no aplica NetworkPolicy, la accion NO se da por hecha:\nse anota como no ejecutada, porque una contencion que se cree aplicada\ny no lo esta es peor que no haberla intentado.\n\nPor que: Se deshace borrando el objeto y no destruye estado ni evidencia, a\ndiferencia de matar el pod. Corta el canal de salida sin impedir que el\ncontenedor siga existiendo para poder mirarlo.\n",
+      "flag": false,
+      "group": "3. Contencion",
+      "mandatory": false,
+      "order": 13,
+      "title": "Aplicar una NetworkPolicy de denegacion de salida sobre las etiquetas del pod"
+    },
+    {
+      "description": "Alcance: Un enlace de permisos concreto. No toca el rol, el ServiceAccount ni el workload.\nRadio: equipo · Reversible: si\nAutomatica en clase auto_contener si la politica del cliente lo permite.\nAccion de ResponseLab: k8s.retirar_rolebinding · se deshace con k8s.restaurar_rolebinding\nPor que: Es el artefacto del ataque, no una pieza de la aplicacion, y se vuelve a\naplicar en un comando con el manifiesto guardado. Dejarlo puesto\nsignifica que el atacante conserva los permisos aunque se contenga todo\nlo demas, que es la forma tipica de que este caso vuelva la semana\nsiguiente.\n",
+      "flag": false,
+      "group": "3. Contencion",
+      "mandatory": false,
+      "order": 14,
+      "title": "Retirar el RoleBinding o ClusterRoleBinding creado en la escalada, guardando su manifiesto"
+    },
+    {
+      "description": "Alcance: El servicio que ese Deployment o StatefulSet presta, completo\nRadio: objeto · Reversible: si\nRequiere aprobacion.\nAccion de ResponseLab: k8s.escalar_cero · se deshace con k8s.restaurar_replicas\nPor que: Es la unica contencion que de verdad impide que el pod vuelva, y por eso\nmismo es una caida de servicio: el controlador deja de reprogramar\nporque ya no hay nada que reprogramar. El SOAR no sabe si ese workload\nes el proceso de compra de la tienda o un cron de limpieza, y el\nsintoma que ve negocio no se parece en nada a la causa. Se deja\npreparada con el objeto resuelto y espera.\n",
+      "flag": false,
+      "group": "3. Contencion",
+      "mandatory": false,
+      "order": 15,
+      "title": "Escalar el workload a cero replicas"
+    },
+    {
+      "description": "Lectura de secretos (k8s_lectura_masiva_secretos) cuyo sujeto es un ServiceAccount de la lista de operadores aprobados, con la peticion llegando desde la IP del pod de ese operador, el user-agent del controlador y los secretos leidos dentro del conjunto que ese operador ya reconcilia habitualmente.\n\nPor que es seguro: Un operador lee sus secretos en cada bucle de reconciliacion, decenas de veces por hora y por namespace: sin esta condicion la regla genera la mayoria de los casos de la familia y el turno aprende a cerrarla de un vistazo, que es exactamente como se pierde la lectura que si importa. Se exigen las cuatro condiciones y no solo la identidad precisamente porque un token de ServiceAccount robado satisface la primera sin ningun esfuerzo; el origen de red, el cliente y el conjunto de objetos son tres cosas mas que habria que falsificar a la vez, y cualquiera que falle deja el caso vivo.",
+      "flag": false,
+      "group": "4. Cierre",
+      "mandatory": false,
+      "order": 16,
+      "title": "Comprobar si se puede cerrar: Lectura de secretos (k8s_lectura_masiva_secretos) cuyo sujeto es un ServiceAccount de la lista de operadores aprobados, con la peticion llegando desde la IP del pod de ese operador, el user-agent del "
+    },
+    {
+      "description": "Rotar un secreto de Kubernetes tira todos los pods que lo montan hasta que se reinician. Hay que saber cuales son antes de tocarlo.",
+      "flag": false,
+      "group": "5. Requiere persona",
+      "mandatory": false,
+      "order": 17,
+      "title": "Rotar los secretos que se hayan leido"
+    },
+    {
+      "description": "Afecta a todos los despliegues que la usan, no solo a este cluster.",
+      "flag": false,
+      "group": "5. Requiere persona",
+      "mandatory": false,
+      "order": 18,
+      "title": "Reconstruir o retirar la imagen del registro"
+    },
+    {
+      "description": "Un escape a los namespaces del host alcanza a todo lo que corre en ese nodo. Decidir el alcance de la reconstruccion es una decision de servicio.",
+      "flag": false,
+      "group": "5. Requiere persona",
+      "mandatory": false,
+      "order": 19,
+      "title": "Declarar el nodo o el cluster comprometido"
+    },
+    {
+      "description": "Deja de ser un caso y pasa a ser un trabajo de plataforma, con propietario y plazo propios.",
+      "flag": false,
+      "group": "5. Requiere persona",
+      "mandatory": false,
+      "order": 20,
+      "title": "Revisar el resto de workloads con la misma configuracion insegura"
+    },
+    {
+      "description": "Escalar a L2 en 15 minutos.\nA L3 si: Hay escape a los namespaces del host, acceso al socket del runtime o montaje de hostPath sobre una ruta sensible",
+      "flag": false,
+      "group": "6. Escalado",
+      "mandatory": false,
+      "order": 21,
+      "title": "Escalado: L2 en 15 min"
+    }
+  ],
+  "titlePrefix": "[RL Contenedores]",
+  "tlp": 2
+}

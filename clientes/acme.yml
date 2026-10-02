@@ -1,0 +1,132 @@
+# Cliente de ejemplo: empresa financiera con pila Microsoft y Palo Alto
+#
+# Sentinel y Splunk como SIEM, Defender for Endpoint, Entra ID y Exchange
+# Online, Palo Alto en el perimetro, Cloudflare delante de la web, Kubernetes,
+# TheHive para los casos, ServiceNow para los tickets y avisos por Teams.
+# Entidad financiera: DORA, NIS2 y RGPD.
+#
+# Ejemplo de politica mas estricta que la del laboratorio: matar procesos y
+# aislar requieren aprobacion en este cliente aunque el playbook los permita.
+
+id: acme
+nombre: ACME Servicios Financieros (ejemplo)
+activo: true
+modo: simulacion
+zona_horaria: Europe/Madrid
+marcos: [dora, nis2, rgpd]
+
+autenticacion:
+  # Sustituye por la huella de tu token: python -m responselab token
+  token_sha256: "0000000000000000000000000000000000000000000000000000000000000000"
+  agentes: {token_sha256: "0000000000000000000000000000000000000000000000000000000000000000"}
+  edl: {token_sha256: "0000000000000000000000000000000000000000000000000000000000000000"}
+
+aprobadores:
+  - {nombre: Guardia SOC ACME, email: soc-guardia@acme.test, token_sha256: "0000000000000000000000000000000000000000000000000000000000000000"}
+
+capacidades:
+  edr: defender
+  identidad: entra
+  correo: exchange
+  perimetro: [paloalto, edl]
+  waf: cloudflare
+  nac: paloalto
+  kubernetes: kubernetes
+  siem: splunk
+  casos: thehive
+  itsm: servicenow
+
+conectores:
+  defender:
+    tenant_id: 00000000-0000-0000-0000-000000000000
+    client_id_env: RL_ACME_MS_CLIENT_ID
+    client_secret_env: RL_ACME_MS_CLIENT_SECRET
+  entra:
+    tenant_id: 00000000-0000-0000-0000-000000000000
+    client_id_env: RL_ACME_MS_CLIENT_ID
+    client_secret_env: RL_ACME_MS_CLIENT_SECRET
+  exchange:
+    tenant_id: 00000000-0000-0000-0000-000000000000
+    client_id_env: RL_ACME_MS_CLIENT_ID
+    client_secret_env: RL_ACME_MS_CLIENT_SECRET
+  paloalto:
+    url: https://fw.acme.test
+    api_key_env: RL_ACME_PANOS_KEY
+    etiqueta_bloqueo: responselab-bloqueo
+    etiqueta_cuarentena: responselab-cuarentena
+  cloudflare:
+    zona: 0123456789abcdef0123456789abcdef
+    api_token_env: RL_ACME_CLOUDFLARE_TOKEN
+  kubernetes:
+    url: https://k8s.acme.test:6443
+    token_env: RL_ACME_K8S_TOKEN
+    ca: /etc/responselab/acme-k8s-ca.pem
+  splunk:
+    url: https://splunk.acme.test:8089
+    token_env: RL_ACME_SPLUNK_TOKEN
+    indice_evidencias: rl_evidencias
+  thehive:
+    url: https://thehive.acme.test
+    api_key_env: RL_ACME_THEHIVE_KEY
+    organizacion: ACME
+  servicenow:
+    base_url_env: RL_ACME_SNOW_URL
+    usuario_env: RL_ACME_SNOW_USUARIO
+    clave_env: RL_ACME_SNOW_CLAVE
+  teams:
+    tipo: teams
+    webhook_env: RL_ACME_TEAMS_WEBHOOK
+  correo:
+    tipo: correo
+    servidor: smtp.acme.test
+    puerto: 587
+    remitente: responselab@acme.test
+    destinatarios: [soc@acme.test]
+    usuario_env: RL_ACME_SMTP_USUARIO
+    clave_env: RL_ACME_SMTP_CLAVE
+
+avisos:
+  canales: [teams]
+  por_tipo:
+    vencimiento: [teams, correo]
+    error: [correo]
+
+politica:
+  contencion_automatica: true
+  acciones_prohibidas: [k8s.escalar_cero]
+  acciones_siempre_aprobacion: [proceso.matar]
+  excepcion_sin_datos: aprobacion
+  escalado_por_correlacion: true
+  caducidad_aprobacion_min: 120
+  bloqueo_perimetro_horas: 48
+
+inventario:
+  completo: false
+  protegidos: ["^DC\\d+", "^SRV-PRD-", "^CORE-"]
+  activos:
+    - {patron: "^DC\\d+", etiquetas: [controlador_dominio, servidor_produccion]}
+    - {patron: "^SRV-PRD-", etiquetas: [servidor_produccion]}
+    - {patron: "^SRV-FS-", etiquetas: [servidor_ficheros, servidor_produccion, datos_personales]}
+    - {patron: "^PC-", etiquetas: [puesto]}
+    - {patron: "^PC-DIR-", etiquetas: [puesto, direccion]}
+
+listas:
+  administradores: [adm-]
+  cuentas_emergencia: [breakglass01@acme.test, breakglass02@acme.test]
+  aplicaciones_negocio: []
+  software_aprobado: []
+  agentes_distribucion: [ccmexec.exe]
+  atribuciones_pago: [tesoreria@acme.test, pagos@acme.test]
+  emisores_autorizados: [comunicacion@acme.test]
+  servicios_aprobados: [sharepoint.com]
+  escaneres_autorizados: ["192.0.2.10/32"]
+
+ventanas: []
+excepciones: []
+
+contactos:
+  L2: {email: soc-l2@acme.test}
+  L3: {email: soc-l3@acme.test}
+  guardia: {telefono: "+34 600 000 001"}
+  dpd: {email: dpd@acme.test}
+  asesoria_juridica: {email: legal@acme.test}

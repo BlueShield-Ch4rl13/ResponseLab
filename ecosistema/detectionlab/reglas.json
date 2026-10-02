@@ -1,0 +1,4870 @@
+{
+  "avisos": [],
+  "reglas": [
+    {
+      "clave": "dl:ad_013_dcshadow",
+      "familia": "ad",
+      "fichero": "rules/windows/ad_013_dcshadow.yml",
+      "logsource": "windows/security",
+      "nivel": "critical",
+      "origen": "detectionlab",
+      "sigma_id": "af56165d-0e7e-5470-ae70-f1cff304abd7",
+      "splunk": "DL - DCShadow - registro de un controlador de dominio falso",
+      "tacticas": [
+        "defense-evasion",
+        "persistence"
+      ],
+      "tecnicas": [
+        "T1207"
+      ],
+      "tipo": "sigma",
+      "titulo": "DCShadow - registro de un controlador de dominio falso",
+      "titulos": [
+        "DCShadow - registro de un controlador de dominio falso"
+      ],
+      "wazuh_ids": [
+        "101128",
+        "101129"
+      ]
+    },
+    {
+      "clave": "dl:ad_014_sid_history",
+      "familia": "ad",
+      "fichero": "rules/windows/ad_014_sid_history.yml",
+      "logsource": "windows/security",
+      "nivel": "critical",
+      "origen": "detectionlab",
+      "sigma_id": "ae90efaf-7f20-5cb6-8465-984176acf7c5",
+      "splunk": "DL - Inyeccion de SID history en una cuenta del dominio",
+      "tacticas": [
+        "defense-evasion",
+        "persistence",
+        "privilege-escalation"
+      ],
+      "tecnicas": [
+        "T1134.005"
+      ],
+      "tipo": "sigma",
+      "titulo": "Inyeccion de SID history en una cuenta del dominio",
+      "titulos": [
+        "Inyeccion de SID history en una cuenta del dominio"
+      ],
+      "wazuh_ids": [
+        "101130",
+        "101131"
+      ]
+    },
+    {
+      "clave": "dl:ad_015_delegacion_kerberos",
+      "familia": "ad",
+      "fichero": "rules/windows/ad_015_delegacion_kerberos.yml",
+      "logsource": "windows/security",
+      "nivel": "critical",
+      "origen": "detectionlab",
+      "sigma_id": "43e8419e-0986-5162-a5ef-2808128e015d",
+      "splunk": "DL - Abuso de delegacion Kerberos - constrained, unconstrained y RBCD",
+      "tacticas": [
+        "credential-access",
+        "persistence",
+        "privilege-escalation"
+      ],
+      "tecnicas": [
+        "T1098",
+        "T1550.003"
+      ],
+      "tipo": "sigma",
+      "titulo": "Abuso de delegacion Kerberos - constrained, unconstrained y RBCD",
+      "titulos": [
+        "Abuso de delegacion Kerberos - constrained, unconstrained y RBCD"
+      ],
+      "wazuh_ids": [
+        "101132",
+        "101133",
+        "101134"
+      ]
+    },
+    {
+      "clave": "dl:ad_016_adminsdholder",
+      "familia": "ad",
+      "fichero": "rules/windows/ad_016_adminsdholder.yml",
+      "logsource": "windows/security",
+      "nivel": "critical",
+      "origen": "detectionlab",
+      "sigma_id": "9c473f28-93ea-568b-a4f5-44110135c933",
+      "splunk": "DL - Modificacion de AdminSDHolder o del descriptor de seguridad de un objeto de directorio",
+      "tacticas": [
+        "persistence",
+        "privilege-escalation"
+      ],
+      "tecnicas": [
+        "T1098",
+        "T1222"
+      ],
+      "tipo": "sigma",
+      "titulo": "Modificacion de AdminSDHolder o del descriptor de seguridad de un objeto de directorio",
+      "titulos": [
+        "Modificacion de AdminSDHolder o del descriptor de seguridad de un objeto de directorio"
+      ],
+      "wazuh_ids": [
+        "101135",
+        "101136"
+      ]
+    },
+    {
+      "clave": "dl:ad_017_lectura_laps",
+      "familia": "ad",
+      "fichero": "rules/windows/ad_017_lectura_laps.yml",
+      "logsource": "windows/process_creation",
+      "nivel": "high",
+      "origen": "detectionlab",
+      "sigma_id": "08b46422-a962-571d-8170-ebebb45e7ecb",
+      "splunk": "DL - Lectura de contrasenas de administrador local gestionadas por LAPS",
+      "tacticas": [
+        "credential-access",
+        "discovery"
+      ],
+      "tecnicas": [
+        "T1087.002",
+        "T1555"
+      ],
+      "tipo": "sigma",
+      "titulo": "Lectura de contrasenas de administrador local gestionadas por LAPS",
+      "titulos": [
+        "Lectura de contrasenas de administrador local gestionadas por LAPS"
+      ],
+      "wazuh_ids": [
+        "101137",
+        "101138",
+        "101139",
+        "101140"
+      ]
+    },
+    {
+      "clave": "dl:ad_018_extraccion_ntds",
+      "familia": "ad",
+      "fichero": "rules/windows/ad_018_extraccion_ntds.yml",
+      "logsource": "windows/process_creation",
+      "nivel": "critical",
+      "origen": "detectionlab",
+      "sigma_id": "893b0192-dee4-5f8b-baee-a9ee65e8d60d",
+      "splunk": "DL - Extraccion de la base de datos ntds.dit del controlador de dominio",
+      "tacticas": [
+        "credential-access"
+      ],
+      "tecnicas": [
+        "T1003.003"
+      ],
+      "tipo": "sigma",
+      "titulo": "Extraccion de la base de datos ntds.dit del controlador de dominio",
+      "titulos": [
+        "Extraccion de la base de datos ntds.dit del controlador de dominio"
+      ],
+      "wazuh_ids": [
+        "101141",
+        "101142",
+        "101143",
+        "101144",
+        "101145",
+        "101146",
+        "101147",
+        "101148"
+      ]
+    },
+    {
+      "clave": "dl:ad_019_coercion_ntlm",
+      "familia": "ad",
+      "fichero": "rules/windows/ad_019_coercion_ntlm.yml",
+      "logsource": "windows/security",
+      "nivel": "high",
+      "origen": "detectionlab",
+      "sigma_id": "f9da33dd-eac7-5670-9bc1-fe7ff7bed9b2",
+      "splunk": "DL - Coercion de autenticacion y relay NTLM contra el controlador de dominio",
+      "tacticas": [
+        "collection",
+        "credential-access"
+      ],
+      "tecnicas": [
+        "T1187",
+        "T1557.001"
+      ],
+      "tipo": "sigma",
+      "titulo": "Coercion de autenticacion y relay NTLM contra el controlador de dominio",
+      "titulos": [
+        "Coercion de autenticacion y relay NTLM contra el controlador de dominio"
+      ],
+      "wazuh_ids": [
+        "101149",
+        "101150",
+        "101151"
+      ]
+    },
+    {
+      "clave": "dl:cont_escape_a_namespaces_host",
+      "familia": "contenedores",
+      "fichero": "rules/contenedores/cont_escape_a_namespaces_host.yml",
+      "logsource": "linux/process_creation",
+      "nivel": "critical",
+      "origen": "detectionlab",
+      "sigma_id": "d4e7c487-eb0b-5457-99f7-c59ad3143ecd",
+      "splunk": "DL - Escape de contenedor hacia los namespaces del host",
+      "tacticas": [
+        "privilege-escalation"
+      ],
+      "tecnicas": [
+        "T1611"
+      ],
+      "tipo": "sigma",
+      "titulo": "Escape de contenedor hacia los namespaces del host",
+      "titulos": [
+        "Escape de contenedor hacia los namespaces del host"
+      ],
+      "wazuh_ids": [
+        "101009",
+        "101010",
+        "101011",
+        "101012"
+      ]
+    },
+    {
+      "clave": "dl:cont_socket_runtime_accedido",
+      "familia": "contenedores",
+      "fichero": "rules/contenedores/cont_socket_runtime_accedido.yml",
+      "logsource": "linux/process_creation",
+      "nivel": "critical",
+      "origen": "detectionlab",
+      "sigma_id": "7d0e6088-9338-5a96-999a-8337650284ac",
+      "splunk": "DL - Acceso al socket del runtime de contenedores",
+      "tacticas": [
+        "privilege-escalation"
+      ],
+      "tecnicas": [
+        "T1610",
+        "T1611"
+      ],
+      "tipo": "sigma",
+      "titulo": "Acceso al socket del runtime de contenedores",
+      "titulos": [
+        "Acceso al socket del runtime de contenedores"
+      ],
+      "wazuh_ids": [
+        "101013"
+      ]
+    },
+    {
+      "clave": "dl:cred_001_volcado_colmenas_registro",
+      "familia": "credenciales",
+      "fichero": "rules/windows/cred_001_volcado_colmenas_registro.yml",
+      "logsource": "windows/process_creation",
+      "nivel": "critical",
+      "origen": "detectionlab",
+      "sigma_id": "cc11096b-a05e-58b6-8523-384d00fb0dac",
+      "splunk": "DL - Volcado de las colmenas SAM, SYSTEM y SECURITY",
+      "tacticas": [
+        "credential-access"
+      ],
+      "tecnicas": [
+        "T1003.002",
+        "T1003.004"
+      ],
+      "tipo": "sigma",
+      "titulo": "Volcado de las colmenas SAM, SYSTEM y SECURITY",
+      "titulos": [
+        "Volcado de las colmenas SAM, SYSTEM y SECURITY"
+      ],
+      "wazuh_ids": [
+        "101152",
+        "101153",
+        "101154",
+        "101155",
+        "101156",
+        "101157"
+      ]
+    },
+    {
+      "clave": "dl:cred_002_credenciales_navegador",
+      "familia": "credenciales",
+      "fichero": "rules/windows/cred_002_credenciales_navegador.yml",
+      "logsource": "windows/process_creation",
+      "nivel": "high",
+      "origen": "detectionlab",
+      "sigma_id": "8661fc4c-c194-5b18-8992-957d866887cb",
+      "splunk": "DL - Acceso a los almacenes de credenciales del navegador",
+      "tacticas": [
+        "credential-access"
+      ],
+      "tecnicas": [
+        "T1539",
+        "T1555.003"
+      ],
+      "tipo": "sigma",
+      "titulo": "Acceso a los almacenes de credenciales del navegador",
+      "titulos": [
+        "Acceso a los almacenes de credenciales del navegador"
+      ],
+      "wazuh_ids": [
+        "101158",
+        "101159",
+        "101160"
+      ]
+    },
+    {
+      "clave": "dl:cred_003_abuso_dpapi",
+      "familia": "credenciales",
+      "fichero": "rules/windows/cred_003_abuso_dpapi.yml",
+      "logsource": "windows/process_creation",
+      "nivel": "critical",
+      "origen": "detectionlab",
+      "sigma_id": "440e4a0c-5483-5e6a-aa57-e341c56268af",
+      "splunk": "DL - Abuso de DPAPI - masterkeys y clave de respaldo del dominio",
+      "tacticas": [
+        "credential-access"
+      ],
+      "tecnicas": [
+        "T1003.004",
+        "T1555"
+      ],
+      "tipo": "sigma",
+      "titulo": "Abuso de DPAPI - masterkeys y clave de respaldo del dominio",
+      "titulos": [
+        "Abuso de DPAPI - masterkeys y clave de respaldo del dominio"
+      ],
+      "wazuh_ids": [
+        "101161",
+        "101162",
+        "101163",
+        "101164"
+      ]
+    },
+    {
+      "clave": "dl:cred_004_descenso_wdigest",
+      "familia": "credenciales",
+      "fichero": "rules/windows/cred_004_descenso_wdigest.yml",
+      "logsource": "windows/registry_event",
+      "nivel": "high",
+      "origen": "detectionlab",
+      "sigma_id": "74fe15a7-3458-5317-9767-cca3e3939904",
+      "splunk": "DL - Descenso de version a WDigest para cachear credenciales en claro",
+      "tacticas": [
+        "credential-access",
+        "defense-evasion"
+      ],
+      "tecnicas": [
+        "T1003.001",
+        "T1112"
+      ],
+      "tipo": "sigma",
+      "titulo": "Descenso de version a WDigest para cachear credenciales en claro",
+      "titulos": [
+        "Descenso de version a WDigest para cachear credenciales en claro"
+      ],
+      "wazuh_ids": [
+        "101165",
+        "101166",
+        "101167"
+      ]
+    },
+    {
+      "clave": "dl:cred_005_credenciales_nube_ssh",
+      "familia": "credenciales",
+      "fichero": "rules/windows/cred_005_credenciales_nube_ssh.yml",
+      "logsource": "windows/process_creation",
+      "nivel": "high",
+      "origen": "detectionlab",
+      "sigma_id": "c79d5ef3-0b6d-5226-9b40-1a0cd438111b",
+      "splunk": "DL - Robo de ficheros de credenciales de nube y de SSH",
+      "tacticas": [
+        "credential-access"
+      ],
+      "tecnicas": [
+        "T1552.001",
+        "T1552.004"
+      ],
+      "tipo": "sigma",
+      "titulo": "Robo de ficheros de credenciales de nube y de SSH",
+      "titulos": [
+        "Robo de ficheros de credenciales de nube y de SSH"
+      ],
+      "wazuh_ids": [
+        "101168",
+        "101169"
+      ]
+    },
+    {
+      "clave": "dl:cred_006_gestores_contrasenas",
+      "familia": "credenciales",
+      "fichero": "rules/windows/cred_006_gestores_contrasenas.yml",
+      "logsource": "windows/process_creation",
+      "nivel": "high",
+      "origen": "detectionlab",
+      "sigma_id": "404beb95-b0b8-5224-a7fd-7cf271361022",
+      "splunk": "DL - Acceso a bases de datos de gestores de contrasenas",
+      "tacticas": [
+        "credential-access"
+      ],
+      "tecnicas": [
+        "T1555.005"
+      ],
+      "tipo": "sigma",
+      "titulo": "Acceso a bases de datos de gestores de contrasenas",
+      "titulos": [
+        "Acceso a bases de datos de gestores de contrasenas"
+      ],
+      "wazuh_ids": [
+        "101170",
+        "101171",
+        "101172"
+      ]
+    },
+    {
+      "clave": "dl:cred_007_credenciales_cacheadas_vault",
+      "familia": "credenciales",
+      "fichero": "rules/windows/cred_007_credenciales_cacheadas_vault.yml",
+      "logsource": "windows/process_creation",
+      "nivel": "high",
+      "origen": "detectionlab",
+      "sigma_id": "11908a4b-0218-5368-8d81-0f5ce554c8dc",
+      "splunk": "DL - Volcado de credenciales cacheadas y del Administrador de credenciales de Windows",
+      "tacticas": [
+        "credential-access"
+      ],
+      "tecnicas": [
+        "T1003.005",
+        "T1555.004"
+      ],
+      "tipo": "sigma",
+      "titulo": "Volcado de credenciales cacheadas y del Administrador de credenciales de Windows",
+      "titulos": [
+        "Volcado de credenciales cacheadas y del Administrador de credenciales de Windows"
+      ],
+      "wazuh_ids": [
+        "101173",
+        "101174",
+        "101175",
+        "101176",
+        "101177",
+        "101178"
+      ]
+    },
+    {
+      "clave": "dl:exf_001_archivado_previo_exfiltracion",
+      "familia": "exfiltracion",
+      "fichero": "rules/exfiltracion/exf_001_archivado_previo_exfiltracion.yml",
+      "logsource": "windows/process_creation",
+      "nivel": "medium",
+      "origen": "detectionlab",
+      "sigma_id": "7cb435fe-faee-5668-9a71-cca1d1caeccc",
+      "splunk": "DL - Archivado masivo previo a la exfiltracion",
+      "tacticas": [
+        "collection",
+        "exfiltration"
+      ],
+      "tecnicas": [
+        "T1074.001",
+        "T1560.001"
+      ],
+      "tipo": "sigma",
+      "titulo": "Archivado masivo previo a la exfiltracion",
+      "titulos": [
+        "Archivado masivo previo a la exfiltracion"
+      ],
+      "wazuh_ids": [
+        "101031",
+        "101032",
+        "101033",
+        "101034"
+      ]
+    },
+    {
+      "clave": "dl:exf_002_subida_nube_personal",
+      "familia": "exfiltracion",
+      "fichero": "rules/exfiltracion/exf_002_subida_nube_personal.yml",
+      "logsource": "proxy",
+      "nivel": "high",
+      "origen": "detectionlab",
+      "sigma_id": "86ac3970-5716-5339-b2d3-651daf876a27",
+      "splunk": "DL - Subida a almacenamiento personal en la nube",
+      "tacticas": [
+        "exfiltration"
+      ],
+      "tecnicas": [
+        "T1567.002"
+      ],
+      "tipo": "sigma",
+      "titulo": "Subida a almacenamiento personal en la nube",
+      "titulos": [
+        "Subida a almacenamiento personal en la nube"
+      ],
+      "wazuh_ids": [
+        "101035"
+      ]
+    },
+    {
+      "clave": "dl:exf_003_copia_masiva_extraible",
+      "familia": "exfiltracion",
+      "fichero": "rules/exfiltracion/exf_003_copia_masiva_extraible.yml",
+      "logsource": "windows/file_event",
+      "nivel": "medium",
+      "origen": "detectionlab",
+      "sigma_id": "9c354515-fc16-58cf-8197-a2b2ec4798b1",
+      "splunk": "DL - Copia masiva de documentos a unidad extraible",
+      "tacticas": [
+        "collection",
+        "exfiltration"
+      ],
+      "tecnicas": [
+        "T1005",
+        "T1052.001"
+      ],
+      "tipo": "sigma",
+      "titulo": "Copia masiva de documentos a unidad extraible",
+      "titulos": [
+        "Copia masiva de documentos a unidad extraible"
+      ],
+      "wazuh_ids": [
+        "101036"
+      ]
+    },
+    {
+      "clave": "dl:exf_004_protocolo_alternativo",
+      "familia": "exfiltracion",
+      "fichero": "rules/exfiltracion/exf_004_protocolo_alternativo.yml",
+      "logsource": "windows/process_creation",
+      "nivel": "high",
+      "origen": "detectionlab",
+      "sigma_id": "d7d8f746-4313-5fa0-9046-e3ac00a56827",
+      "splunk": "DL - Exfiltracion por protocolo alternativo",
+      "tacticas": [
+        "exfiltration"
+      ],
+      "tecnicas": [
+        "T1048",
+        "T1048.003"
+      ],
+      "tipo": "sigma",
+      "titulo": "Exfiltracion por protocolo alternativo",
+      "titulos": [
+        "Exfiltracion por protocolo alternativo"
+      ],
+      "wazuh_ids": [
+        "101037",
+        "101038",
+        "101039"
+      ]
+    },
+    {
+      "clave": "dl:exf_005_reenvio_correo_personal",
+      "familia": "exfiltracion",
+      "fichero": "rules/exfiltracion/exf_005_reenvio_correo_personal.yml",
+      "logsource": "m365/exchange",
+      "nivel": "critical",
+      "origen": "detectionlab",
+      "sigma_id": "41402951-6235-5e8c-af8c-4253f01fab6b",
+      "splunk": "DL - Reenvio automatico de correo a dominio personal",
+      "tacticas": [
+        "collection",
+        "exfiltration"
+      ],
+      "tecnicas": [
+        "T1020",
+        "T1114.003"
+      ],
+      "tipo": "sigma",
+      "titulo": "Reenvio automatico de correo a dominio personal",
+      "titulos": [
+        "Reenvio automatico de correo a dominio personal"
+      ],
+      "wazuh_ids": [
+        "101040"
+      ]
+    },
+    {
+      "clave": "dl:exf_006_repositorio_publico_codigo",
+      "familia": "exfiltracion",
+      "fichero": "rules/exfiltracion/exf_006_repositorio_publico_codigo.yml",
+      "logsource": "windows/process_creation",
+      "nivel": "high",
+      "origen": "detectionlab",
+      "sigma_id": "27880277-c1d6-5d19-abcd-fced9180a797",
+      "splunk": "DL - Subida de codigo o secretos a repositorio publico",
+      "tacticas": [
+        "exfiltration"
+      ],
+      "tecnicas": [
+        "T1567.001"
+      ],
+      "tipo": "sigma",
+      "titulo": "Subida de codigo o secretos a repositorio publico",
+      "titulos": [
+        "Subida de codigo o secretos a repositorio publico"
+      ],
+      "wazuh_ids": [
+        "101041",
+        "101042"
+      ]
+    },
+    {
+      "clave": "dl:exf_007_volcado_base_datos",
+      "familia": "exfiltracion",
+      "fichero": "rules/exfiltracion/exf_007_volcado_base_datos.yml",
+      "logsource": "windows/process_creation",
+      "nivel": "high",
+      "origen": "detectionlab",
+      "sigma_id": "509613e3-9423-5cd4-9a5c-e24c82dcdb94",
+      "splunk": "DL - Volcado de base de datos a ruta de usuario",
+      "tacticas": [
+        "collection",
+        "exfiltration"
+      ],
+      "tecnicas": [
+        "T1005",
+        "T1074.001"
+      ],
+      "tipo": "sigma",
+      "titulo": "Volcado de base de datos a ruta de usuario",
+      "titulos": [
+        "Volcado de base de datos a ruta de usuario"
+      ],
+      "wazuh_ids": [
+        "101043",
+        "101044"
+      ]
+    },
+    {
+      "clave": "dl:exf_008_impresion_captura_masiva",
+      "familia": "exfiltracion",
+      "fichero": "rules/exfiltracion/exf_008_impresion_captura_masiva.yml",
+      "logsource": "windows/process_creation",
+      "nivel": "medium",
+      "origen": "detectionlab",
+      "sigma_id": "615a5461-b233-5af9-8142-3107cbf4ad2f",
+      "splunk": "DL - Impresion o captura masiva de documentos",
+      "tacticas": [
+        "collection",
+        "exfiltration"
+      ],
+      "tecnicas": [
+        "T1052",
+        "T1113"
+      ],
+      "tipo": "sigma",
+      "titulo": "Impresion o captura masiva de documentos",
+      "titulos": [
+        "Impresion o captura masiva de documentos"
+      ],
+      "wazuh_ids": [
+        "101045",
+        "101046",
+        "101047",
+        "101048",
+        "101049"
+      ]
+    },
+    {
+      "clave": "dl:k8s_capacidades_peligrosas",
+      "familia": "contenedores",
+      "fichero": "rules/contenedores/k8s_capacidades_peligrosas.yml",
+      "logsource": "kubernetes/audit",
+      "nivel": "high",
+      "origen": "detectionlab",
+      "sigma_id": "7ae90226-7659-5c85-89d4-05be5a0656f6",
+      "splunk": "DL - Contenedor con capacidades de kernel peligrosas",
+      "tacticas": [
+        "defense-evasion",
+        "privilege-escalation"
+      ],
+      "tecnicas": [
+        "T1611"
+      ],
+      "tipo": "sigma",
+      "titulo": "Contenedor con capacidades de kernel peligrosas",
+      "titulos": [
+        "Contenedor con capacidades de kernel peligrosas"
+      ],
+      "wazuh_ids": [
+        "101014"
+      ]
+    },
+    {
+      "clave": "dl:k8s_escalada_por_rolebinding",
+      "familia": "contenedores",
+      "fichero": "rules/contenedores/k8s_escalada_por_rolebinding.yml",
+      "logsource": "kubernetes/audit",
+      "nivel": "high",
+      "origen": "detectionlab",
+      "sigma_id": "34f6c415-b810-5fbb-ac9a-836216b887f6",
+      "splunk": "DL - Enlace a un rol con privilegios de administrador del cluster",
+      "tacticas": [
+        "persistence",
+        "privilege-escalation"
+      ],
+      "tecnicas": [
+        "T1078.003"
+      ],
+      "tipo": "sigma",
+      "titulo": "Enlace a un rol con privilegios de administrador del cluster",
+      "titulos": [
+        "Enlace a un rol con privilegios de administrador del cluster"
+      ],
+      "wazuh_ids": [
+        "101015"
+      ]
+    },
+    {
+      "clave": "dl:k8s_exec_en_pod",
+      "familia": "contenedores",
+      "fichero": "rules/contenedores/k8s_exec_en_pod.yml",
+      "logsource": "kubernetes/audit",
+      "nivel": "medium",
+      "origen": "detectionlab",
+      "sigma_id": "3f755e60-8d98-5bf4-8dea-10ad9f0effa5",
+      "splunk": "DL - Ejecucion interactiva dentro de un pod",
+      "tacticas": [
+        "execution",
+        "lateral-movement"
+      ],
+      "tecnicas": [
+        "T1609"
+      ],
+      "tipo": "sigma",
+      "titulo": "Ejecucion interactiva dentro de un pod",
+      "titulos": [
+        "Ejecucion interactiva dentro de un pod"
+      ],
+      "wazuh_ids": [
+        "101016"
+      ]
+    },
+    {
+      "clave": "dl:k8s_lectura_masiva_secretos",
+      "familia": "contenedores",
+      "fichero": "rules/contenedores/k8s_lectura_masiva_secretos.yml",
+      "logsource": "kubernetes/audit",
+      "nivel": "medium",
+      "origen": "detectionlab",
+      "sigma_id": "1ac2a767-fb50-5649-b181-1b7d7c12090d",
+      "splunk": "DL - Lectura de secretos de Kubernetes",
+      "tacticas": [
+        "credential-access"
+      ],
+      "tecnicas": [
+        "T1552.007"
+      ],
+      "tipo": "sigma",
+      "titulo": "Lectura de secretos de Kubernetes",
+      "titulos": [
+        "Lectura de secretos de Kubernetes"
+      ],
+      "wazuh_ids": [
+        "101017"
+      ]
+    },
+    {
+      "clave": "dl:k8s_montaje_hostpath",
+      "familia": "contenedores",
+      "fichero": "rules/contenedores/k8s_montaje_hostpath.yml",
+      "logsource": "kubernetes/audit",
+      "nivel": "critical",
+      "origen": "detectionlab",
+      "sigma_id": "766ec1dc-ed98-5480-abc2-0c34824f7d56",
+      "splunk": "DL - Pod que monta una ruta sensible del nodo",
+      "tacticas": [
+        "privilege-escalation"
+      ],
+      "tecnicas": [
+        "T1611"
+      ],
+      "tipo": "sigma",
+      "titulo": "Pod que monta una ruta sensible del nodo",
+      "titulos": [
+        "Pod que monta una ruta sensible del nodo"
+      ],
+      "wazuh_ids": [
+        "101018",
+        "101019"
+      ]
+    },
+    {
+      "clave": "dl:k8s_pod_privilegiado",
+      "familia": "contenedores",
+      "fichero": "rules/contenedores/k8s_pod_privilegiado.yml",
+      "logsource": "kubernetes/audit",
+      "nivel": "high",
+      "origen": "detectionlab",
+      "sigma_id": "7b09c90e-e326-5a96-9a89-79a7fe78e3e7",
+      "splunk": "DL - Creacion de pod privilegiado",
+      "tacticas": [
+        "defense-evasion",
+        "privilege-escalation"
+      ],
+      "tecnicas": [
+        "T1610",
+        "T1611"
+      ],
+      "tipo": "sigma",
+      "titulo": "Creacion de pod privilegiado",
+      "titulos": [
+        "Creacion de pod privilegiado"
+      ],
+      "wazuh_ids": [
+        "101020"
+      ]
+    },
+    {
+      "clave": "dl:lin_base64_decode_exec",
+      "familia": "linux",
+      "fichero": "rules/linux/lin_base64_decode_exec.yml",
+      "logsource": "linux/process_creation",
+      "nivel": "high",
+      "origen": "detectionlab",
+      "sigma_id": "200e7a04-2cc7-5824-8fa7-b103e2a599ca",
+      "splunk": "DL - Ejecucion de payload codificado en base64",
+      "tacticas": [
+        "defense-evasion",
+        "execution"
+      ],
+      "tecnicas": [
+        "T1059.004",
+        "T1140"
+      ],
+      "tipo": "sigma",
+      "titulo": "Ejecucion de payload codificado en base64",
+      "titulos": [
+        "Ejecucion de payload codificado en base64"
+      ],
+      "wazuh_ids": [
+        "101050"
+      ]
+    },
+    {
+      "clave": "dl:lin_chmod_tmp_exec",
+      "familia": "linux",
+      "fichero": "rules/linux/lin_chmod_tmp_exec.yml",
+      "logsource": "linux/process_creation",
+      "nivel": "medium",
+      "origen": "detectionlab",
+      "sigma_id": "9f7e0bd9-6dc3-507a-bc3d-ccd37de8defc",
+      "splunk": "DL - Permisos de ejecucion en /tmp o /dev/shm",
+      "tacticas": [
+        "defense-evasion"
+      ],
+      "tecnicas": [
+        "T1222.002"
+      ],
+      "tipo": "sigma",
+      "titulo": "Permisos de ejecucion en /tmp o /dev/shm",
+      "titulos": [
+        "Permisos de ejecucion en /tmp o /dev/shm"
+      ],
+      "wazuh_ids": [
+        "101051"
+      ]
+    },
+    {
+      "clave": "dl:lin_cron_persistence",
+      "familia": "linux",
+      "fichero": "rules/linux/lin_cron_persistence.yml",
+      "logsource": "linux/process_creation",
+      "nivel": "medium",
+      "origen": "detectionlab",
+      "sigma_id": "9f783794-6644-5a53-8f89-77dca1717c53",
+      "splunk": "DL - Persistencia por cron",
+      "tacticas": [
+        "persistence"
+      ],
+      "tecnicas": [
+        "T1053.003"
+      ],
+      "tipo": "sigma",
+      "titulo": "Persistencia por cron",
+      "titulos": [
+        "Persistencia por cron"
+      ],
+      "wazuh_ids": [
+        "101052"
+      ]
+    },
+    {
+      "clave": "dl:lin_disable_history",
+      "familia": "linux",
+      "fichero": "rules/linux/lin_disable_history.yml",
+      "logsource": "linux/process_creation",
+      "nivel": "medium",
+      "origen": "detectionlab",
+      "sigma_id": "08fecbad-072d-5720-af42-a5fc54a420a7",
+      "splunk": "DL - Deshabilitar historial de shell (anti-forense)",
+      "tacticas": [
+        "defense-evasion"
+      ],
+      "tecnicas": [
+        "T1070.003"
+      ],
+      "tipo": "sigma",
+      "titulo": "Deshabilitar historial de shell (anti-forense)",
+      "titulos": [
+        "Deshabilitar historial de shell (anti-forense)"
+      ],
+      "wazuh_ids": [
+        "101053"
+      ]
+    },
+    {
+      "clave": "dl:lin_download_pipe_shell",
+      "familia": "linux",
+      "fichero": "rules/linux/lin_download_pipe_shell.yml",
+      "logsource": "linux/process_creation",
+      "nivel": "high",
+      "origen": "detectionlab",
+      "sigma_id": "1ff0c388-d765-5870-8c84-3ecc40a1881c",
+      "splunk": "DL - Descarga tuberia a shell (curl|bash)",
+      "tacticas": [
+        "command-and-control",
+        "execution"
+      ],
+      "tecnicas": [
+        "T1059.004",
+        "T1105"
+      ],
+      "tipo": "sigma",
+      "titulo": "Descarga tuberia a shell (curl|bash)",
+      "titulos": [
+        "Descarga tuberia a shell (curl|bash)"
+      ],
+      "wazuh_ids": [
+        "101054"
+      ]
+    },
+    {
+      "clave": "dl:lin_ld_preload",
+      "familia": "linux",
+      "fichero": "rules/linux/lin_ld_preload.yml",
+      "logsource": "linux/process_creation",
+      "nivel": "critical",
+      "origen": "detectionlab",
+      "sigma_id": "dad88192-8cd4-5e0e-84e1-cfd83f7db605",
+      "splunk": "DL - Modificacion de ld.so.preload (rootkit)",
+      "tacticas": [
+        "persistence"
+      ],
+      "tecnicas": [
+        "T1574.006"
+      ],
+      "tipo": "sigma",
+      "titulo": "Modificacion de ld.so.preload (rootkit)",
+      "titulos": [
+        "Modificacion de ld.so.preload (rootkit)"
+      ],
+      "wazuh_ids": [
+        "101055"
+      ]
+    },
+    {
+      "clave": "dl:lin_read_shadow",
+      "familia": "linux",
+      "fichero": "rules/linux/lin_read_shadow.yml",
+      "logsource": "linux/process_creation",
+      "nivel": "high",
+      "origen": "detectionlab",
+      "sigma_id": "8fd4716f-0df1-5142-8a42-2d80006a2218",
+      "splunk": "DL - Lectura de /etc/shadow",
+      "tacticas": [
+        "credential-access"
+      ],
+      "tecnicas": [
+        "T1003.008"
+      ],
+      "tipo": "sigma",
+      "titulo": "Lectura de /etc/shadow",
+      "titulos": [
+        "Lectura de /etc/shadow"
+      ],
+      "wazuh_ids": [
+        "101056"
+      ]
+    },
+    {
+      "clave": "dl:lin_reverse_shell",
+      "familia": "linux",
+      "fichero": "rules/linux/lin_reverse_shell.yml",
+      "logsource": "linux/process_creation",
+      "nivel": "high",
+      "origen": "detectionlab",
+      "sigma_id": "4a71dfc8-7e6a-5a63-8946-c8a844833cbe",
+      "splunk": "DL - Shell inversa (bash /dev/tcp)",
+      "tacticas": [
+        "execution"
+      ],
+      "tecnicas": [
+        "T1059.004"
+      ],
+      "tipo": "sigma",
+      "titulo": "Shell inversa (bash /dev/tcp)",
+      "titulos": [
+        "Shell inversa (bash /dev/tcp)"
+      ],
+      "wazuh_ids": [
+        "101057"
+      ]
+    },
+    {
+      "clave": "dl:lin_ssh_authorized_keys",
+      "familia": "linux",
+      "fichero": "rules/linux/lin_ssh_authorized_keys.yml",
+      "logsource": "linux/process_creation",
+      "nivel": "high",
+      "origen": "detectionlab",
+      "sigma_id": "91efd863-d033-552f-9f65-782761f7ccbc",
+      "splunk": "DL - Adicion de clave SSH (authorized_keys)",
+      "tacticas": [
+        "persistence"
+      ],
+      "tecnicas": [
+        "T1098.004"
+      ],
+      "tipo": "sigma",
+      "titulo": "Adicion de clave SSH (authorized_keys)",
+      "titulos": [
+        "Adicion de clave SSH (authorized_keys)"
+      ],
+      "wazuh_ids": [
+        "101058"
+      ]
+    },
+    {
+      "clave": "dl:lin_useradd",
+      "familia": "linux",
+      "fichero": "rules/linux/lin_useradd.yml",
+      "logsource": "linux/process_creation",
+      "nivel": "medium",
+      "origen": "detectionlab",
+      "sigma_id": "94df057c-ecd2-521c-8166-3ca59630c868",
+      "splunk": "DL - Creacion o modificacion de cuenta",
+      "tacticas": [
+        "persistence"
+      ],
+      "tecnicas": [
+        "T1136.001"
+      ],
+      "tipo": "sigma",
+      "titulo": "Creacion o modificacion de cuenta",
+      "titulos": [
+        "Creacion o modificacion de cuenta"
+      ],
+      "wazuh_ids": [
+        "101059"
+      ]
+    },
+    {
+      "clave": "dl:mac_borrado_de_registros",
+      "familia": "macos",
+      "fichero": "rules/macos/mac_borrado_de_registros.yml",
+      "logsource": "macos/process_creation",
+      "nivel": "high",
+      "origen": "detectionlab",
+      "sigma_id": "48094831-81d9-5cb0-910c-8e544f883835",
+      "splunk": "DL - Borrado de registros del sistema en macOS",
+      "tacticas": [
+        "defense-evasion"
+      ],
+      "tecnicas": [
+        "T1070.002",
+        "T1070.003"
+      ],
+      "tipo": "sigma",
+      "titulo": "Borrado de registros del sistema en macOS",
+      "titulos": [
+        "Borrado de registros del sistema en macOS"
+      ],
+      "wazuh_ids": [
+        "101060",
+        "101061",
+        "101062"
+      ]
+    },
+    {
+      "clave": "dl:mac_descarga_y_ejecucion",
+      "familia": "macos",
+      "fichero": "rules/macos/mac_descarga_y_ejecucion.yml",
+      "logsource": "macos/process_creation",
+      "nivel": "high",
+      "origen": "detectionlab",
+      "sigma_id": "b37e6c5e-7e87-5523-a3d3-dcad9c9356ce",
+      "splunk": "DL - Descarga y ejecucion directa en macOS",
+      "tacticas": [
+        "command-and-control",
+        "execution"
+      ],
+      "tecnicas": [
+        "T1059.004",
+        "T1105"
+      ],
+      "tipo": "sigma",
+      "titulo": "Descarga y ejecucion directa en macOS",
+      "titulos": [
+        "Descarga y ejecucion directa en macOS"
+      ],
+      "wazuh_ids": [
+        "101063"
+      ]
+    },
+    {
+      "clave": "dl:mac_gatekeeper_deshabilitado",
+      "familia": "macos",
+      "fichero": "rules/macos/mac_gatekeeper_deshabilitado.yml",
+      "logsource": "macos/process_creation",
+      "nivel": "high",
+      "origen": "detectionlab",
+      "sigma_id": "ebc36b57-e804-575d-a354-1abd9e11abe7",
+      "splunk": "DL - Gatekeeper deshabilitado o cuarentena eliminada",
+      "tacticas": [
+        "defense-evasion"
+      ],
+      "tecnicas": [
+        "T1553.001",
+        "T1562.001"
+      ],
+      "tipo": "sigma",
+      "titulo": "Gatekeeper deshabilitado o cuarentena eliminada",
+      "titulos": [
+        "Gatekeeper deshabilitado o cuarentena eliminada"
+      ],
+      "wazuh_ids": [
+        "101064",
+        "101065",
+        "101066"
+      ]
+    },
+    {
+      "clave": "dl:mac_osascript_sospechoso",
+      "familia": "macos",
+      "fichero": "rules/macos/mac_osascript_sospechoso.yml",
+      "logsource": "macos/process_creation",
+      "nivel": "high",
+      "origen": "detectionlab",
+      "sigma_id": "451d4f04-a5f2-508c-ae41-a1f9b5216882",
+      "splunk": "DL - AppleScript ejecutando shell o descargando codigo",
+      "tacticas": [
+        "execution"
+      ],
+      "tecnicas": [
+        "T1059.002"
+      ],
+      "tipo": "sigma",
+      "titulo": "AppleScript ejecutando shell o descargando codigo",
+      "titulos": [
+        "AppleScript ejecutando shell o descargando codigo"
+      ],
+      "wazuh_ids": [
+        "101067",
+        "101068",
+        "101069"
+      ]
+    },
+    {
+      "clave": "dl:mac_persistencia_launchagent",
+      "familia": "macos",
+      "fichero": "rules/macos/mac_persistencia_launchagent.yml",
+      "logsource": "macos/file_event",
+      "nivel": "medium",
+      "origen": "detectionlab",
+      "sigma_id": "85b54d2d-a1e6-56d4-bc85-eb76d07aad0c",
+      "splunk": "DL - Persistencia por LaunchAgent o LaunchDaemon",
+      "tacticas": [
+        "persistence",
+        "privilege-escalation"
+      ],
+      "tecnicas": [
+        "T1543.001",
+        "T1543.004"
+      ],
+      "tipo": "sigma",
+      "titulo": "Persistencia por LaunchAgent o LaunchDaemon",
+      "titulos": [
+        "Persistencia por LaunchAgent o LaunchDaemon"
+      ],
+      "wazuh_ids": [
+        "101070"
+      ]
+    },
+    {
+      "clave": "dl:mac_tcc_manipulacion",
+      "familia": "macos",
+      "fichero": "rules/macos/mac_tcc_manipulacion.yml",
+      "logsource": "macos/process_creation",
+      "nivel": "high",
+      "origen": "detectionlab",
+      "sigma_id": "3c2aab49-bcdd-5915-a33d-32919fc5e81c",
+      "splunk": "DL - Manipulacion de la base de datos TCC",
+      "tacticas": [
+        "defense-evasion",
+        "privilege-escalation"
+      ],
+      "tecnicas": [
+        "T1548.006"
+      ],
+      "tipo": "sigma",
+      "titulo": "Manipulacion de la base de datos TCC",
+      "titulos": [
+        "Manipulacion de la base de datos TCC"
+      ],
+      "wazuh_ids": [
+        "101071",
+        "101072"
+      ]
+    },
+    {
+      "clave": "dl:mac_usuario_oculto_creado",
+      "familia": "macos",
+      "fichero": "rules/macos/mac_usuario_oculto_creado.yml",
+      "logsource": "macos/process_creation",
+      "nivel": "high",
+      "origen": "detectionlab",
+      "sigma_id": "c36ece79-7e24-5e5a-8da1-7b8b37b1cd92",
+      "splunk": "DL - Creacion de usuario local u oculto en macOS",
+      "tacticas": [
+        "persistence"
+      ],
+      "tecnicas": [
+        "T1136.001"
+      ],
+      "tipo": "sigma",
+      "titulo": "Creacion de usuario local u oculto en macOS",
+      "titulos": [
+        "Creacion de usuario local u oculto en macOS"
+      ],
+      "wazuh_ids": [
+        "101073",
+        "101074",
+        "101075"
+      ]
+    },
+    {
+      "clave": "dl:mac_volcado_llavero",
+      "familia": "macos",
+      "fichero": "rules/macos/mac_volcado_llavero.yml",
+      "logsource": "macos/process_creation",
+      "nivel": "critical",
+      "origen": "detectionlab",
+      "sigma_id": "652db084-3fca-583c-8d62-745dfe04ef45",
+      "splunk": "DL - Acceso o volcado del llavero de macOS",
+      "tacticas": [
+        "credential-access"
+      ],
+      "tecnicas": [
+        "T1555.001"
+      ],
+      "tipo": "sigma",
+      "titulo": "Acceso o volcado del llavero de macOS",
+      "titulos": [
+        "Acceso o volcado del llavero de macOS"
+      ],
+      "wazuh_ids": [
+        "101076",
+        "101077"
+      ]
+    },
+    {
+      "clave": "dl:net_rare_process_external_conn",
+      "familia": "endpoint",
+      "fichero": "rules/windows/net_rare_process_external_conn.yml",
+      "logsource": "windows/network_connection",
+      "nivel": "medium",
+      "origen": "detectionlab",
+      "sigma_id": "a35beb16-5027-58c8-b7bc-4763c8837610",
+      "splunk": "DL - Proceso del sistema con conexion saliente inusual",
+      "tacticas": [
+        "command-and-control"
+      ],
+      "tecnicas": [
+        "T1071.001"
+      ],
+      "tipo": "sigma",
+      "titulo": "Proceso del sistema con conexion saliente inusual",
+      "titulos": [
+        "Proceso del sistema con conexion saliente inusual"
+      ],
+      "wazuh_ids": [
+        "101179"
+      ]
+    },
+    {
+      "clave": "dl:proc_net_user_add",
+      "familia": "endpoint",
+      "fichero": "rules/windows/proc_net_user_add.yml",
+      "logsource": "windows/process_creation",
+      "nivel": "medium",
+      "origen": "detectionlab",
+      "sigma_id": "067a60fd-e20d-53ed-83d6-c1101487e1e3",
+      "splunk": "DL - Creacion de cuenta local",
+      "tacticas": [
+        "persistence"
+      ],
+      "tecnicas": [
+        "T1136.001"
+      ],
+      "tipo": "sigma",
+      "titulo": "Creacion de cuenta local",
+      "titulos": [
+        "Creacion de cuenta local"
+      ],
+      "wazuh_ids": [
+        "101180"
+      ]
+    },
+    {
+      "clave": "dl:proc_office_spawning_shell",
+      "familia": "endpoint",
+      "fichero": "rules/windows/proc_office_spawning_shell.yml",
+      "logsource": "windows/process_creation",
+      "nivel": "high",
+      "origen": "detectionlab",
+      "sigma_id": "86a9cd62-a27b-55eb-892c-223a8f532cad",
+      "splunk": "DL - Documento de Office lanzando shell",
+      "tacticas": [
+        "execution",
+        "initial-access"
+      ],
+      "tecnicas": [
+        "T1204.002",
+        "T1566.001"
+      ],
+      "tipo": "sigma",
+      "titulo": "Documento de Office lanzando shell",
+      "titulos": [
+        "Documento de Office lanzando shell"
+      ],
+      "wazuh_ids": [
+        "101181"
+      ]
+    },
+    {
+      "clave": "dl:proc_service_create_scexe",
+      "familia": "endpoint",
+      "fichero": "rules/windows/proc_service_create_scexe.yml",
+      "logsource": "windows/process_creation",
+      "nivel": "medium",
+      "origen": "detectionlab",
+      "sigma_id": "8097a5f5-4800-546d-a736-d3e5dae18db9",
+      "splunk": "DL - Creacion de servicio via sc.exe",
+      "tacticas": [
+        "persistence"
+      ],
+      "tecnicas": [
+        "T1543.003"
+      ],
+      "tipo": "sigma",
+      "titulo": "Creacion de servicio via sc.exe",
+      "titulos": [
+        "Creacion de servicio via sc.exe"
+      ],
+      "wazuh_ids": [
+        "101182"
+      ]
+    },
+    {
+      "clave": "dl:proc_wmic_process_call_create",
+      "familia": "endpoint",
+      "fichero": "rules/windows/proc_wmic_process_call_create.yml",
+      "logsource": "windows/process_creation",
+      "nivel": "medium",
+      "origen": "detectionlab",
+      "sigma_id": "1181c65d-755c-5ccd-a27e-57b726385aa6",
+      "splunk": "DL - Ejecucion via WMIC process call create",
+      "tacticas": [
+        "execution"
+      ],
+      "tecnicas": [
+        "T1047"
+      ],
+      "tipo": "sigma",
+      "titulo": "Ejecucion via WMIC process call create",
+      "titulos": [
+        "Ejecucion via WMIC process call create"
+      ],
+      "wazuh_ids": [
+        "101183"
+      ]
+    },
+    {
+      "clave": "dl:soc_ad_001_kerberoasting",
+      "familia": "ad",
+      "fichero": "rules/windows/soc_ad_001_kerberoasting.yml",
+      "logsource": "windows/security",
+      "nivel": "high",
+      "origen": "detectionlab",
+      "sigma_id": "54b36280-b579-5b0d-af3a-3ff82ad085f2",
+      "splunk": "DL - Kerberoasting - solicitud masiva de tickets de servicio con RC4",
+      "tacticas": [
+        "credential-access"
+      ],
+      "tecnicas": [
+        "T1558.003"
+      ],
+      "tipo": "sigma",
+      "titulo": "Kerberoasting - solicitud masiva de tickets de servicio con RC4",
+      "titulos": [
+        "Kerberoasting - solicitud masiva de tickets de servicio con RC4"
+      ],
+      "wazuh_ids": [
+        "101184"
+      ]
+    },
+    {
+      "clave": "dl:soc_ad_002_asrep_roasting",
+      "familia": "ad",
+      "fichero": "rules/windows/soc_ad_002_asrep_roasting.yml",
+      "logsource": "windows/security",
+      "nivel": "high",
+      "origen": "detectionlab",
+      "sigma_id": "05ce8c8f-92c0-5450-9da3-3d957a21566f",
+      "splunk": "DL - AS-REP Roasting - peticion sin preautenticacion Kerberos",
+      "tacticas": [
+        "credential-access"
+      ],
+      "tecnicas": [
+        "T1558.004"
+      ],
+      "tipo": "sigma",
+      "titulo": "AS-REP Roasting - peticion sin preautenticacion Kerberos",
+      "titulos": [
+        "AS-REP Roasting - peticion sin preautenticacion Kerberos"
+      ],
+      "wazuh_ids": [
+        "101185"
+      ]
+    },
+    {
+      "clave": "dl:soc_ad_003_dcsync",
+      "familia": "ad",
+      "fichero": "rules/windows/soc_ad_003_dcsync.yml",
+      "logsource": "windows/security",
+      "nivel": "critical",
+      "origen": "detectionlab",
+      "sigma_id": "c99d10d7-e44d-5516-b637-3ec1ccf42c9e",
+      "splunk": "DL - DCSync - replicacion de directorio desde un equipo que no es DC",
+      "tacticas": [
+        "credential-access"
+      ],
+      "tecnicas": [
+        "T1003.006"
+      ],
+      "tipo": "sigma",
+      "titulo": "DCSync - replicacion de directorio desde un equipo que no es DC",
+      "titulos": [
+        "DCSync - replicacion de directorio desde un equipo que no es DC"
+      ],
+      "wazuh_ids": [
+        "101186"
+      ]
+    },
+    {
+      "clave": "dl:soc_ad_004_golden_ticket",
+      "familia": "ad",
+      "fichero": "rules/windows/soc_ad_004_golden_ticket.yml",
+      "logsource": "windows/security",
+      "nivel": "critical",
+      "origen": "detectionlab",
+      "sigma_id": "da924d29-69e6-5216-aa30-7765e1e2ebb7",
+      "splunk": "DL - Indicio de Golden Ticket - TGS de krbtgt con cifrado degradado",
+      "tacticas": [
+        "credential-access"
+      ],
+      "tecnicas": [
+        "T1558.001"
+      ],
+      "tipo": "sigma",
+      "titulo": "Indicio de Golden Ticket - TGS de krbtgt con cifrado degradado",
+      "titulos": [
+        "Indicio de Golden Ticket - TGS de krbtgt con cifrado degradado"
+      ],
+      "wazuh_ids": [
+        "101187"
+      ]
+    },
+    {
+      "clave": "dl:soc_ad_005_herramientas_kerberos",
+      "familia": "ad",
+      "fichero": "rules/windows/soc_ad_005_herramientas_kerberos.yml",
+      "logsource": "windows/process_creation",
+      "nivel": "critical",
+      "origen": "detectionlab",
+      "sigma_id": "8326ba13-ff5b-50a8-a31b-acdc642cb6b6",
+      "splunk": "DL - Herramienta de abuso de Kerberos ejecutada",
+      "tacticas": [
+        "credential-access"
+      ],
+      "tecnicas": [
+        "T1003",
+        "T1558"
+      ],
+      "tipo": "sigma",
+      "titulo": "Herramienta de abuso de Kerberos ejecutada",
+      "titulos": [
+        "Herramienta de abuso de Kerberos ejecutada"
+      ],
+      "wazuh_ids": [
+        "101188",
+        "101189",
+        "101190"
+      ]
+    },
+    {
+      "clave": "dl:soc_ad_006_pass_the_hash",
+      "familia": "ad",
+      "fichero": "rules/windows/soc_ad_006_pass_the_hash.yml",
+      "logsource": "windows/security",
+      "nivel": "high",
+      "origen": "detectionlab",
+      "sigma_id": "01c2fb48-329b-5375-b16a-812b91423779",
+      "splunk": "DL - Pass-the-Hash y Overpass-the-Hash",
+      "tacticas": [
+        "lateral-movement"
+      ],
+      "tecnicas": [
+        "T1550.002"
+      ],
+      "tipo": "sigma",
+      "titulo": "Pass-the-Hash y Overpass-the-Hash",
+      "titulos": [
+        "Pass-the-Hash y Overpass-the-Hash"
+      ],
+      "wazuh_ids": [
+        "101191"
+      ]
+    },
+    {
+      "clave": "dl:soc_ad_007_enumeracion_dominio",
+      "familia": "ad",
+      "fichero": "rules/windows/soc_ad_007_enumeracion_dominio.yml",
+      "logsource": "windows/process_creation",
+      "nivel": "medium",
+      "origen": "detectionlab",
+      "sigma_id": "d73db06b-35ac-5211-9dc2-20ace855c116",
+      "splunk": "DL - Enumeracion de Active Directory - BloodHound y comandos de reconocimiento",
+      "tacticas": [
+        "discovery"
+      ],
+      "tecnicas": [
+        "T1069.002",
+        "T1087.002"
+      ],
+      "tipo": "sigma",
+      "titulo": "Enumeracion de Active Directory - BloodHound y comandos de reconocimiento",
+      "titulos": [
+        "Enumeracion de Active Directory - BloodHound y comandos de reconocimiento"
+      ],
+      "wazuh_ids": [
+        "101192",
+        "101193",
+        "101194",
+        "101195"
+      ]
+    },
+    {
+      "clave": "dl:soc_ad_008_psexec_remoto",
+      "familia": "ad",
+      "fichero": "rules/windows/soc_ad_008_psexec_remoto.yml",
+      "logsource": "windows/system",
+      "nivel": "high",
+      "origen": "detectionlab",
+      "sigma_id": "115a874a-4941-5c4c-89fc-5c02eb47b43a",
+      "splunk": "DL - Ejecucion remota tipo PsExec",
+      "tacticas": [
+        "execution",
+        "lateral-movement"
+      ],
+      "tecnicas": [
+        "T1569.002"
+      ],
+      "tipo": "sigma",
+      "titulo": "Ejecucion remota tipo PsExec",
+      "titulos": [
+        "Ejecucion remota tipo PsExec"
+      ],
+      "wazuh_ids": [
+        "101196",
+        "101197"
+      ]
+    },
+    {
+      "clave": "dl:soc_ad_009_wmi_winrm_remoto",
+      "familia": "ad",
+      "fichero": "rules/windows/soc_ad_009_wmi_winrm_remoto.yml",
+      "logsource": "windows/process_creation",
+      "nivel": "high",
+      "origen": "detectionlab",
+      "sigma_id": "d100a784-f138-5e0b-a961-f39fcf91a366",
+      "splunk": "DL - Ejecucion remota por WMI o WinRM",
+      "tacticas": [
+        "execution",
+        "lateral-movement"
+      ],
+      "tecnicas": [
+        "T1021.006",
+        "T1047"
+      ],
+      "tipo": "sigma",
+      "titulo": "Ejecucion remota por WMI o WinRM",
+      "titulos": [
+        "Ejecucion remota por WMI o WinRM"
+      ],
+      "wazuh_ids": [
+        "101198"
+      ]
+    },
+    {
+      "clave": "dl:soc_ad_010_abuso_gpo",
+      "familia": "ad",
+      "fichero": "rules/windows/soc_ad_010_abuso_gpo.yml",
+      "logsource": "windows/process_creation",
+      "nivel": "high",
+      "origen": "detectionlab",
+      "sigma_id": "b79d32d8-b72a-5ae0-ad98-f6e745e568db",
+      "splunk": "DL - Modificacion sospechosa de directiva de grupo",
+      "tacticas": [
+        "defense-evasion",
+        "privilege-escalation"
+      ],
+      "tecnicas": [
+        "T1484.001"
+      ],
+      "tipo": "sigma",
+      "titulo": "Modificacion sospechosa de directiva de grupo",
+      "titulos": [
+        "Modificacion sospechosa de directiva de grupo"
+      ],
+      "wazuh_ids": [
+        "101199",
+        "101200",
+        "101201"
+      ]
+    },
+    {
+      "clave": "dl:soc_ad_011_cuenta_equipo_creada",
+      "familia": "ad",
+      "fichero": "rules/windows/soc_ad_011_cuenta_equipo_creada.yml",
+      "logsource": "windows/security",
+      "nivel": "medium",
+      "origen": "detectionlab",
+      "sigma_id": "6d07e08b-7e4c-5a6f-8d27-3717e0ea2338",
+      "splunk": "DL - Cuenta de equipo creada por un usuario no administrador",
+      "tacticas": [
+        "persistence",
+        "privilege-escalation"
+      ],
+      "tecnicas": [
+        "T1136.002"
+      ],
+      "tipo": "sigma",
+      "titulo": "Cuenta de equipo creada por un usuario no administrador",
+      "titulos": [
+        "Cuenta de equipo creada por un usuario no administrador"
+      ],
+      "wazuh_ids": [
+        "101202"
+      ]
+    },
+    {
+      "clave": "dl:soc_ad_012_abuso_adcs",
+      "familia": "ad",
+      "fichero": "rules/windows/soc_ad_012_abuso_adcs.yml",
+      "logsource": "windows/process_creation",
+      "nivel": "critical",
+      "origen": "detectionlab",
+      "sigma_id": "6197f868-992a-5ff7-a3bb-9fd7b94eaf75",
+      "splunk": "DL - Abuso de servicios de certificados de Active Directory",
+      "tacticas": [
+        "credential-access",
+        "privilege-escalation"
+      ],
+      "tecnicas": [
+        "T1649"
+      ],
+      "tipo": "sigma",
+      "titulo": "Abuso de servicios de certificados de Active Directory",
+      "titulos": [
+        "Abuso de servicios de certificados de Active Directory"
+      ],
+      "wazuh_ids": [
+        "101203",
+        "101204",
+        "101205"
+      ]
+    },
+    {
+      "clave": "dl:soc_cld_001_consentimiento_oauth",
+      "familia": "cloud",
+      "fichero": "rules/cloud/soc_cld_001_consentimiento_oauth.yml",
+      "logsource": "azure/auditlogs",
+      "nivel": "high",
+      "origen": "detectionlab",
+      "sigma_id": "95f7a7fa-56a0-5b5e-9dca-02cbde4b8404",
+      "splunk": "DL - Consentimiento concedido a una aplicacion no verificada",
+      "tacticas": [
+        "credential-access",
+        "persistence"
+      ],
+      "tecnicas": [
+        "T1550.001"
+      ],
+      "tipo": "sigma",
+      "titulo": "Consentimiento concedido a una aplicacion no verificada",
+      "titulos": [
+        "Consentimiento concedido a una aplicacion no verificada"
+      ],
+      "wazuh_ids": [
+        "101000"
+      ]
+    },
+    {
+      "clave": "dl:soc_cld_002_metodo_mfa_registrado",
+      "familia": "cloud",
+      "fichero": "rules/cloud/soc_cld_002_metodo_mfa_registrado.yml",
+      "logsource": "azure/auditlogs",
+      "nivel": "medium",
+      "origen": "detectionlab",
+      "sigma_id": "6bd3a056-bb2a-5da6-9e88-2ed2cfbc375f",
+      "splunk": "DL - Metodo MFA registrado tras un inicio de sesion de riesgo",
+      "tacticas": [
+        "persistence"
+      ],
+      "tecnicas": [
+        "T1098.005"
+      ],
+      "tipo": "sigma",
+      "titulo": "Metodo MFA registrado tras un inicio de sesion de riesgo",
+      "titulos": [
+        "Metodo MFA registrado tras un inicio de sesion de riesgo"
+      ],
+      "wazuh_ids": [
+        "101001"
+      ]
+    },
+    {
+      "clave": "dl:soc_cld_003_password_spraying",
+      "familia": "cloud",
+      "fichero": "rules/cloud/soc_cld_003_password_spraying.yml",
+      "logsource": "azure/signinlogs",
+      "nivel": "high",
+      "origen": "detectionlab",
+      "sigma_id": "69702e46-a05c-5f88-9936-3f46fd5fbcd0",
+      "splunk": "DL - Fallo de autenticacion en Entra ID por credencial invalida",
+      "tacticas": [
+        "credential-access"
+      ],
+      "tecnicas": [
+        "T1110.003"
+      ],
+      "tipo": "sigma_correlacion",
+      "titulo": "Password spraying contra Entra ID",
+      "titulos": [
+        "Fallo de autenticacion en Entra ID por credencial invalida",
+        "Password spraying contra Entra ID"
+      ],
+      "wazuh_ids": [
+        "101002"
+      ]
+    },
+    {
+      "clave": "dl:soc_cld_004_token_robado",
+      "familia": "cloud",
+      "fichero": "rules/cloud/soc_cld_004_token_robado.yml",
+      "logsource": "azure/signinlogs",
+      "nivel": "high",
+      "origen": "detectionlab",
+      "sigma_id": "30a53297-0c05-5e6a-ba72-4d68737f7878",
+      "splunk": "DL - Inicio de sesion correcto en Entra ID",
+      "tacticas": [
+        "credential-access",
+        "defense-evasion"
+      ],
+      "tecnicas": [
+        "T1539"
+      ],
+      "tipo": "sigma_correlacion",
+      "titulo": "Reutilizacion de sesion desde redes distintas",
+      "titulos": [
+        "Inicio de sesion correcto en Entra ID",
+        "Reutilizacion de sesion desde redes distintas"
+      ],
+      "wazuh_ids": [
+        "101003"
+      ]
+    },
+    {
+      "clave": "dl:soc_cld_005_rol_privilegiado",
+      "familia": "cloud",
+      "fichero": "rules/cloud/soc_cld_005_rol_privilegiado.yml",
+      "logsource": "azure/auditlogs",
+      "nivel": "high",
+      "origen": "detectionlab",
+      "sigma_id": "908dd089-7e8f-5b57-a6dc-6a877ac8b66b",
+      "splunk": "DL - Alta en un rol privilegiado de Entra ID",
+      "tacticas": [
+        "persistence",
+        "privilege-escalation"
+      ],
+      "tecnicas": [
+        "T1098.003"
+      ],
+      "tipo": "sigma",
+      "titulo": "Alta en un rol privilegiado de Entra ID",
+      "titulos": [
+        "Alta en un rol privilegiado de Entra ID"
+      ],
+      "wazuh_ids": [
+        "101004"
+      ]
+    },
+    {
+      "clave": "dl:soc_cld_006_acceso_condicional",
+      "familia": "cloud",
+      "fichero": "rules/cloud/soc_cld_006_acceso_condicional.yml",
+      "logsource": "azure/auditlogs",
+      "nivel": "high",
+      "origen": "detectionlab",
+      "sigma_id": "b8b523ce-0a01-508a-be5d-7b83fe72c728",
+      "splunk": "DL - Politica de acceso condicional modificada o deshabilitada",
+      "tacticas": [
+        "defense-evasion",
+        "persistence"
+      ],
+      "tecnicas": [
+        "T1556.009"
+      ],
+      "tipo": "sigma",
+      "titulo": "Politica de acceso condicional modificada o deshabilitada",
+      "titulos": [
+        "Politica de acceso condicional modificada o deshabilitada"
+      ],
+      "wazuh_ids": [
+        "101005"
+      ]
+    },
+    {
+      "clave": "dl:soc_cld_007_credencial_service_principal",
+      "familia": "cloud",
+      "fichero": "rules/cloud/soc_cld_007_credencial_service_principal.yml",
+      "logsource": "azure/auditlogs",
+      "nivel": "high",
+      "origen": "detectionlab",
+      "sigma_id": "da193677-3359-5252-bcd8-9f6063c42b91",
+      "splunk": "DL - Credencial anadida a una aplicacion o service principal",
+      "tacticas": [
+        "persistence"
+      ],
+      "tecnicas": [
+        "T1098.001"
+      ],
+      "tipo": "sigma",
+      "titulo": "Credencial anadida a una aplicacion o service principal",
+      "titulos": [
+        "Credencial anadida a una aplicacion o service principal"
+      ],
+      "wazuh_ids": [
+        "101006"
+      ]
+    },
+    {
+      "clave": "dl:soc_cld_008_origen_anonimizado",
+      "familia": "cloud",
+      "fichero": "rules/cloud/soc_cld_008_origen_anonimizado.yml",
+      "logsource": "azure/signinlogs",
+      "nivel": "high",
+      "origen": "detectionlab",
+      "sigma_id": "91c66a9f-76c5-5135-80b8-0c98c3d7518c",
+      "splunk": "DL - Inicio de sesion desde una red de anonimizacion",
+      "tacticas": [
+        "command-and-control",
+        "defense-evasion"
+      ],
+      "tecnicas": [
+        "T1090.003"
+      ],
+      "tipo": "sigma",
+      "titulo": "Inicio de sesion desde una red de anonimizacion",
+      "titulos": [
+        "Inicio de sesion desde una red de anonimizacion"
+      ],
+      "wazuh_ids": [
+        "101007"
+      ]
+    },
+    {
+      "clave": "dl:soc_cld_009_dispositivo_no_conforme",
+      "familia": "cloud",
+      "fichero": "rules/cloud/soc_cld_009_dispositivo_no_conforme.yml",
+      "logsource": "azure/signinlogs",
+      "nivel": "medium",
+      "origen": "detectionlab",
+      "sigma_id": "f19d764c-d4f0-5a0b-a678-e9e17bc7843c",
+      "splunk": "DL - Dispositivo no conforme accediendo a un recurso corporativo",
+      "tacticas": [
+        "initial-access"
+      ],
+      "tecnicas": [
+        "T1078.004"
+      ],
+      "tipo": "sigma",
+      "titulo": "Dispositivo no conforme accediendo a un recurso corporativo",
+      "titulos": [
+        "Dispositivo no conforme accediendo a un recurso corporativo"
+      ],
+      "wazuh_ids": []
+    },
+    {
+      "clave": "dl:soc_cld_010_saas_no_aprobado",
+      "familia": "cloud",
+      "fichero": "rules/cloud/soc_cld_010_saas_no_aprobado.yml",
+      "logsource": "netskope/alerts",
+      "nivel": "medium",
+      "origen": "detectionlab",
+      "sigma_id": "8a846cef-b630-5bf6-b72b-345b927c6188",
+      "splunk": "DL - Subida de datos a un servicio SaaS no aprobado",
+      "tacticas": [
+        "exfiltration"
+      ],
+      "tecnicas": [
+        "T1567.002"
+      ],
+      "tipo": "sigma",
+      "titulo": "Subida de datos a un servicio SaaS no aprobado",
+      "titulos": [
+        "Subida de datos a un servicio SaaS no aprobado"
+      ],
+      "wazuh_ids": [
+        "101008"
+      ]
+    },
+    {
+      "clave": "dl:soc_edr_001_volcado_lsass",
+      "familia": "endpoint",
+      "fichero": "rules/windows/soc_edr_001_volcado_lsass.yml",
+      "logsource": "windows/process_creation",
+      "nivel": "critical",
+      "origen": "detectionlab",
+      "sigma_id": "84045599-ca95-50f1-86c8-66d8351fc0e8",
+      "splunk": "DL - Volcado de memoria de LSASS",
+      "tacticas": [
+        "credential-access"
+      ],
+      "tecnicas": [
+        "T1003.001"
+      ],
+      "tipo": "sigma",
+      "titulo": "Volcado de memoria de LSASS",
+      "titulos": [
+        "Volcado de memoria de LSASS"
+      ],
+      "wazuh_ids": [
+        "101206",
+        "101207",
+        "101208",
+        "101209"
+      ]
+    },
+    {
+      "clave": "dl:soc_edr_002_acceso_lsass_sysmon",
+      "familia": "endpoint",
+      "fichero": "rules/windows/soc_edr_002_acceso_lsass_sysmon.yml",
+      "logsource": "windows/process_access",
+      "nivel": "high",
+      "origen": "detectionlab",
+      "sigma_id": "9b92970e-32f3-52ad-8234-2649fd2a6d8b",
+      "splunk": "DL - Acceso a memoria de LSASS con permisos de lectura",
+      "tacticas": [
+        "credential-access"
+      ],
+      "tecnicas": [
+        "T1003.001"
+      ],
+      "tipo": "sigma",
+      "titulo": "Acceso a memoria de LSASS con permisos de lectura",
+      "titulos": [
+        "Acceso a memoria de LSASS con permisos de lectura"
+      ],
+      "wazuh_ids": [
+        "101210"
+      ]
+    },
+    {
+      "clave": "dl:soc_edr_003_borrado_copias_sombra",
+      "familia": "endpoint",
+      "fichero": "rules/windows/soc_edr_003_borrado_copias_sombra.yml",
+      "logsource": "windows/process_creation",
+      "nivel": "critical",
+      "origen": "detectionlab",
+      "sigma_id": "02750359-dfb4-57e1-864c-b80ef788407f",
+      "splunk": "DL - Destruccion de copias de seguridad y puntos de restauracion",
+      "tacticas": [
+        "impact"
+      ],
+      "tecnicas": [
+        "T1490"
+      ],
+      "tipo": "sigma",
+      "titulo": "Destruccion de copias de seguridad y puntos de restauracion",
+      "titulos": [
+        "Destruccion de copias de seguridad y puntos de restauracion"
+      ],
+      "wazuh_ids": [
+        "101211",
+        "101212",
+        "101213",
+        "101214",
+        "101215"
+      ]
+    },
+    {
+      "clave": "dl:soc_edr_004_defensas_deshabilitadas",
+      "familia": "endpoint",
+      "fichero": "rules/windows/soc_edr_004_defensas_deshabilitadas.yml",
+      "logsource": "windows/process_creation",
+      "nivel": "high",
+      "origen": "detectionlab",
+      "sigma_id": "36eabb0c-817b-5472-83fe-29bf4b6c4fa0",
+      "splunk": "DL - Defensas de seguridad deshabilitadas",
+      "tacticas": [
+        "defense-evasion"
+      ],
+      "tecnicas": [
+        "T1070.001",
+        "T1562.001"
+      ],
+      "tipo": "sigma",
+      "titulo": "Defensas de seguridad deshabilitadas",
+      "titulos": [
+        "Defensas de seguridad deshabilitadas"
+      ],
+      "wazuh_ids": [
+        "101216",
+        "101217",
+        "101218",
+        "101219"
+      ]
+    },
+    {
+      "clave": "dl:soc_edr_005_lolbins_descarga",
+      "familia": "endpoint",
+      "fichero": "rules/windows/soc_edr_005_lolbins_descarga.yml",
+      "logsource": "windows/process_creation",
+      "nivel": "high",
+      "origen": "detectionlab",
+      "sigma_id": "2614c89b-16c3-5096-8ec8-dad99e3669f7",
+      "splunk": "DL - LOLBin usado para descargar y ejecutar",
+      "tacticas": [
+        "command-and-control",
+        "defense-evasion"
+      ],
+      "tecnicas": [
+        "T1105",
+        "T1140",
+        "T1197",
+        "T1218",
+        "T1218.005",
+        "T1218.010"
+      ],
+      "tipo": "sigma",
+      "titulo": "LOLBin usado para descargar y ejecutar",
+      "titulos": [
+        "LOLBin usado para descargar y ejecutar"
+      ],
+      "wazuh_ids": [
+        "101220",
+        "101221",
+        "101222",
+        "101223",
+        "101224"
+      ]
+    },
+    {
+      "clave": "dl:soc_edr_006_powershell_ofuscado",
+      "familia": "endpoint",
+      "fichero": "rules/windows/soc_edr_006_powershell_ofuscado.yml",
+      "logsource": "windows/process_creation",
+      "nivel": "high",
+      "origen": "detectionlab",
+      "sigma_id": "42d67036-72b0-52b3-a8be-d59d6f24fcd8",
+      "splunk": "DL - PowerShell codificado u ofuscado",
+      "tacticas": [
+        "defense-evasion",
+        "execution"
+      ],
+      "tecnicas": [
+        "T1027",
+        "T1059.001"
+      ],
+      "tipo": "sigma",
+      "titulo": "PowerShell codificado u ofuscado",
+      "titulos": [
+        "PowerShell codificado u ofuscado"
+      ],
+      "wazuh_ids": [
+        "101225"
+      ]
+    },
+    {
+      "clave": "dl:soc_edr_007_cifrado_masivo",
+      "familia": "endpoint",
+      "fichero": "rules/windows/soc_edr_007_cifrado_masivo.yml",
+      "logsource": "windows/file_event",
+      "nivel": "critical",
+      "origen": "detectionlab",
+      "sigma_id": "2423a95e-56a2-53e3-8db6-b6326db26eeb",
+      "splunk": "DL - Cifrado masivo de ficheros por ransomware",
+      "tacticas": [
+        "impact"
+      ],
+      "tecnicas": [
+        "T1486"
+      ],
+      "tipo": "sigma",
+      "titulo": "Cifrado masivo de ficheros por ransomware",
+      "titulos": [
+        "Cifrado masivo de ficheros por ransomware"
+      ],
+      "wazuh_ids": [
+        "101226",
+        "101227"
+      ]
+    },
+    {
+      "clave": "dl:soc_edr_008_persistencia_tarea",
+      "familia": "endpoint",
+      "fichero": "rules/windows/soc_edr_008_persistencia_tarea.yml",
+      "logsource": "windows/process_creation",
+      "nivel": "high",
+      "origen": "detectionlab",
+      "sigma_id": "099c1cf5-2990-5ab5-ba59-7ebbb0aaf70b",
+      "splunk": "DL - Tarea programada sospechosa",
+      "tacticas": [
+        "execution",
+        "persistence"
+      ],
+      "tecnicas": [
+        "T1053.005"
+      ],
+      "tipo": "sigma",
+      "titulo": "Tarea programada sospechosa",
+      "titulos": [
+        "Tarea programada sospechosa"
+      ],
+      "wazuh_ids": [
+        "101228",
+        "101229"
+      ]
+    },
+    {
+      "clave": "dl:soc_edr_009_persistencia_registro",
+      "familia": "endpoint",
+      "fichero": "rules/windows/soc_edr_009_persistencia_registro.yml",
+      "logsource": "windows/registry_event",
+      "nivel": "high",
+      "origen": "detectionlab",
+      "sigma_id": "399fddea-b0d4-5580-9016-a906e2a5f1e2",
+      "splunk": "DL - Persistencia por claves de arranque del registro",
+      "tacticas": [
+        "persistence",
+        "privilege-escalation"
+      ],
+      "tecnicas": [
+        "T1547.001"
+      ],
+      "tipo": "sigma",
+      "titulo": "Persistencia por claves de arranque del registro",
+      "titulos": [
+        "Persistencia por claves de arranque del registro"
+      ],
+      "wazuh_ids": [
+        "101230"
+      ]
+    },
+    {
+      "clave": "dl:soc_edr_010_inyeccion_procesos",
+      "familia": "endpoint",
+      "fichero": "rules/windows/soc_edr_010_inyeccion_procesos.yml",
+      "logsource": "windows/create_remote_thread",
+      "nivel": "high",
+      "origen": "detectionlab",
+      "sigma_id": "21ae1a6a-2bbf-5c18-a201-da9a767e785a",
+      "splunk": "DL - Inyeccion de codigo en proceso remoto",
+      "tacticas": [
+        "defense-evasion",
+        "privilege-escalation"
+      ],
+      "tecnicas": [
+        "T1055"
+      ],
+      "tipo": "sigma",
+      "titulo": "Inyeccion de codigo en proceso remoto",
+      "titulos": [
+        "Inyeccion de codigo en proceso remoto"
+      ],
+      "wazuh_ids": [
+        "101231",
+        "101232"
+      ]
+    },
+    {
+      "clave": "dl:soc_edr_011_pipe_c2",
+      "familia": "endpoint",
+      "fichero": "rules/windows/soc_edr_011_pipe_c2.yml",
+      "logsource": "windows/pipe_created",
+      "nivel": "critical",
+      "origen": "detectionlab",
+      "sigma_id": "df529c1f-f89b-5dc9-bd86-97f23cf045d6",
+      "splunk": "DL - Named pipe caracteristico de framework de C2",
+      "tacticas": [
+        "command-and-control",
+        "defense-evasion"
+      ],
+      "tecnicas": [
+        "T1071"
+      ],
+      "tipo": "sigma",
+      "titulo": "Named pipe caracteristico de framework de C2",
+      "titulos": [
+        "Named pipe caracteristico de framework de C2"
+      ],
+      "wazuh_ids": [
+        "101233"
+      ]
+    },
+    {
+      "clave": "dl:soc_edr_012_ejecucion_desde_temp",
+      "familia": "endpoint",
+      "fichero": "rules/windows/soc_edr_012_ejecucion_desde_temp.yml",
+      "logsource": "windows/process_creation",
+      "nivel": "medium",
+      "origen": "detectionlab",
+      "sigma_id": "53189db7-b253-5519-ab36-0d8698ea9110",
+      "splunk": "DL - Ejecucion de binario desde una ruta de escritura de usuario",
+      "tacticas": [
+        "execution"
+      ],
+      "tecnicas": [
+        "T1204.002"
+      ],
+      "tipo": "sigma",
+      "titulo": "Ejecucion de binario desde una ruta de escritura de usuario",
+      "titulos": [
+        "Ejecucion de binario desde una ruta de escritura de usuario"
+      ],
+      "wazuh_ids": [
+        "101234"
+      ]
+    },
+    {
+      "clave": "dl:soc_mail_001_dominio_reciente",
+      "familia": "correo",
+      "fichero": "rules/correo/soc_mail_001_dominio_reciente.yml",
+      "logsource": "proofpoint/tap",
+      "nivel": "medium",
+      "origen": "detectionlab",
+      "sigma_id": "33dde3fb-2659-5074-b1bc-eda0c47bdb34",
+      "splunk": "DL - Correo desde un dominio recien registrado",
+      "tacticas": [
+        "initial-access"
+      ],
+      "tecnicas": [
+        "T1566.002"
+      ],
+      "tipo": "sigma",
+      "titulo": "Correo desde un dominio recien registrado",
+      "titulos": [
+        "Correo desde un dominio recien registrado"
+      ],
+      "wazuh_ids": []
+    },
+    {
+      "clave": "dl:soc_mail_002_suplantacion_directivo",
+      "familia": "correo",
+      "fichero": "rules/correo/soc_mail_002_suplantacion_directivo.yml",
+      "logsource": "proofpoint/tap",
+      "nivel": "high",
+      "origen": "detectionlab",
+      "sigma_id": "e4883bfb-93b7-5cbb-9183-205ac29f5754",
+      "splunk": "DL - Suplantacion de directivo en el nombre para mostrar",
+      "tacticas": [
+        "initial-access"
+      ],
+      "tecnicas": [
+        "T1534"
+      ],
+      "tipo": "sigma",
+      "titulo": "Suplantacion de directivo en el nombre para mostrar",
+      "titulos": [
+        "Suplantacion de directivo en el nombre para mostrar"
+      ],
+      "wazuh_ids": [
+        "101021"
+      ]
+    },
+    {
+      "clave": "dl:soc_mail_003_fallo_dmarc",
+      "familia": "correo",
+      "fichero": "rules/correo/soc_mail_003_fallo_dmarc.yml",
+      "logsource": "proofpoint/tap",
+      "nivel": "high",
+      "origen": "detectionlab",
+      "sigma_id": "d34e302f-f3c2-58f3-9339-166a0ce20690",
+      "splunk": "DL - Fallo de autenticacion de correo en el dominio propio",
+      "tacticas": [
+        "initial-access"
+      ],
+      "tecnicas": [
+        "T1566.002"
+      ],
+      "tipo": "sigma",
+      "titulo": "Fallo de autenticacion de correo en el dominio propio",
+      "titulos": [
+        "Fallo de autenticacion de correo en el dominio propio"
+      ],
+      "wazuh_ids": [
+        "101022",
+        "101023"
+      ]
+    },
+    {
+      "clave": "dl:soc_mail_004_adjunto_sospechoso",
+      "familia": "correo",
+      "fichero": "rules/correo/soc_mail_004_adjunto_sospechoso.yml",
+      "logsource": "proofpoint/tap",
+      "nivel": "high",
+      "origen": "detectionlab",
+      "sigma_id": "b8df3c83-f6c3-55a1-89cb-9123ffd68050",
+      "splunk": "DL - Adjunto con formato usado para entrega de malware",
+      "tacticas": [
+        "initial-access"
+      ],
+      "tecnicas": [
+        "T1566.001"
+      ],
+      "tipo": "sigma",
+      "titulo": "Adjunto con formato usado para entrega de malware",
+      "titulos": [
+        "Adjunto con formato usado para entrega de malware"
+      ],
+      "wazuh_ids": [
+        "101024",
+        "101025",
+        "101026"
+      ]
+    },
+    {
+      "clave": "dl:soc_mail_005_url_pulsada",
+      "familia": "correo",
+      "fichero": "rules/correo/soc_mail_005_url_pulsada.yml",
+      "logsource": "proofpoint/tap",
+      "nivel": "high",
+      "origen": "detectionlab",
+      "sigma_id": "25261569-4979-5ff2-aa56-17fedcd41634",
+      "splunk": "DL - Usuario pulsa una URL de phishing bloqueada o permitida",
+      "tacticas": [
+        "initial-access"
+      ],
+      "tecnicas": [
+        "T1566.002"
+      ],
+      "tipo": "sigma",
+      "titulo": "Usuario pulsa una URL de phishing bloqueada o permitida",
+      "titulos": [
+        "Usuario pulsa una URL de phishing bloqueada o permitida"
+      ],
+      "wazuh_ids": [
+        "101027"
+      ]
+    },
+    {
+      "clave": "dl:soc_mail_006_regla_buzon_externa",
+      "familia": "correo",
+      "fichero": "rules/correo/soc_mail_006_regla_buzon_externa.yml",
+      "logsource": "m365/exchange",
+      "nivel": "high",
+      "origen": "detectionlab",
+      "sigma_id": "bcf30b1b-b97c-5250-87b0-37f674d7971d",
+      "splunk": "DL - Regla de buzon con reenvio externo creada",
+      "tacticas": [
+        "collection",
+        "defense-evasion"
+      ],
+      "tecnicas": [
+        "T1114.003",
+        "T1564.008"
+      ],
+      "tipo": "sigma",
+      "titulo": "Regla de buzon con reenvio externo creada",
+      "titulos": [
+        "Regla de buzon con reenvio externo creada"
+      ],
+      "wazuh_ids": [
+        "101028"
+      ]
+    },
+    {
+      "clave": "dl:soc_mail_007_envio_masivo_interno",
+      "familia": "correo",
+      "fichero": "rules/correo/soc_mail_007_envio_masivo_interno.yml",
+      "logsource": "proofpoint/tap",
+      "nivel": "medium",
+      "origen": "detectionlab",
+      "sigma_id": "fb867dcb-2925-5283-aa61-0acbfe88033f",
+      "splunk": "DL - Correo entregado desde una cuenta interna",
+      "tacticas": [
+        "lateral-movement"
+      ],
+      "tecnicas": [
+        "T1534"
+      ],
+      "tipo": "sigma_correlacion",
+      "titulo": "Envio masivo desde una cuenta interna comprometida",
+      "titulos": [
+        "Correo entregado desde una cuenta interna",
+        "Envio masivo desde una cuenta interna comprometida"
+      ],
+      "wazuh_ids": [
+        "101029"
+      ]
+    },
+    {
+      "clave": "dl:soc_mail_008_html_smuggling",
+      "familia": "correo",
+      "fichero": "rules/correo/soc_mail_008_html_smuggling.yml",
+      "logsource": "proofpoint/tap",
+      "nivel": "high",
+      "origen": "detectionlab",
+      "sigma_id": "79ece427-9b7c-548f-a10e-679cd569fcae",
+      "splunk": "DL - HTML smuggling en adjunto",
+      "tacticas": [
+        "defense-evasion",
+        "initial-access"
+      ],
+      "tecnicas": [
+        "T1027.006"
+      ],
+      "tipo": "sigma",
+      "titulo": "HTML smuggling en adjunto",
+      "titulos": [
+        "HTML smuggling en adjunto"
+      ],
+      "wazuh_ids": [
+        "101030"
+      ]
+    },
+    {
+      "clave": "dl:soc_net_001_beaconing",
+      "familia": "red",
+      "fichero": "rules/red/soc_net_001_beaconing.yml",
+      "logsource": "proxy",
+      "nivel": "medium",
+      "origen": "detectionlab",
+      "sigma_id": "8c852761-72ca-5d2e-80f2-27713e6f14cd",
+      "splunk": "DL - Patron de beaconing hacia un destino externo",
+      "tacticas": [
+        "command-and-control"
+      ],
+      "tecnicas": [
+        "T1071.001"
+      ],
+      "tipo": "sigma",
+      "titulo": "Patron de beaconing hacia un destino externo",
+      "titulos": [
+        "Patron de beaconing hacia un destino externo"
+      ],
+      "wazuh_ids": [
+        "101078"
+      ]
+    },
+    {
+      "clave": "dl:soc_net_002_c2_servicio_legitimo",
+      "familia": "red",
+      "fichero": "rules/red/soc_net_002_c2_servicio_legitimo.yml",
+      "logsource": "proxy",
+      "nivel": "high",
+      "origen": "detectionlab",
+      "sigma_id": "30f00c05-fe4f-53a9-8499-9b822d50df2e",
+      "splunk": "DL - Canal de mando sobre un servicio legitimo",
+      "tacticas": [
+        "command-and-control",
+        "exfiltration"
+      ],
+      "tecnicas": [
+        "T1102"
+      ],
+      "tipo": "sigma",
+      "titulo": "Canal de mando sobre un servicio legitimo",
+      "titulos": [
+        "Canal de mando sobre un servicio legitimo"
+      ],
+      "wazuh_ids": [
+        "101079",
+        "101080",
+        "101081"
+      ]
+    },
+    {
+      "clave": "dl:soc_net_003_dns_tunel",
+      "familia": "red",
+      "fichero": "rules/red/soc_net_003_dns_tunel.yml",
+      "logsource": "dns",
+      "nivel": "high",
+      "origen": "detectionlab",
+      "sigma_id": "ec15f78d-b087-5e4d-9e01-b72d72fa253d",
+      "splunk": "DL - Tunelizacion o exfiltracion por DNS",
+      "tacticas": [
+        "command-and-control",
+        "exfiltration"
+      ],
+      "tecnicas": [
+        "T1071.004"
+      ],
+      "tipo": "sigma",
+      "titulo": "Tunelizacion o exfiltracion por DNS",
+      "titulos": [
+        "Tunelizacion o exfiltracion por DNS"
+      ],
+      "wazuh_ids": [
+        "101082",
+        "101083"
+      ]
+    },
+    {
+      "clave": "dl:soc_net_005_webshell",
+      "familia": "red",
+      "fichero": "rules/red/soc_net_005_webshell.yml",
+      "logsource": "webserver",
+      "nivel": "critical",
+      "origen": "detectionlab",
+      "sigma_id": "0cf72396-00b9-5ea5-8256-25a49ba58ad2",
+      "splunk": "DL - Interaccion con webshell",
+      "tacticas": [
+        "persistence"
+      ],
+      "tecnicas": [
+        "T1505.003"
+      ],
+      "tipo": "sigma",
+      "titulo": "Interaccion con webshell",
+      "titulos": [
+        "Interaccion con webshell"
+      ],
+      "wazuh_ids": [
+        "101084"
+      ]
+    },
+    {
+      "clave": "dl:soc_net_006_exfiltracion_volumen",
+      "familia": "red",
+      "fichero": "rules/red/soc_net_006_exfiltracion_volumen.yml",
+      "logsource": "proxy",
+      "nivel": "medium",
+      "origen": "detectionlab",
+      "sigma_id": "db9eabc7-c1f0-5049-a439-c27e7eb985ab",
+      "splunk": "DL - Volumen de subida anomalo hacia el exterior",
+      "tacticas": [
+        "exfiltration"
+      ],
+      "tecnicas": [
+        "T1048"
+      ],
+      "tipo": "sigma",
+      "titulo": "Volumen de subida anomalo hacia el exterior",
+      "titulos": [
+        "Volumen de subida anomalo hacia el exterior"
+      ],
+      "wazuh_ids": [
+        "101085"
+      ]
+    },
+    {
+      "clave": "dl:web_001_inyeccion_sql",
+      "familia": "web",
+      "fichero": "rules/web/web_001_inyeccion_sql.yml",
+      "logsource": "webserver",
+      "nivel": "high",
+      "origen": "detectionlab",
+      "sigma_id": "5b946d0c-6486-51b6-86ac-a04257362d97",
+      "splunk": "DL - Inyeccion SQL en parametros de la peticion HTTP",
+      "tacticas": [
+        "initial-access"
+      ],
+      "tecnicas": [
+        "T1190"
+      ],
+      "tipo": "sigma",
+      "titulo": "Inyeccion SQL en parametros de la peticion HTTP",
+      "titulos": [
+        "Inyeccion SQL en parametros de la peticion HTTP"
+      ],
+      "wazuh_ids": [
+        "101086",
+        "101087",
+        "101088",
+        "101089"
+      ]
+    },
+    {
+      "clave": "dl:web_002_xss_reflejado",
+      "familia": "web",
+      "fichero": "rules/web/web_002_xss_reflejado.yml",
+      "logsource": "webserver",
+      "nivel": "high",
+      "origen": "detectionlab",
+      "sigma_id": "26c0385f-f87b-5461-95a6-ce33ef181491",
+      "splunk": "DL - Cross-site scripting reflejado en la peticion",
+      "tacticas": [
+        "execution",
+        "initial-access"
+      ],
+      "tecnicas": [
+        "T1059.007",
+        "T1189"
+      ],
+      "tipo": "sigma",
+      "titulo": "Cross-site scripting reflejado en la peticion",
+      "titulos": [
+        "Cross-site scripting reflejado en la peticion"
+      ],
+      "wazuh_ids": [
+        "101090",
+        "101091"
+      ]
+    },
+    {
+      "clave": "dl:web_003_salto_de_directorio",
+      "familia": "web",
+      "fichero": "rules/web/web_003_salto_de_directorio.yml",
+      "logsource": "webserver",
+      "nivel": "high",
+      "origen": "detectionlab",
+      "sigma_id": "55e75c84-7f45-56b8-8072-a0d1c6724aae",
+      "splunk": "DL - Salto de directorio hacia ficheros fuera de la raiz web",
+      "tacticas": [
+        "discovery",
+        "initial-access"
+      ],
+      "tecnicas": [
+        "T1083",
+        "T1190"
+      ],
+      "tipo": "sigma",
+      "titulo": "Salto de directorio hacia ficheros fuera de la raiz web",
+      "titulos": [
+        "Salto de directorio hacia ficheros fuera de la raiz web"
+      ],
+      "wazuh_ids": [
+        "101092",
+        "101093",
+        "101094"
+      ]
+    },
+    {
+      "clave": "dl:web_004_ssrf_metadatos_nube",
+      "familia": "web",
+      "fichero": "rules/web/web_004_ssrf_metadatos_nube.yml",
+      "logsource": "webserver",
+      "nivel": "critical",
+      "origen": "detectionlab",
+      "sigma_id": "14f67b94-16ff-58af-93ce-db950441a7e8",
+      "splunk": "DL - Peticion falsificada desde el servidor hacia metadatos de nube",
+      "tacticas": [
+        "credential-access",
+        "initial-access"
+      ],
+      "tecnicas": [
+        "T1190",
+        "T1552.005"
+      ],
+      "tipo": "sigma",
+      "titulo": "Peticion falsificada desde el servidor hacia metadatos de nube",
+      "titulos": [
+        "Peticion falsificada desde el servidor hacia metadatos de nube"
+      ],
+      "wazuh_ids": [
+        "101095",
+        "101096",
+        "101097",
+        "101098"
+      ]
+    },
+    {
+      "clave": "dl:web_005_deserializacion_insegura",
+      "familia": "web",
+      "fichero": "rules/web/web_005_deserializacion_insegura.yml",
+      "logsource": "webserver",
+      "nivel": "critical",
+      "origen": "detectionlab",
+      "sigma_id": "181d03b7-775f-5078-8b13-1d374ecf7bf7",
+      "splunk": "DL - Deserializacion insegura de datos controlados por el cliente",
+      "tacticas": [
+        "initial-access"
+      ],
+      "tecnicas": [
+        "T1190"
+      ],
+      "tipo": "sigma",
+      "titulo": "Deserializacion insegura de datos controlados por el cliente",
+      "titulos": [
+        "Deserializacion insegura de datos controlados por el cliente"
+      ],
+      "wazuh_ids": [
+        "101099",
+        "101100",
+        "101101",
+        "101102",
+        "101103",
+        "101104"
+      ]
+    },
+    {
+      "clave": "dl:web_006_subida_fichero_ejecutable",
+      "familia": "web",
+      "fichero": "rules/web/web_006_subida_fichero_ejecutable.yml",
+      "logsource": "webserver",
+      "nivel": "high",
+      "origen": "detectionlab",
+      "sigma_id": "6aa670b8-fbb8-5a7a-bef6-7786f81b33e8",
+      "splunk": "DL - Subida de fichero con extension ejecutable al directorio publicado",
+      "tacticas": [
+        "initial-access",
+        "persistence"
+      ],
+      "tecnicas": [
+        "T1190",
+        "T1505.003"
+      ],
+      "tipo": "sigma",
+      "titulo": "Subida de fichero con extension ejecutable al directorio publicado",
+      "titulos": [
+        "Subida de fichero con extension ejecutable al directorio publicado"
+      ],
+      "wazuh_ids": [
+        "101105",
+        "101106",
+        "101107"
+      ]
+    },
+    {
+      "clave": "dl:web_007_inyeccion_de_comandos",
+      "familia": "web",
+      "fichero": "rules/web/web_007_inyeccion_de_comandos.yml",
+      "logsource": "webserver",
+      "nivel": "high",
+      "origen": "detectionlab",
+      "sigma_id": "b727143e-e54b-5f68-b0f1-3eaedab083a4",
+      "splunk": "DL - Inyeccion de comandos del sistema operativo en un parametro",
+      "tacticas": [
+        "execution",
+        "initial-access"
+      ],
+      "tecnicas": [
+        "T1059.004",
+        "T1190"
+      ],
+      "tipo": "sigma",
+      "titulo": "Inyeccion de comandos del sistema operativo en un parametro",
+      "titulos": [
+        "Inyeccion de comandos del sistema operativo en un parametro"
+      ],
+      "wazuh_ids": [
+        "101108"
+      ]
+    },
+    {
+      "clave": "dl:web_008_inyeccion_jndi_log4shell",
+      "familia": "web",
+      "fichero": "rules/web/web_008_inyeccion_jndi_log4shell.yml",
+      "logsource": "webserver",
+      "nivel": "critical",
+      "origen": "detectionlab",
+      "sigma_id": "05f15af6-525d-5749-b494-4e52e9eea166",
+      "splunk": "DL - Inyeccion JNDI en peticion HTTP tipo Log4Shell",
+      "tacticas": [
+        "execution",
+        "initial-access"
+      ],
+      "tecnicas": [
+        "T1059",
+        "T1190"
+      ],
+      "tipo": "sigma",
+      "titulo": "Inyeccion JNDI en peticion HTTP tipo Log4Shell",
+      "titulos": [
+        "Inyeccion JNDI en peticion HTTP tipo Log4Shell"
+      ],
+      "wazuh_ids": [
+        "101109",
+        "101110",
+        "101111"
+      ]
+    },
+    {
+      "clave": "dl:web_009_contrabando_peticiones",
+      "familia": "web",
+      "fichero": "rules/web/web_009_contrabando_peticiones.yml",
+      "logsource": "webserver",
+      "nivel": "high",
+      "origen": "detectionlab",
+      "sigma_id": "de82f1ac-3617-5ae8-89c8-36ac8513f35c",
+      "splunk": "DL - Contrabando de peticiones HTTP entre proxy y servidor final",
+      "tacticas": [
+        "initial-access"
+      ],
+      "tecnicas": [
+        "T1190"
+      ],
+      "tipo": "sigma",
+      "titulo": "Contrabando de peticiones HTTP entre proxy y servidor final",
+      "titulos": [
+        "Contrabando de peticiones HTTP entre proxy y servidor final"
+      ],
+      "wazuh_ids": [
+        "101112",
+        "101113",
+        "101114"
+      ]
+    },
+    {
+      "clave": "dl:web_010_escaneo_automatizado",
+      "familia": "web",
+      "fichero": "rules/web/web_010_escaneo_automatizado.yml",
+      "logsource": "webserver",
+      "nivel": "medium",
+      "origen": "detectionlab",
+      "sigma_id": "78f6cdf2-999e-5685-ba49-7dbd83b1b127",
+      "splunk": "DL - Escaneo automatizado del servidor web por herramienta conocida",
+      "tacticas": [
+        "reconnaissance"
+      ],
+      "tecnicas": [
+        "T1595.002",
+        "T1595.003"
+      ],
+      "tipo": "sigma",
+      "titulo": "Escaneo automatizado del servidor web por herramienta conocida",
+      "titulos": [
+        "Escaneo automatizado del servidor web por herramienta conocida"
+      ],
+      "wazuh_ids": [
+        "101115",
+        "101116"
+      ]
+    },
+    {
+      "clave": "dl:web_011_abuso_de_token_jwt",
+      "familia": "web",
+      "fichero": "rules/web/web_011_abuso_de_token_jwt.yml",
+      "logsource": "webserver",
+      "nivel": "high",
+      "origen": "detectionlab",
+      "sigma_id": "38ee5d40-5490-515d-970a-41e86baeee8b",
+      "splunk": "DL - Abuso de token JWT con algoritmo nulo o cabecera manipulada",
+      "tacticas": [
+        "credential-access",
+        "defense-evasion",
+        "lateral-movement"
+      ],
+      "tecnicas": [
+        "T1550.001",
+        "T1606"
+      ],
+      "tipo": "sigma",
+      "titulo": "Abuso de token JWT con algoritmo nulo o cabecera manipulada",
+      "titulos": [
+        "Abuso de token JWT con algoritmo nulo o cabecera manipulada"
+      ],
+      "wazuh_ids": [
+        "101117",
+        "101118",
+        "101119",
+        "101120"
+      ]
+    },
+    {
+      "clave": "dl:web_012_shell_tras_explotacion",
+      "familia": "web",
+      "fichero": "rules/web/web_012_shell_tras_explotacion.yml",
+      "logsource": "linux/process_creation",
+      "nivel": "critical",
+      "origen": "detectionlab",
+      "sigma_id": "27b637ca-3100-593b-966f-e3a57d366e3b",
+      "splunk": "DL - Shell lanzada por el proceso del servidor web tras explotacion",
+      "tacticas": [
+        "execution",
+        "initial-access",
+        "persistence"
+      ],
+      "tecnicas": [
+        "T1059.004",
+        "T1190",
+        "T1505.003"
+      ],
+      "tipo": "sigma",
+      "titulo": "Shell lanzada por el proceso del servidor web tras explotacion",
+      "titulos": [
+        "Shell lanzada por el proceso del servidor web tras explotacion"
+      ],
+      "wazuh_ids": [
+        "101121",
+        "101122",
+        "101123"
+      ]
+    },
+    {
+      "clave": "dl:web_013_inyeccion_plantillas_ssti",
+      "familia": "web",
+      "fichero": "rules/web/web_013_inyeccion_plantillas_ssti.yml",
+      "logsource": "webserver",
+      "nivel": "critical",
+      "origen": "detectionlab",
+      "sigma_id": "f3fa9ef7-36af-5959-a8c6-1ea48f8ab0bb",
+      "splunk": "DL - Inyeccion en plantillas del lado servidor",
+      "tacticas": [
+        "execution",
+        "initial-access"
+      ],
+      "tecnicas": [
+        "T1190"
+      ],
+      "tipo": "sigma",
+      "titulo": "Inyeccion en plantillas del lado servidor",
+      "titulos": [
+        "Inyeccion en plantillas del lado servidor"
+      ],
+      "wazuh_ids": [
+        "101124",
+        "101125",
+        "101126",
+        "101127"
+      ]
+    },
+    {
+      "clave": "dl:xdr_001_desinstalacion_sensor_edr",
+      "familia": "xdr",
+      "fichero": "rules/xdr/xdr_001_desinstalacion_sensor_edr.yml",
+      "logsource": "windows/process_creation",
+      "nivel": "critical",
+      "origen": "detectionlab",
+      "sigma_id": "ecfb6cc4-b994-572b-938e-786bba873895",
+      "splunk": "DL - Desinstalacion o parada del sensor EDR",
+      "tacticas": [
+        "defense-evasion",
+        "impact"
+      ],
+      "tecnicas": [
+        "T1489",
+        "T1562.001"
+      ],
+      "tipo": "sigma",
+      "titulo": "Desinstalacion o parada del sensor EDR",
+      "titulos": [
+        "Desinstalacion o parada del sensor EDR"
+      ],
+      "wazuh_ids": [
+        "101235"
+      ]
+    },
+    {
+      "clave": "dl:xdr_002_exclusiones_antivirus",
+      "familia": "xdr",
+      "fichero": "rules/xdr/xdr_002_exclusiones_antivirus.yml",
+      "logsource": "windows/registry_event",
+      "nivel": "high",
+      "origen": "detectionlab",
+      "sigma_id": "f2911a10-3ceb-586b-ac05-7f270c3b4561",
+      "splunk": "DL - Exclusion anadida al antivirus",
+      "tacticas": [
+        "defense-evasion"
+      ],
+      "tecnicas": [
+        "T1112",
+        "T1562.001"
+      ],
+      "tipo": "sigma",
+      "titulo": "Exclusion anadida al antivirus",
+      "titulos": [
+        "Exclusion anadida al antivirus"
+      ],
+      "wazuh_ids": [
+        "101236"
+      ]
+    },
+    {
+      "clave": "dl:xdr_003_reglas_asr_desactivadas",
+      "familia": "xdr",
+      "fichero": "rules/xdr/xdr_003_reglas_asr_desactivadas.yml",
+      "logsource": "windows/process_creation",
+      "nivel": "high",
+      "origen": "detectionlab",
+      "sigma_id": "dd15d35d-deb4-58ee-89a9-da35a6b7c576",
+      "splunk": "DL - Reglas ASR desactivadas o puestas en auditoria",
+      "tacticas": [
+        "defense-evasion"
+      ],
+      "tecnicas": [
+        "T1112",
+        "T1562.001"
+      ],
+      "tipo": "sigma",
+      "titulo": "Reglas ASR desactivadas o puestas en auditoria",
+      "titulos": [
+        "Reglas ASR desactivadas o puestas en auditoria"
+      ],
+      "wazuh_ids": [
+        "101237",
+        "101238",
+        "101239"
+      ]
+    },
+    {
+      "clave": "dl:xdr_004_driver_vulnerable_byovd",
+      "familia": "xdr",
+      "fichero": "rules/xdr/xdr_004_driver_vulnerable_byovd.yml",
+      "logsource": "windows/driver_load",
+      "nivel": "critical",
+      "origen": "detectionlab",
+      "sigma_id": "aff7e57c-74cd-5ce2-a1ee-a5329b52a838",
+      "splunk": "DL - Carga de driver vulnerable conocido",
+      "tacticas": [
+        "defense-evasion",
+        "privilege-escalation"
+      ],
+      "tecnicas": [
+        "T1068",
+        "T1562.001"
+      ],
+      "tipo": "sigma",
+      "titulo": "Carga de driver vulnerable conocido",
+      "titulos": [
+        "Carga de driver vulnerable conocido"
+      ],
+      "wazuh_ids": [
+        "101240",
+        "101241"
+      ]
+    },
+    {
+      "clave": "dl:xdr_005_telemetria_etw_manipulada",
+      "familia": "xdr",
+      "fichero": "rules/xdr/xdr_005_telemetria_etw_manipulada.yml",
+      "logsource": "windows/process_creation",
+      "nivel": "high",
+      "origen": "detectionlab",
+      "sigma_id": "df839973-dc16-57d5-a385-a791c31c0cdd",
+      "splunk": "DL - Manipulacion del canal de telemetria ETW",
+      "tacticas": [
+        "defense-evasion"
+      ],
+      "tecnicas": [
+        "T1562.002",
+        "T1562.006"
+      ],
+      "tipo": "sigma",
+      "titulo": "Manipulacion del canal de telemetria ETW",
+      "titulos": [
+        "Manipulacion del canal de telemetria ETW"
+      ],
+      "wazuh_ids": [
+        "101242",
+        "101243",
+        "101244",
+        "101245",
+        "101246"
+      ]
+    },
+    {
+      "clave": "dl:xdr_006_arranque_modo_seguro",
+      "familia": "xdr",
+      "fichero": "rules/xdr/xdr_006_arranque_modo_seguro.yml",
+      "logsource": "windows/process_creation",
+      "nivel": "critical",
+      "origen": "detectionlab",
+      "sigma_id": "7e1ef1be-ea1d-528d-b861-c463a02f6d1f",
+      "splunk": "DL - Arranque en modo seguro forzado por bcdedit",
+      "tacticas": [
+        "defense-evasion"
+      ],
+      "tecnicas": [
+        "T1112",
+        "T1562.009"
+      ],
+      "tipo": "sigma",
+      "titulo": "Arranque en modo seguro forzado por bcdedit",
+      "titulos": [
+        "Arranque en modo seguro forzado por bcdedit"
+      ],
+      "wazuh_ids": [
+        "101247",
+        "101248"
+      ]
+    },
+    {
+      "clave": "dl:zta_dev_001_almacenamiento_extraible",
+      "familia": "zta",
+      "fichero": "rules/zta/zta_dev_001_almacenamiento_extraible.yml",
+      "logsource": "windows/security",
+      "nivel": "medium",
+      "origen": "detectionlab",
+      "sigma_id": "7cbc6380-a117-572b-830c-b754c0f78f4a",
+      "splunk": "DL - Montaje de almacenamiento extraible",
+      "tacticas": [
+        "exfiltration",
+        "initial-access"
+      ],
+      "tecnicas": [
+        "T1052.001",
+        "T1091"
+      ],
+      "tipo": "sigma",
+      "titulo": "Montaje de almacenamiento extraible",
+      "titulos": [
+        "Montaje de almacenamiento extraible"
+      ],
+      "wazuh_ids": [
+        "101249"
+      ]
+    },
+    {
+      "clave": "dl:zta_id_001_autenticacion_heredada",
+      "familia": "zta",
+      "fichero": "rules/zta/zta_id_001_autenticacion_heredada.yml",
+      "logsource": "azure/signinlogs",
+      "nivel": "high",
+      "origen": "detectionlab",
+      "sigma_id": "89d197a1-f243-587e-a32e-3326790b3d26",
+      "splunk": "DL - Uso de protocolo de autenticacion heredado",
+      "tacticas": [
+        "defense-evasion",
+        "initial-access"
+      ],
+      "tecnicas": [
+        "T1078.004",
+        "T1556.006"
+      ],
+      "tipo": "sigma",
+      "titulo": "Uso de protocolo de autenticacion heredado",
+      "titulos": [
+        "Uso de protocolo de autenticacion heredado"
+      ],
+      "wazuh_ids": [
+        "101250"
+      ]
+    },
+    {
+      "clave": "dl:zta_id_002_cuenta_servicio_interactiva",
+      "familia": "zta",
+      "fichero": "rules/zta/zta_id_002_cuenta_servicio_interactiva.yml",
+      "logsource": "windows/security",
+      "nivel": "high",
+      "origen": "detectionlab",
+      "sigma_id": "6fb6acc5-8ef5-526a-a9b9-2988898935b1",
+      "splunk": "DL - Cuenta de servicio con inicio de sesion interactivo",
+      "tacticas": [
+        "persistence",
+        "privilege-escalation"
+      ],
+      "tecnicas": [
+        "T1078.002"
+      ],
+      "tipo": "sigma",
+      "titulo": "Cuenta de servicio con inicio de sesion interactivo",
+      "titulos": [
+        "Cuenta de servicio con inicio de sesion interactivo"
+      ],
+      "wazuh_ids": [
+        "101251"
+      ]
+    },
+    {
+      "clave": "dl:zta_net_001_protocolo_en_claro",
+      "familia": "zta",
+      "fichero": "rules/zta/zta_net_001_protocolo_en_claro.yml",
+      "logsource": "network_connection",
+      "nivel": "medium",
+      "origen": "detectionlab",
+      "sigma_id": "047df04a-271b-59d0-af0b-69f1039cf53a",
+      "splunk": "DL - Protocolo en claro hacia un recurso que exige cifrado",
+      "tacticas": [
+        "collection",
+        "credential-access"
+      ],
+      "tecnicas": [
+        "T1040"
+      ],
+      "tipo": "sigma",
+      "titulo": "Protocolo en claro hacia un recurso que exige cifrado",
+      "titulos": [
+        "Protocolo en claro hacia un recurso que exige cifrado"
+      ],
+      "wazuh_ids": [
+        "101252"
+      ]
+    },
+    {
+      "clave": "dl:zta_sup_001_libreria_ruta_no_estandar",
+      "familia": "zta",
+      "fichero": "rules/zta/zta_sup_001_libreria_ruta_no_estandar.yml",
+      "logsource": "windows/image_load",
+      "nivel": "high",
+      "origen": "detectionlab",
+      "sigma_id": "e82ffea5-13cf-5426-80a7-c5e7f25c2e1c",
+      "splunk": "DL - Carga de libreria desde una ruta no estandar",
+      "tacticas": [
+        "defense-evasion",
+        "persistence",
+        "privilege-escalation"
+      ],
+      "tecnicas": [
+        "T1574.001",
+        "T1574.002"
+      ],
+      "tipo": "sigma",
+      "titulo": "Carga de libreria desde una ruta no estandar",
+      "titulos": [
+        "Carga de libreria desde una ruta no estandar"
+      ],
+      "wazuh_ids": [
+        "101253",
+        "101254"
+      ]
+    },
+    {
+      "clave": "dl:zta_sup_002_paquete_repositorio_no_aprobado",
+      "familia": "zta",
+      "fichero": "rules/zta/zta_sup_002_paquete_repositorio_no_aprobado.yml",
+      "logsource": "linux/process_creation",
+      "nivel": "medium",
+      "origen": "detectionlab",
+      "sigma_id": "5dd0df5c-e15a-59df-9bff-b236a7a0d6b0",
+      "splunk": "DL - Instalacion de paquete desde un repositorio no aprobado",
+      "tacticas": [
+        "initial-access"
+      ],
+      "tecnicas": [
+        "T1195.001",
+        "T1195.002"
+      ],
+      "tipo": "sigma",
+      "titulo": "Instalacion de paquete desde un repositorio no aprobado",
+      "titulos": [
+        "Instalacion de paquete desde un repositorio no aprobado"
+      ],
+      "wazuh_ids": [
+        "101255",
+        "101256"
+      ]
+    },
+    {
+      "clave": "dl:zta_sup_003_fichero_dependencias_modificado",
+      "familia": "zta",
+      "fichero": "rules/zta/zta_sup_003_fichero_dependencias_modificado.yml",
+      "logsource": "file_event",
+      "nivel": "medium",
+      "origen": "detectionlab",
+      "sigma_id": "933f7737-80c7-5bdb-8ce2-e857119ac34d",
+      "splunk": "DL - Modificacion de un fichero de dependencias o lockfile",
+      "tacticas": [
+        "initial-access",
+        "persistence"
+      ],
+      "tecnicas": [
+        "T1195.001"
+      ],
+      "tipo": "sigma",
+      "titulo": "Modificacion de un fichero de dependencias o lockfile",
+      "titulos": [
+        "Modificacion de un fichero de dependencias o lockfile"
+      ],
+      "wazuh_ids": [
+        "101257"
+      ]
+    },
+    {
+      "clave": "dl:zta_vis_001_borrado_registro_auditoria",
+      "familia": "zta",
+      "fichero": "rules/zta/zta_vis_001_borrado_registro_auditoria.yml",
+      "logsource": "windows/security",
+      "nivel": "critical",
+      "origen": "detectionlab",
+      "sigma_id": "15af3283-6349-580f-980f-519cc737d589",
+      "splunk": "DL - Borrado o reduccion del registro de auditoria",
+      "tacticas": [
+        "defense-evasion"
+      ],
+      "tecnicas": [
+        "T1070.001",
+        "T1562.002"
+      ],
+      "tipo": "sigma",
+      "titulo": "Borrado o reduccion del registro de auditoria",
+      "titulos": [
+        "Borrado o reduccion del registro de auditoria"
+      ],
+      "wazuh_ids": [
+        "101258",
+        "101259"
+      ]
+    },
+    {
+      "clase": "auto_cierre",
+      "clave": "wazuh:100100",
+      "familia": "zta",
+      "fichero": "deploy/wazuh/reglas/0900-zta_identity_rules.xml",
+      "logsource": "wazuh",
+      "nivel": "informational",
+      "origen": "detectionlab",
+      "sigma_id": "",
+      "splunk": "",
+      "tacticas": [],
+      "tecnicas": [],
+      "tipo": "wazuh",
+      "titulo": "ZTA base: intento de autenticacion fallido (usado en correlacion).",
+      "wazuh_ids": [
+        "100100"
+      ]
+    },
+    {
+      "clase": "auto_analisis",
+      "clave": "wazuh:100101",
+      "familia": "zta",
+      "fichero": "deploy/wazuh/reglas/0900-zta_identity_rules.xml",
+      "logsource": "wazuh",
+      "nivel": "medium",
+      "origen": "detectionlab",
+      "sigma_id": "",
+      "splunk": "",
+      "tacticas": [],
+      "tecnicas": [
+        "T1110.001"
+      ],
+      "tipo": "wazuh",
+      "titulo": "ZTA-ID-001: Autenticacion exitosa desde $(srcip) tras multiples fallos. Posible fuerza bruta con exito.",
+      "wazuh_ids": [
+        "100101"
+      ]
+    },
+    {
+      "clase": "auto_analisis",
+      "clave": "wazuh:100102",
+      "familia": "zta",
+      "fichero": "deploy/wazuh/reglas/0900-zta_identity_rules.xml",
+      "logsource": "wazuh",
+      "nivel": "high",
+      "origen": "detectionlab",
+      "sigma_id": "",
+      "splunk": "",
+      "tacticas": [],
+      "tecnicas": [
+        "T1078.002"
+      ],
+      "tipo": "wazuh",
+      "titulo": "ZTA-ID-002: Cuenta privilegiada $(user) autenticada desde $(srcip), fuera de los equipos de administracion aprobados.",
+      "wazuh_ids": [
+        "100102"
+      ]
+    },
+    {
+      "clase": "auto_analisis",
+      "clave": "wazuh:100103",
+      "familia": "zta",
+      "fichero": "deploy/wazuh/reglas/0900-zta_identity_rules.xml",
+      "logsource": "wazuh",
+      "nivel": "medium",
+      "origen": "detectionlab",
+      "sigma_id": "",
+      "splunk": "",
+      "tacticas": [],
+      "tecnicas": [
+        "T1078.004"
+      ],
+      "tipo": "wazuh",
+      "titulo": "ZTA-ID-003: El usuario $(user) se ha autenticado desde dos paises distintos en menos de una hora.",
+      "wazuh_ids": [
+        "100103"
+      ]
+    },
+    {
+      "clase": "auto_cierre",
+      "clave": "wazuh:100104",
+      "familia": "zta",
+      "fichero": "deploy/wazuh/reglas/0900-zta_identity_rules.xml",
+      "logsource": "wazuh",
+      "nivel": "informational",
+      "origen": "detectionlab",
+      "sigma_id": "",
+      "splunk": "",
+      "tacticas": [],
+      "tecnicas": [],
+      "tipo": "wazuh",
+      "titulo": "ZTA base: notificacion MFA rechazada por el usuario.",
+      "wazuh_ids": [
+        "100104"
+      ]
+    },
+    {
+      "clase": "auto_analisis",
+      "clave": "wazuh:100105",
+      "familia": "zta",
+      "fichero": "deploy/wazuh/reglas/0900-zta_identity_rules.xml",
+      "logsource": "wazuh",
+      "nivel": "high",
+      "origen": "detectionlab",
+      "sigma_id": "",
+      "splunk": "",
+      "tacticas": [],
+      "tecnicas": [
+        "T1621"
+      ],
+      "tipo": "wazuh",
+      "titulo": "ZTA-ID-004: Multiples notificaciones MFA rechazadas para $(user). Posible MFA fatigue o push bombing.",
+      "wazuh_ids": [
+        "100105"
+      ]
+    },
+    {
+      "clase": "auto_analisis",
+      "clave": "wazuh:100106",
+      "familia": "zta",
+      "fichero": "deploy/wazuh/reglas/0900-zta_identity_rules.xml",
+      "logsource": "wazuh",
+      "nivel": "medium",
+      "origen": "detectionlab",
+      "sigma_id": "",
+      "splunk": "",
+      "tacticas": [],
+      "tecnicas": [
+        "T1098"
+      ],
+      "tipo": "wazuh",
+      "titulo": "ZTA-ID-005: Miembro anadido a un grupo privilegiado de Windows por $(win.eventdata.subjectUserName).",
+      "wazuh_ids": [
+        "100106"
+      ]
+    },
+    {
+      "clase": "auto_analisis",
+      "clave": "wazuh:100107",
+      "familia": "zta",
+      "fichero": "deploy/wazuh/reglas/0900-zta_identity_rules.xml",
+      "logsource": "wazuh",
+      "nivel": "medium",
+      "origen": "detectionlab",
+      "sigma_id": "",
+      "splunk": "",
+      "tacticas": [],
+      "tecnicas": [
+        "T1098"
+      ],
+      "tipo": "wazuh",
+      "titulo": "ZTA-ID-005: Cuenta anadida a un grupo con privilegios de administracion en Linux.",
+      "wazuh_ids": [
+        "100107"
+      ]
+    },
+    {
+      "clase": "auto_analisis",
+      "clave": "wazuh:100108",
+      "familia": "zta",
+      "fichero": "deploy/wazuh/reglas/0900-zta_identity_rules.xml",
+      "logsource": "wazuh",
+      "nivel": "high",
+      "origen": "detectionlab",
+      "sigma_id": "",
+      "splunk": "",
+      "tacticas": [],
+      "tecnicas": [
+        "T1078.003"
+      ],
+      "tipo": "wazuh",
+      "titulo": "ZTA-ID-006: La cuenta de servicio $(win.eventdata.targetUserName) ha iniciado sesion de forma interactiva (tipo $(win.eventdata.logonType)).",
+      "wazuh_ids": [
+        "100108"
+      ]
+    },
+    {
+      "clase": "auto_enriq",
+      "clave": "wazuh:100109",
+      "familia": "zta",
+      "fichero": "deploy/wazuh/reglas/0900-zta_identity_rules.xml",
+      "logsource": "wazuh",
+      "nivel": "low",
+      "origen": "detectionlab",
+      "sigma_id": "",
+      "splunk": "",
+      "tacticas": [],
+      "tecnicas": [],
+      "tipo": "wazuh",
+      "titulo": "ZTA base: cuenta de usuario creada en Windows.",
+      "wazuh_ids": [
+        "100109"
+      ]
+    },
+    {
+      "clase": "auto_analisis",
+      "clave": "wazuh:100110",
+      "familia": "zta",
+      "fichero": "deploy/wazuh/reglas/0900-zta_identity_rules.xml",
+      "logsource": "wazuh",
+      "nivel": "high",
+      "origen": "detectionlab",
+      "sigma_id": "",
+      "splunk": "",
+      "tacticas": [],
+      "tecnicas": [
+        "T1136.001"
+      ],
+      "tipo": "wazuh",
+      "titulo": "ZTA-ID-007: Cuenta recien creada utilizada para autenticarse en menos de 10 minutos. Posible persistencia.",
+      "wazuh_ids": [
+        "100110"
+      ]
+    },
+    {
+      "clase": "auto_analisis",
+      "clave": "wazuh:100111",
+      "familia": "zta",
+      "fichero": "deploy/wazuh/reglas/0900-zta_identity_rules.xml",
+      "logsource": "wazuh",
+      "nivel": "medium",
+      "origen": "detectionlab",
+      "sigma_id": "",
+      "splunk": "",
+      "tacticas": [],
+      "tecnicas": [
+        "T1136.001"
+      ],
+      "tipo": "wazuh",
+      "titulo": "ZTA-ID-007: Cuenta local creada en Linux. Verificar contra el proceso de alta aprobado.",
+      "wazuh_ids": [
+        "100111"
+      ]
+    },
+    {
+      "clase": "auto_analisis",
+      "clave": "wazuh:100112",
+      "familia": "zta",
+      "fichero": "deploy/wazuh/reglas/0900-zta_identity_rules.xml",
+      "logsource": "wazuh",
+      "nivel": "medium",
+      "origen": "detectionlab",
+      "sigma_id": "",
+      "splunk": "",
+      "tacticas": [],
+      "tecnicas": [
+        "T1078"
+      ],
+      "tipo": "wazuh",
+      "titulo": "ZTA-ID-008: Autenticacion mediante NTLMv1/LM para $(win.eventdata.targetUserName). Protocolo heredado incompatible con Zero Trust.",
+      "wazuh_ids": [
+        "100112"
+      ]
+    },
+    {
+      "clase": "auto_analisis",
+      "clave": "wazuh:100113",
+      "familia": "zta",
+      "fichero": "deploy/wazuh/reglas/0900-zta_identity_rules.xml",
+      "logsource": "wazuh",
+      "nivel": "high",
+      "origen": "detectionlab",
+      "sigma_id": "",
+      "splunk": "",
+      "tacticas": [],
+      "tecnicas": [
+        "T1078"
+      ],
+      "tipo": "wazuh",
+      "titulo": "ZTA-ID-009: Autenticacion exitosa desde un equipo que acaba de fallar el baseline Zero Trust. La politica de acceso no se ha reevaluado.",
+      "wazuh_ids": [
+        "100113"
+      ]
+    },
+    {
+      "clase": "auto_analisis",
+      "clave": "wazuh:100200",
+      "familia": "zta",
+      "fichero": "deploy/wazuh/reglas/0910-zta_devices_rules.xml",
+      "logsource": "wazuh",
+      "nivel": "high",
+      "origen": "detectionlab",
+      "sigma_id": "",
+      "splunk": "",
+      "tacticas": [],
+      "tecnicas": [
+        "T1562.001"
+      ],
+      "tipo": "wazuh",
+      "titulo": "ZTA-DEV-001: Agente Wazuh desconectado en $(hostname). El equipo pierde verificacion continua de postura.",
+      "wazuh_ids": [
+        "100200"
+      ]
+    },
+    {
+      "clase": "auto_analisis",
+      "clave": "wazuh:100201",
+      "familia": "zta",
+      "fichero": "deploy/wazuh/reglas/0910-zta_devices_rules.xml",
+      "logsource": "wazuh",
+      "nivel": "high",
+      "origen": "detectionlab",
+      "sigma_id": "",
+      "splunk": "",
+      "tacticas": [],
+      "tecnicas": [
+        "T1562.001"
+      ],
+      "tipo": "wazuh",
+      "titulo": "ZTA-DEV-001: Servicio de seguridad detenido en $(hostname). Posible evasion de defensas.",
+      "wazuh_ids": [
+        "100201"
+      ]
+    },
+    {
+      "clase": "auto_analisis",
+      "clave": "wazuh:100202",
+      "familia": "zta",
+      "fichero": "deploy/wazuh/reglas/0910-zta_devices_rules.xml",
+      "logsource": "wazuh",
+      "nivel": "medium",
+      "origen": "detectionlab",
+      "sigma_id": "",
+      "splunk": "",
+      "tacticas": [],
+      "tecnicas": [
+        "T1200"
+      ],
+      "tipo": "wazuh",
+      "titulo": "ZTA-DEV-002: El equipo $(hostname) envia eventos pero no figura en el inventario de activos aprobado.",
+      "wazuh_ids": [
+        "100202"
+      ]
+    },
+    {
+      "clase": "auto_analisis",
+      "clave": "wazuh:100203",
+      "familia": "zta",
+      "fichero": "deploy/wazuh/reglas/0910-zta_devices_rules.xml",
+      "logsource": "wazuh",
+      "nivel": "medium",
+      "origen": "detectionlab",
+      "sigma_id": "",
+      "splunk": "",
+      "tacticas": [],
+      "tecnicas": [],
+      "tipo": "wazuh",
+      "titulo": "ZTA-DEV-003: Fallo del baseline Zero Trust en $(hostname): $(sca.check.title)",
+      "wazuh_ids": [
+        "100203"
+      ]
+    },
+    {
+      "clase": "auto_analisis",
+      "clave": "wazuh:100204",
+      "familia": "zta",
+      "fichero": "deploy/wazuh/reglas/0910-zta_devices_rules.xml",
+      "logsource": "wazuh",
+      "nivel": "high",
+      "origen": "detectionlab",
+      "sigma_id": "",
+      "splunk": "",
+      "tacticas": [],
+      "tecnicas": [],
+      "tipo": "wazuh",
+      "titulo": "ZTA-DEV-003: Fallo de un control critico del baseline Zero Trust en $(hostname): $(sca.check.title). El equipo no deberia acceder a recursos protegidos.",
+      "wazuh_ids": [
+        "100204"
+      ]
+    },
+    {
+      "clase": "auto_analisis",
+      "clave": "wazuh:100205",
+      "familia": "zta",
+      "fichero": "deploy/wazuh/reglas/0910-zta_devices_rules.xml",
+      "logsource": "wazuh",
+      "nivel": "high",
+      "origen": "detectionlab",
+      "sigma_id": "",
+      "splunk": "",
+      "tacticas": [],
+      "tecnicas": [
+        "T1543"
+      ],
+      "tipo": "wazuh",
+      "titulo": "ZTA-DEV-004: Modificacion de un fichero critico de control de acceso en $(hostname): $(file)",
+      "wazuh_ids": [
+        "100205"
+      ]
+    },
+    {
+      "clase": "auto_analisis",
+      "clave": "wazuh:100206",
+      "familia": "zta",
+      "fichero": "deploy/wazuh/reglas/0910-zta_devices_rules.xml",
+      "logsource": "wazuh",
+      "nivel": "high",
+      "origen": "detectionlab",
+      "sigma_id": "",
+      "splunk": "",
+      "tacticas": [],
+      "tecnicas": [
+        "T1190"
+      ],
+      "tipo": "wazuh",
+      "titulo": "ZTA-DEV-005: Vulnerabilidad critica $(data.vulnerability.cve) en $(hostname). La postura del equipo deja de cumplir la politica de acceso.",
+      "wazuh_ids": [
+        "100206"
+      ]
+    },
+    {
+      "clase": "auto_analisis",
+      "clave": "wazuh:100207",
+      "familia": "zta",
+      "fichero": "deploy/wazuh/reglas/0910-zta_devices_rules.xml",
+      "logsource": "wazuh",
+      "nivel": "medium",
+      "origen": "detectionlab",
+      "sigma_id": "",
+      "splunk": "",
+      "tacticas": [],
+      "tecnicas": [
+        "T1091"
+      ],
+      "tipo": "wazuh",
+      "titulo": "ZTA-DEV-006: Dispositivo de almacenamiento extraible conectado en $(hostname).",
+      "wazuh_ids": [
+        "100207"
+      ]
+    },
+    {
+      "clase": "auto_analisis",
+      "clave": "wazuh:100208",
+      "familia": "zta",
+      "fichero": "deploy/wazuh/reglas/0910-zta_devices_rules.xml",
+      "logsource": "wazuh",
+      "nivel": "medium",
+      "origen": "detectionlab",
+      "sigma_id": "",
+      "splunk": "",
+      "tacticas": [],
+      "tecnicas": [
+        "T1091"
+      ],
+      "tipo": "wazuh",
+      "titulo": "ZTA-DEV-006: Nuevo dispositivo externo reconocido por Windows en $(hostname): $(win.eventdata.deviceDescription)",
+      "wazuh_ids": [
+        "100208"
+      ]
+    },
+    {
+      "clase": "auto_analisis",
+      "clave": "wazuh:100300",
+      "familia": "zta",
+      "fichero": "deploy/wazuh/reglas/0920-zta_network_rules.xml",
+      "logsource": "wazuh",
+      "nivel": "medium",
+      "origen": "detectionlab",
+      "sigma_id": "",
+      "splunk": "",
+      "tacticas": [],
+      "tecnicas": [
+        "T1021"
+      ],
+      "tipo": "wazuh",
+      "titulo": "ZTA-NET-001: Trafico este-oeste desde $(data.src_ip) hacia el segmento protegido $(data.dest_ip). Verificar la politica de microsegmentacion.",
+      "wazuh_ids": [
+        "100300"
+      ]
+    },
+    {
+      "clase": "auto_analisis",
+      "clave": "wazuh:100301",
+      "familia": "zta",
+      "fichero": "deploy/wazuh/reglas/0920-zta_network_rules.xml",
+      "logsource": "wazuh",
+      "nivel": "medium",
+      "origen": "detectionlab",
+      "sigma_id": "",
+      "splunk": "",
+      "tacticas": [],
+      "tecnicas": [
+        "T1090"
+      ],
+      "tipo": "wazuh",
+      "titulo": "ZTA-NET-002: Salida directa a Internet desde $(data.src_ip) sin pasar por un proxy aprobado.",
+      "wazuh_ids": [
+        "100301"
+      ]
+    },
+    {
+      "clase": "auto_cierre",
+      "clave": "wazuh:100302",
+      "familia": "zta",
+      "fichero": "deploy/wazuh/reglas/0920-zta_network_rules.xml",
+      "logsource": "wazuh",
+      "nivel": "informational",
+      "origen": "detectionlab",
+      "sigma_id": "",
+      "splunk": "",
+      "tacticas": [],
+      "tecnicas": [],
+      "tipo": "wazuh",
+      "titulo": "ZTA base: consulta DNS de tipo susceptible de tunelizacion.",
+      "wazuh_ids": [
+        "100302"
+      ]
+    },
+    {
+      "clase": "auto_analisis",
+      "clave": "wazuh:100303",
+      "familia": "zta",
+      "fichero": "deploy/wazuh/reglas/0920-zta_network_rules.xml",
+      "logsource": "wazuh",
+      "nivel": "medium",
+      "origen": "detectionlab",
+      "sigma_id": "",
+      "splunk": "",
+      "tacticas": [],
+      "tecnicas": [
+        "T1071.004"
+      ],
+      "tipo": "wazuh",
+      "titulo": "ZTA-NET-003: Volumen anomalo de consultas DNS TXT/NULL desde $(data.src_ip). Posible tunel DNS o canal C2.",
+      "wazuh_ids": [
+        "100303"
+      ]
+    },
+    {
+      "clase": "auto_analisis",
+      "clave": "wazuh:100304",
+      "familia": "zta",
+      "fichero": "deploy/wazuh/reglas/0920-zta_network_rules.xml",
+      "logsource": "wazuh",
+      "nivel": "medium",
+      "origen": "detectionlab",
+      "sigma_id": "",
+      "splunk": "",
+      "tacticas": [],
+      "tecnicas": [
+        "T1071.004"
+      ],
+      "tipo": "wazuh",
+      "titulo": "ZTA-NET-003: Consulta DNS con etiqueta anormalmente larga desde $(data.src_ip). Posible exfiltracion por DNS.",
+      "wazuh_ids": [
+        "100304"
+      ]
+    },
+    {
+      "clase": "auto_analisis",
+      "clave": "wazuh:100305",
+      "familia": "zta",
+      "fichero": "deploy/wazuh/reglas/0920-zta_network_rules.xml",
+      "logsource": "wazuh",
+      "nivel": "medium",
+      "origen": "detectionlab",
+      "sigma_id": "",
+      "splunk": "",
+      "tacticas": [],
+      "tecnicas": [
+        "T1040"
+      ],
+      "tipo": "wazuh",
+      "titulo": "ZTA-NET-004: Conexion sin cifrar hacia el recurso protegido $(data.dest_ip):$(data.dest_port). Incumple el cifrado obligatorio en transito.",
+      "wazuh_ids": [
+        "100305"
+      ]
+    },
+    {
+      "clase": "auto_cierre",
+      "clave": "wazuh:100306",
+      "familia": "zta",
+      "fichero": "deploy/wazuh/reglas/0920-zta_network_rules.xml",
+      "logsource": "wazuh",
+      "nivel": "informational",
+      "origen": "detectionlab",
+      "sigma_id": "",
+      "splunk": "",
+      "tacticas": [],
+      "tecnicas": [],
+      "tipo": "wazuh",
+      "titulo": "ZTA base: flujo interno observado por Suricata.",
+      "wazuh_ids": [
+        "100306"
+      ]
+    },
+    {
+      "clase": "auto_analisis",
+      "clave": "wazuh:100307",
+      "familia": "zta",
+      "fichero": "deploy/wazuh/reglas/0920-zta_network_rules.xml",
+      "logsource": "wazuh",
+      "nivel": "medium",
+      "origen": "detectionlab",
+      "sigma_id": "",
+      "splunk": "",
+      "tacticas": [],
+      "tecnicas": [
+        "T1046"
+      ],
+      "tipo": "wazuh",
+      "titulo": "ZTA-NET-005: $(data.src_ip) ha contactado con un numero anomalo de destinos internos en 2 minutos. Posible reconocimiento lateral.",
+      "wazuh_ids": [
+        "100307"
+      ]
+    },
+    {
+      "clase": "auto_analisis",
+      "clave": "wazuh:100308",
+      "familia": "zta",
+      "fichero": "deploy/wazuh/reglas/0920-zta_network_rules.xml",
+      "logsource": "wazuh",
+      "nivel": "high",
+      "origen": "detectionlab",
+      "sigma_id": "",
+      "splunk": "",
+      "tacticas": [],
+      "tecnicas": [
+        "T1071"
+      ],
+      "tipo": "wazuh",
+      "titulo": "ZTA-NET-006: $(data.src_ip) ha contactado con el indicador de amenaza conocido $(data.dest_ip).",
+      "wazuh_ids": [
+        "100308"
+      ]
+    },
+    {
+      "clase": "auto_analisis",
+      "clave": "wazuh:100400",
+      "familia": "zta",
+      "fichero": "deploy/wazuh/reglas/0930-zta_apps_data_rules.xml",
+      "logsource": "wazuh",
+      "nivel": "high",
+      "origen": "detectionlab",
+      "sigma_id": "",
+      "splunk": "",
+      "tacticas": [],
+      "tecnicas": [
+        "T1133"
+      ],
+      "tipo": "wazuh",
+      "titulo": "ZTA-APP-001: Acceso a la aplicacion desde $(srcip) sin atravesar el Policy Enforcement Point. Bypass del PEP.",
+      "wazuh_ids": [
+        "100400"
+      ]
+    },
+    {
+      "clase": "auto_analisis",
+      "clave": "wazuh:100401",
+      "familia": "zta",
+      "fichero": "deploy/wazuh/reglas/0930-zta_apps_data_rules.xml",
+      "logsource": "wazuh",
+      "nivel": "high",
+      "origen": "detectionlab",
+      "sigma_id": "",
+      "splunk": "",
+      "tacticas": [],
+      "tecnicas": [
+        "T1190"
+      ],
+      "tipo": "wazuh",
+      "titulo": "ZTA-APP-002: Intento de explotacion web contra $(data.dest_ip): $(data.alert.signature)",
+      "wazuh_ids": [
+        "100401"
+      ]
+    },
+    {
+      "clase": "auto_analisis",
+      "clave": "wazuh:100402",
+      "familia": "zta",
+      "fichero": "deploy/wazuh/reglas/0930-zta_apps_data_rules.xml",
+      "logsource": "wazuh",
+      "nivel": "medium",
+      "origen": "detectionlab",
+      "sigma_id": "",
+      "splunk": "",
+      "tacticas": [],
+      "tecnicas": [
+        "T1190"
+      ],
+      "tipo": "wazuh",
+      "titulo": "ZTA-APP-002: Patron de explotacion en la peticion web desde $(srcip): $(url)",
+      "wazuh_ids": [
+        "100402"
+      ]
+    },
+    {
+      "clase": "auto_analisis",
+      "clave": "wazuh:100403",
+      "familia": "zta",
+      "fichero": "deploy/wazuh/reglas/0930-zta_apps_data_rules.xml",
+      "logsource": "wazuh",
+      "nivel": "high",
+      "origen": "detectionlab",
+      "sigma_id": "",
+      "splunk": "",
+      "tacticas": [],
+      "tecnicas": [
+        "T1505.003"
+      ],
+      "tipo": "wazuh",
+      "titulo": "ZTA-APP-003: Fichero ejecutable web creado o modificado en el directorio de publicacion de $(hostname): $(file). Posible webshell.",
+      "wazuh_ids": [
+        "100403"
+      ]
+    },
+    {
+      "clase": "auto_analisis",
+      "clave": "wazuh:100404",
+      "familia": "zta",
+      "fichero": "deploy/wazuh/reglas/0930-zta_apps_data_rules.xml",
+      "logsource": "wazuh",
+      "nivel": "high",
+      "origen": "detectionlab",
+      "sigma_id": "",
+      "splunk": "",
+      "tacticas": [],
+      "tecnicas": [
+        "T1610"
+      ],
+      "tipo": "wazuh",
+      "titulo": "ZTA-APP-004: Contenedor lanzado en modo privilegiado. Rompe el aislamiento de la carga de trabajo.",
+      "wazuh_ids": [
+        "100404"
+      ]
+    },
+    {
+      "clase": "auto_analisis",
+      "clave": "wazuh:100405",
+      "familia": "zta",
+      "fichero": "deploy/wazuh/reglas/0930-zta_apps_data_rules.xml",
+      "logsource": "wazuh",
+      "nivel": "high",
+      "origen": "detectionlab",
+      "sigma_id": "",
+      "splunk": "",
+      "tacticas": [],
+      "tecnicas": [
+        "T1610"
+      ],
+      "tipo": "wazuh",
+      "titulo": "ZTA-APP-004: Acceso o montaje del socket de Docker detectado en $(hostname). Equivale a acceso root al nodo.",
+      "wazuh_ids": [
+        "100405"
+      ]
+    },
+    {
+      "clase": "auto_cierre",
+      "clave": "wazuh:100450",
+      "familia": "zta",
+      "fichero": "deploy/wazuh/reglas/0930-zta_apps_data_rules.xml",
+      "logsource": "wazuh",
+      "nivel": "informational",
+      "origen": "detectionlab",
+      "sigma_id": "",
+      "splunk": "",
+      "tacticas": [],
+      "tecnicas": [],
+      "tipo": "wazuh",
+      "titulo": "ZTA base: acceso a un fichero clasificado.",
+      "wazuh_ids": [
+        "100450"
+      ]
+    },
+    {
+      "clase": "auto_analisis",
+      "clave": "wazuh:100451",
+      "familia": "zta",
+      "fichero": "deploy/wazuh/reglas/0930-zta_apps_data_rules.xml",
+      "logsource": "wazuh",
+      "nivel": "high",
+      "origen": "detectionlab",
+      "sigma_id": "",
+      "splunk": "",
+      "tacticas": [],
+      "tecnicas": [
+        "T1530"
+      ],
+      "tipo": "wazuh",
+      "titulo": "ZTA-DAT-001: El usuario $(audit.uid) ha accedido a un volumen anomalo de ficheros clasificados en 5 minutos. Posible staging previo a exfiltracion.",
+      "wazuh_ids": [
+        "100451"
+      ]
+    },
+    {
+      "clase": "auto_analisis",
+      "clave": "wazuh:100452",
+      "familia": "zta",
+      "fichero": "deploy/wazuh/reglas/0930-zta_apps_data_rules.xml",
+      "logsource": "wazuh",
+      "nivel": "high",
+      "origen": "detectionlab",
+      "sigma_id": "",
+      "splunk": "",
+      "tacticas": [],
+      "tecnicas": [
+        "T1567"
+      ],
+      "tipo": "wazuh",
+      "titulo": "ZTA-DAT-002: Transferencia saliente superior a 100 MB desde $(data.src_ip) hacia $(data.dest_ip). Posible exfiltracion.",
+      "wazuh_ids": [
+        "100452"
+      ]
+    },
+    {
+      "clase": "auto_analisis",
+      "clave": "wazuh:100453",
+      "familia": "zta",
+      "fichero": "deploy/wazuh/reglas/0930-zta_apps_data_rules.xml",
+      "logsource": "wazuh",
+      "nivel": "high",
+      "origen": "detectionlab",
+      "sigma_id": "",
+      "splunk": "",
+      "tacticas": [],
+      "tecnicas": [
+        "T1530"
+      ],
+      "tipo": "wazuh",
+      "titulo": "ZTA-DAT-003: Acceso a datos clasificados desde un equipo que ha fallado el baseline Zero Trust. La politica de acceso dinamica no se esta aplicando.",
+      "wazuh_ids": [
+        "100453"
+      ]
+    },
+    {
+      "clase": "auto_analisis",
+      "clave": "wazuh:100454",
+      "familia": "zta",
+      "fichero": "deploy/wazuh/reglas/0930-zta_apps_data_rules.xml",
+      "logsource": "wazuh",
+      "nivel": "high",
+      "origen": "detectionlab",
+      "sigma_id": "",
+      "splunk": "",
+      "tacticas": [],
+      "tecnicas": [
+        "T1052.001"
+      ],
+      "tipo": "wazuh",
+      "titulo": "ZTA-DAT-004: Acceso a datos clasificados poco despues de conectarse un dispositivo extraible en $(hostname). Posible copia a medio no aprobado.",
+      "wazuh_ids": [
+        "100454"
+      ]
+    },
+    {
+      "clase": "auto_analisis",
+      "clave": "wazuh:100500",
+      "familia": "zta",
+      "fichero": "deploy/wazuh/reglas/0940-zta_supplychain_rules.xml",
+      "logsource": "wazuh",
+      "nivel": "high",
+      "origen": "detectionlab",
+      "sigma_id": "",
+      "splunk": "",
+      "tacticas": [],
+      "tecnicas": [
+        "T1574.002"
+      ],
+      "tipo": "wazuh",
+      "titulo": "ZTA-SUP-001: Libreria cargada desde una ruta no estandar en $(hostname): $(win.eventdata.imageLoaded). Posible DLL sideloading.",
+      "wazuh_ids": [
+        "100500"
+      ]
+    },
+    {
+      "clase": "auto_analisis",
+      "clave": "wazuh:100501",
+      "familia": "zta",
+      "fichero": "deploy/wazuh/reglas/0940-zta_supplychain_rules.xml",
+      "logsource": "wazuh",
+      "nivel": "medium",
+      "origen": "detectionlab",
+      "sigma_id": "",
+      "splunk": "",
+      "tacticas": [],
+      "tecnicas": [
+        "T1574.006"
+      ],
+      "tipo": "wazuh",
+      "titulo": "ZTA-SUP-001: Objeto compartido cargado desde una ruta no confiable en $(hostname): $(audit.file.name)",
+      "wazuh_ids": [
+        "100501"
+      ]
+    },
+    {
+      "clase": "auto_analisis",
+      "clave": "wazuh:100502",
+      "familia": "zta",
+      "fichero": "deploy/wazuh/reglas/0940-zta_supplychain_rules.xml",
+      "logsource": "wazuh",
+      "nivel": "medium",
+      "origen": "detectionlab",
+      "sigma_id": "",
+      "splunk": "",
+      "tacticas": [],
+      "tecnicas": [
+        "T1195.001"
+      ],
+      "tipo": "wazuh",
+      "titulo": "ZTA-SUP-002: Instalacion de paquete Python desde un indice externo en $(hostname). Dependencia fuera de la cadena de suministro aprobada.",
+      "wazuh_ids": [
+        "100502"
+      ]
+    },
+    {
+      "clase": "auto_analisis",
+      "clave": "wazuh:100503",
+      "familia": "zta",
+      "fichero": "deploy/wazuh/reglas/0940-zta_supplychain_rules.xml",
+      "logsource": "wazuh",
+      "nivel": "medium",
+      "origen": "detectionlab",
+      "sigma_id": "",
+      "splunk": "",
+      "tacticas": [],
+      "tecnicas": [
+        "T1195.001"
+      ],
+      "tipo": "wazuh",
+      "titulo": "ZTA-SUP-002: Instalacion de paquete npm desde un registro no aprobado en $(hostname).",
+      "wazuh_ids": [
+        "100503"
+      ]
+    },
+    {
+      "clase": "auto_analisis",
+      "clave": "wazuh:100504",
+      "familia": "zta",
+      "fichero": "deploy/wazuh/reglas/0940-zta_supplychain_rules.xml",
+      "logsource": "wazuh",
+      "nivel": "high",
+      "origen": "detectionlab",
+      "sigma_id": "",
+      "splunk": "",
+      "tacticas": [],
+      "tecnicas": [
+        "T1195.002"
+      ],
+      "tipo": "wazuh",
+      "titulo": "ZTA-SUP-002: Ejecucion directa de un script descargado de Internet en $(hostname). Instalacion sin verificacion de integridad.",
+      "wazuh_ids": [
+        "100504"
+      ]
+    },
+    {
+      "clase": "auto_contener",
+      "clave": "wazuh:100505",
+      "familia": "zta",
+      "fichero": "deploy/wazuh/reglas/0940-zta_supplychain_rules.xml",
+      "logsource": "wazuh",
+      "nivel": "critical",
+      "origen": "detectionlab",
+      "sigma_id": "",
+      "splunk": "",
+      "tacticas": [],
+      "tecnicas": [
+        "T1190"
+      ],
+      "tipo": "wazuh",
+      "titulo": "ZTA-SUP-003: Intento de explotacion JNDI (tipo Log4Shell) contra $(hostname) desde $(srcip).",
+      "wazuh_ids": [
+        "100505"
+      ]
+    },
+    {
+      "clase": "auto_analisis",
+      "clave": "wazuh:100506",
+      "familia": "zta",
+      "fichero": "deploy/wazuh/reglas/0940-zta_supplychain_rules.xml",
+      "logsource": "wazuh",
+      "nivel": "high",
+      "origen": "detectionlab",
+      "sigma_id": "",
+      "splunk": "",
+      "tacticas": [],
+      "tecnicas": [
+        "T1190"
+      ],
+      "tipo": "wazuh",
+      "titulo": "ZTA-SUP-003: Patron de explotacion de libreria de terceros (deserializacion o prototype pollution) desde $(srcip).",
+      "wazuh_ids": [
+        "100506"
+      ]
+    },
+    {
+      "clase": "auto_analisis",
+      "clave": "wazuh:100507",
+      "familia": "zta",
+      "fichero": "deploy/wazuh/reglas/0940-zta_supplychain_rules.xml",
+      "logsource": "wazuh",
+      "nivel": "high",
+      "origen": "detectionlab",
+      "sigma_id": "",
+      "splunk": "",
+      "tacticas": [],
+      "tecnicas": [
+        "T1190"
+      ],
+      "tipo": "wazuh",
+      "titulo": "ZTA-SUP-003: Intento de inyeccion de expresiones (SpEL/OGNL) contra una libreria de aplicacion desde $(srcip).",
+      "wazuh_ids": [
+        "100507"
+      ]
+    },
+    {
+      "clase": "auto_analisis",
+      "clave": "wazuh:100508",
+      "familia": "zta",
+      "fichero": "deploy/wazuh/reglas/0940-zta_supplychain_rules.xml",
+      "logsource": "wazuh",
+      "nivel": "high",
+      "origen": "detectionlab",
+      "sigma_id": "",
+      "splunk": "",
+      "tacticas": [],
+      "tecnicas": [
+        "T1195"
+      ],
+      "tipo": "wazuh",
+      "titulo": "ZTA-SUP-004: Componente de terceros vulnerable en $(hostname): $(data.vulnerability.package.name) - $(data.vulnerability.cve)",
+      "wazuh_ids": [
+        "100508"
+      ]
+    },
+    {
+      "clase": "auto_analisis",
+      "clave": "wazuh:100509",
+      "familia": "zta",
+      "fichero": "deploy/wazuh/reglas/0940-zta_supplychain_rules.xml",
+      "logsource": "wazuh",
+      "nivel": "high",
+      "origen": "detectionlab",
+      "sigma_id": "",
+      "splunk": "",
+      "tacticas": [],
+      "tecnicas": [
+        "T1195.001"
+      ],
+      "tipo": "wazuh",
+      "titulo": "ZTA-SUP-005: Fichero de dependencias modificado en $(hostname): $(file). Verificar que procede de un despliegue aprobado.",
+      "wazuh_ids": [
+        "100509"
+      ]
+    },
+    {
+      "clase": "auto_analisis",
+      "clave": "wazuh:100510",
+      "familia": "zta",
+      "fichero": "deploy/wazuh/reglas/0940-zta_supplychain_rules.xml",
+      "logsource": "wazuh",
+      "nivel": "high",
+      "origen": "detectionlab",
+      "sigma_id": "",
+      "splunk": "",
+      "tacticas": [],
+      "tecnicas": [
+        "T1574"
+      ],
+      "tipo": "wazuh",
+      "titulo": "ZTA-SUP-005: Fichero de una libreria instalada modificado en tiempo de ejecucion en $(hostname): $(file). Posible manipulacion de dependencia.",
+      "wazuh_ids": [
+        "100510"
+      ]
+    },
+    {
+      "clase": "auto_analisis",
+      "clave": "wazuh:100511",
+      "familia": "zta",
+      "fichero": "deploy/wazuh/reglas/0940-zta_supplychain_rules.xml",
+      "logsource": "wazuh",
+      "nivel": "medium",
+      "origen": "detectionlab",
+      "sigma_id": "",
+      "splunk": "",
+      "tacticas": [],
+      "tecnicas": [
+        "T1610"
+      ],
+      "tipo": "wazuh",
+      "titulo": "ZTA-SUP-006: Descarga de la imagen $(data.Actor.ID) desde un registro no aprobado.",
+      "wazuh_ids": [
+        "100511"
+      ]
+    },
+    {
+      "clase": "auto_analisis",
+      "clave": "wazuh:100600",
+      "familia": "zta",
+      "fichero": "deploy/wazuh/reglas/0950-zta_visibility_rules.xml",
+      "logsource": "wazuh",
+      "nivel": "high",
+      "origen": "detectionlab",
+      "sigma_id": "",
+      "splunk": "",
+      "tacticas": [],
+      "tecnicas": [
+        "T1562.008"
+      ],
+      "tipo": "wazuh",
+      "titulo": "ZTA-VIS-001: Servicio de telemetria detenido o deshabilitado en $(hostname). Perdida de visibilidad.",
+      "wazuh_ids": [
+        "100600"
+      ]
+    },
+    {
+      "clase": "auto_analisis",
+      "clave": "wazuh:100601",
+      "familia": "zta",
+      "fichero": "deploy/wazuh/reglas/0950-zta_visibility_rules.xml",
+      "logsource": "wazuh",
+      "nivel": "high",
+      "origen": "detectionlab",
+      "sigma_id": "",
+      "splunk": "",
+      "tacticas": [],
+      "tecnicas": [
+        "T1562.006"
+      ],
+      "tipo": "wazuh",
+      "titulo": "ZTA-VIS-001: Configuracion de recogida de logs modificada en $(hostname): $(file)",
+      "wazuh_ids": [
+        "100601"
+      ]
+    },
+    {
+      "clase": "auto_contener",
+      "clave": "wazuh:100602",
+      "familia": "zta",
+      "fichero": "deploy/wazuh/reglas/0950-zta_visibility_rules.xml",
+      "logsource": "wazuh",
+      "nivel": "critical",
+      "origen": "detectionlab",
+      "sigma_id": "",
+      "splunk": "",
+      "tacticas": [],
+      "tecnicas": [
+        "T1070.001"
+      ],
+      "tipo": "wazuh",
+      "titulo": "ZTA-VIS-002: Registro de auditoria borrado en $(hostname) por $(win.eventdata.subjectUserName).",
+      "wazuh_ids": [
+        "100602"
+      ]
+    },
+    {
+      "clase": "auto_contener",
+      "clave": "wazuh:100603",
+      "familia": "zta",
+      "fichero": "deploy/wazuh/reglas/0950-zta_visibility_rules.xml",
+      "logsource": "wazuh",
+      "nivel": "critical",
+      "origen": "detectionlab",
+      "sigma_id": "",
+      "splunk": "",
+      "tacticas": [],
+      "tecnicas": [
+        "T1070.002"
+      ],
+      "tipo": "wazuh",
+      "titulo": "ZTA-VIS-002: Borrado o truncado de ficheros de log en $(hostname). Posible anti-forense.",
+      "wazuh_ids": [
+        "100603"
+      ]
+    },
+    {
+      "clase": "auto_analisis",
+      "clave": "wazuh:100700",
+      "familia": "cumplimiento",
+      "fichero": "deploy/wazuh/reglas/0960-cmp_compliance_rules.xml",
+      "logsource": "wazuh",
+      "nivel": "high",
+      "origen": "detectionlab",
+      "sigma_id": "",
+      "splunk": "",
+      "tacticas": [],
+      "tecnicas": [],
+      "tipo": "wazuh",
+      "titulo": "CMP-NOT-007: Modificacion o borrado sobre un almacen de datos personales en $(hostname): $(file). Posible violacion de seguridad de datos personales.",
+      "wazuh_ids": [
+        "100700"
+      ]
+    },
+    {
+      "clase": "auto_contener",
+      "clave": "wazuh:100701",
+      "familia": "cumplimiento",
+      "fichero": "deploy/wazuh/reglas/0960-cmp_compliance_rules.xml",
+      "logsource": "wazuh",
+      "nivel": "critical",
+      "origen": "detectionlab",
+      "sigma_id": "",
+      "splunk": "",
+      "tacticas": [],
+      "tecnicas": [],
+      "tipo": "wazuh",
+      "titulo": "CMP-NOT-007: Borrado auditado sobre datos personales en $(hostname) por el usuario $(audit.uid). Activa el plazo de 72 h del RGPD art. 33.",
+      "wazuh_ids": [
+        "100701"
+      ]
+    },
+    {
+      "clase": "auto_analisis",
+      "clave": "wazuh:100720",
+      "familia": "cumplimiento",
+      "fichero": "deploy/wazuh/reglas/0960-cmp_compliance_rules.xml",
+      "logsource": "wazuh",
+      "nivel": "high",
+      "origen": "detectionlab",
+      "sigma_id": "",
+      "splunk": "",
+      "tacticas": [],
+      "tecnicas": [],
+      "tipo": "wazuh",
+      "titulo": "CMP-CON-001: Fallo en el proceso de copia de seguridad de $(hostname). Se compromete el RPO comprometido.",
+      "wazuh_ids": [
+        "100720"
+      ]
+    },
+    {
+      "clase": "auto_contener",
+      "clave": "wazuh:100721",
+      "familia": "cumplimiento",
+      "fichero": "deploy/wazuh/reglas/0960-cmp_compliance_rules.xml",
+      "logsource": "wazuh",
+      "nivel": "critical",
+      "origen": "detectionlab",
+      "sigma_id": "",
+      "splunk": "",
+      "tacticas": [],
+      "tecnicas": [],
+      "tipo": "wazuh",
+      "titulo": "CMP-CON-004: Fichero del repositorio de copias modificado o borrado en $(hostname): $(file). La copia deja de ser fiable.",
+      "wazuh_ids": [
+        "100721"
+      ]
+    },
+    {
+      "clase": "auto_analisis",
+      "clave": "wazuh:100722",
+      "familia": "cumplimiento",
+      "fichero": "deploy/wazuh/reglas/0960-cmp_compliance_rules.xml",
+      "logsource": "wazuh",
+      "nivel": "high",
+      "origen": "detectionlab",
+      "sigma_id": "",
+      "splunk": "",
+      "tacticas": [],
+      "tecnicas": [
+        "T1490"
+      ],
+      "tipo": "wazuh",
+      "titulo": "CMP-CON-004: Comando de destruccion de copias de seguridad o instantaneas ejecutado en $(hostname). Patron habitual previo a un cifrado por ransomware.",
+      "wazuh_ids": [
+        "100722"
+      ]
+    },
+    {
+      "clase": "auto_contener",
+      "clave": "wazuh:100740",
+      "familia": "cumplimiento",
+      "fichero": "deploy/wazuh/reglas/0960-cmp_compliance_rules.xml",
+      "logsource": "wazuh",
+      "nivel": "critical",
+      "origen": "detectionlab",
+      "sigma_id": "",
+      "splunk": "",
+      "tacticas": [],
+      "tecnicas": [
+        "T1070.002"
+      ],
+      "tipo": "wazuh",
+      "titulo": "CMP-LOG-002: Fichero de registro truncado a cero en $(hostname): $(file). Perdida de evidencia exigida por ENS op.exp.10.",
+      "wazuh_ids": [
+        "100740"
+      ]
+    },
+    {
+      "clase": "auto_analisis",
+      "clave": "wazuh:100741",
+      "familia": "cumplimiento",
+      "fichero": "deploy/wazuh/reglas/0960-cmp_compliance_rules.xml",
+      "logsource": "wazuh",
+      "nivel": "high",
+      "origen": "detectionlab",
+      "sigma_id": "",
+      "splunk": "",
+      "tacticas": [],
+      "tecnicas": [
+        "T1562.006"
+      ],
+      "tipo": "wazuh",
+      "titulo": "CMP-LOG-002: Manipulacion de la proteccion del registro de actividad en $(hostname). Incumple ENS op.exp.10.",
+      "wazuh_ids": [
+        "100741"
+      ]
+    },
+    {
+      "clase": "auto_cierre",
+      "clave": "wazuh:100760",
+      "familia": "cumplimiento",
+      "fichero": "deploy/wazuh/reglas/0960-cmp_compliance_rules.xml",
+      "logsource": "wazuh",
+      "nivel": "informational",
+      "origen": "detectionlab",
+      "sigma_id": "",
+      "splunk": "",
+      "tacticas": [],
+      "tecnicas": [],
+      "tipo": "wazuh",
+      "titulo": "CMP base: acceso a un almacen de datos personales.",
+      "wazuh_ids": [
+        "100760"
+      ]
+    },
+    {
+      "clase": "auto_analisis",
+      "clave": "wazuh:100761",
+      "familia": "cumplimiento",
+      "fichero": "deploy/wazuh/reglas/0960-cmp_compliance_rules.xml",
+      "logsource": "wazuh",
+      "nivel": "high",
+      "origen": "detectionlab",
+      "sigma_id": "",
+      "splunk": "",
+      "tacticas": [],
+      "tecnicas": [],
+      "tipo": "wazuh",
+      "titulo": "CMP-RGP-001: Acceso masivo a datos personales por parte de $(audit.uid) en $(hostname). Revisar licitud y minimizacion.",
+      "wazuh_ids": [
+        "100761"
+      ]
+    },
+    {
+      "clase": "auto_analisis",
+      "clave": "wazuh:100762",
+      "familia": "cumplimiento",
+      "fichero": "deploy/wazuh/reglas/0960-cmp_compliance_rules.xml",
+      "logsource": "wazuh",
+      "nivel": "high",
+      "origen": "detectionlab",
+      "sigma_id": "",
+      "splunk": "",
+      "tacticas": [],
+      "tecnicas": [],
+      "tipo": "wazuh",
+      "titulo": "CMP-RGP-001: Volcado completo de base de datos ejecutado en $(hostname). Si contiene datos personales, es una exportacion masiva que debe estar justificada.",
+      "wazuh_ids": [
+        "100762"
+      ]
+    },
+    {
+      "clase": "auto_analisis",
+      "clave": "wazuh:100763",
+      "familia": "cumplimiento",
+      "fichero": "deploy/wazuh/reglas/0960-cmp_compliance_rules.xml",
+      "logsource": "wazuh",
+      "nivel": "high",
+      "origen": "detectionlab",
+      "sigma_id": "",
+      "splunk": "",
+      "tacticas": [],
+      "tecnicas": [],
+      "tipo": "wazuh",
+      "titulo": "CMP-RGP-002: Transferencia saliente relevante desde un sistema con datos personales ($(data.src_ip)) hacia $(data.dest_ip). Verificar base juridica de la transferencia internacional.",
+      "wazuh_ids": [
+        "100763"
+      ]
+    },
+    {
+      "clase": "auto_analisis",
+      "clave": "wazuh:100764",
+      "familia": "cumplimiento",
+      "fichero": "deploy/wazuh/reglas/0960-cmp_compliance_rules.xml",
+      "logsource": "wazuh",
+      "nivel": "high",
+      "origen": "detectionlab",
+      "sigma_id": "",
+      "splunk": "",
+      "tacticas": [],
+      "tecnicas": [],
+      "tipo": "wazuh",
+      "titulo": "CMP-RGP-003: El equipo $(hostname) no tiene cifrado el volumen del sistema. Si trata datos personales, incumple el RGPD art. 32.1.a y el ENS mp.info.3.",
+      "wazuh_ids": [
+        "100764"
+      ]
+    },
+    {
+      "clase": "auto_analisis",
+      "clave": "wazuh:100780",
+      "familia": "cumplimiento",
+      "fichero": "deploy/wazuh/reglas/0960-cmp_compliance_rules.xml",
+      "logsource": "wazuh",
+      "nivel": "high",
+      "origen": "detectionlab",
+      "sigma_id": "",
+      "splunk": "",
+      "tacticas": [],
+      "tecnicas": [],
+      "tipo": "wazuh",
+      "titulo": "CMP-TER-001: Acceso de la cuenta de proveedor $(user) desde $(srcip) fuera del horario laboral. Verificar contra la ventana autorizada en el contrato.",
+      "wazuh_ids": [
+        "100780"
+      ]
+    },
+    {
+      "clase": "auto_analisis",
+      "clave": "wazuh:100781",
+      "familia": "cumplimiento",
+      "fichero": "deploy/wazuh/reglas/0960-cmp_compliance_rules.xml",
+      "logsource": "wazuh",
+      "nivel": "high",
+      "origen": "detectionlab",
+      "sigma_id": "",
+      "splunk": "",
+      "tacticas": [],
+      "tecnicas": [],
+      "tipo": "wazuh",
+      "titulo": "CMP-TER-001: Acceso de la cuenta de proveedor $(user) en fin de semana desde $(srcip). Verificar autorizacion previa.",
+      "wazuh_ids": [
+        "100781"
+      ]
+    },
+    {
+      "clase": "auto_analisis",
+      "clave": "wazuh:101300",
+      "familia": "inteligencia",
+      "fichero": "deploy/wazuh/reglas/0980-cti_indicadores.xml",
+      "logsource": "wazuh",
+      "nivel": "high",
+      "origen": "detectionlab",
+      "sigma_id": "",
+      "splunk": "",
+      "tacticas": [],
+      "tecnicas": [
+        "T1204.002"
+      ],
+      "tipo": "wazuh",
+      "titulo": "CTI: proceso ejecutado con un hash presente en la inteligencia de News CTI",
+      "wazuh_ids": [
+        "101300"
+      ]
+    },
+    {
+      "clase": "auto_analisis",
+      "clave": "wazuh:101301",
+      "familia": "inteligencia",
+      "fichero": "deploy/wazuh/reglas/0980-cti_indicadores.xml",
+      "logsource": "wazuh",
+      "nivel": "high",
+      "origen": "detectionlab",
+      "sigma_id": "",
+      "splunk": "",
+      "tacticas": [],
+      "tecnicas": [
+        "T1105"
+      ],
+      "tipo": "wazuh",
+      "titulo": "CTI: fichero escrito en disco con un hash presente en la inteligencia",
+      "wazuh_ids": [
+        "101301"
+      ]
+    },
+    {
+      "clase": "auto_enriq",
+      "clave": "wazuh:101310",
+      "familia": "inteligencia",
+      "fichero": "deploy/wazuh/reglas/0980-cti_indicadores.xml",
+      "logsource": "wazuh",
+      "nivel": "low",
+      "origen": "detectionlab",
+      "sigma_id": "",
+      "splunk": "",
+      "tacticas": [],
+      "tecnicas": [
+        "T1071"
+      ],
+      "tipo": "wazuh",
+      "titulo": "CTI: conexion saliente hacia una IP de la inteligencia de News CTI",
+      "wazuh_ids": [
+        "101310"
+      ]
+    },
+    {
+      "clase": "auto_enriq",
+      "clave": "wazuh:101311",
+      "familia": "inteligencia",
+      "fichero": "deploy/wazuh/reglas/0980-cti_indicadores.xml",
+      "logsource": "wazuh",
+      "nivel": "low",
+      "origen": "detectionlab",
+      "sigma_id": "",
+      "splunk": "",
+      "tacticas": [],
+      "tecnicas": [
+        "T1071.004"
+      ],
+      "tipo": "wazuh",
+      "titulo": "CTI: resolucion DNS de un dominio presente en la inteligencia",
+      "wazuh_ids": [
+        "101311"
+      ]
+    },
+    {
+      "clase": "auto_enriq",
+      "clave": "wazuh:101312",
+      "familia": "inteligencia",
+      "fichero": "deploy/wazuh/reglas/0980-cti_indicadores.xml",
+      "logsource": "wazuh",
+      "nivel": "low",
+      "origen": "detectionlab",
+      "sigma_id": "",
+      "splunk": "",
+      "tacticas": [],
+      "tecnicas": [
+        "T1071.001"
+      ],
+      "tipo": "wazuh",
+      "titulo": "CTI: peticion hacia una URL presente en la inteligencia",
+      "wazuh_ids": [
+        "101312"
+      ]
+    },
+    {
+      "clase": "auto_analisis",
+      "clave": "wazuh:101320",
+      "familia": "inteligencia",
+      "fichero": "deploy/wazuh/reglas/0980-cti_indicadores.xml",
+      "logsource": "wazuh",
+      "nivel": "medium",
+      "origen": "detectionlab",
+      "sigma_id": "",
+      "splunk": "",
+      "tacticas": [],
+      "tecnicas": [
+        "T1071"
+      ],
+      "tipo": "wazuh",
+      "titulo": "CTI: contacto repetido con infraestructura de la inteligencia desde el mismo origen",
+      "wazuh_ids": [
+        "101320"
+      ]
+    },
+    {
+      "clase": "auto_analisis",
+      "clave": "wazuh:101321",
+      "familia": "inteligencia",
+      "fichero": "deploy/wazuh/reglas/0980-cti_indicadores.xml",
+      "logsource": "wazuh",
+      "nivel": "medium",
+      "origen": "detectionlab",
+      "sigma_id": "",
+      "splunk": "",
+      "tacticas": [],
+      "tecnicas": [
+        "T1071.004"
+      ],
+      "tipo": "wazuh",
+      "titulo": "CTI: resoluciones repetidas de dominios de la inteligencia desde el mismo equipo",
+      "wazuh_ids": [
+        "101321"
+      ]
+    }
+  ]
+}

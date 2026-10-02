@@ -1,0 +1,141 @@
+{
+  "avisos": [],
+  "reglas": [
+    {
+      "clase": "auto_cierre",
+      "clave": "infra:110000",
+      "familia": "_generico",
+      "fichero": "wazuh/soc_rules.xml",
+      "logsource": "wazuh",
+      "nivel": "informational",
+      "origen": "infra-socanalyst",
+      "sigma_id": "",
+      "splunk": "",
+      "tacticas": [],
+      "tecnicas": [],
+      "tipo": "wazuh",
+      "titulo": "SOC: evento de sensor recibido",
+      "wazuh_ids": [
+        "110000"
+      ]
+    },
+    {
+      "clase": "auto_analisis",
+      "clave": "infra:110010",
+      "familia": "linux",
+      "fichero": "wazuh/soc_rules.xml",
+      "logsource": "wazuh",
+      "nivel": "medium",
+      "origen": "infra-socanalyst",
+      "sigma_id": "",
+      "splunk": "",
+      "tacticas": [],
+      "tecnicas": [
+        "T1059.004"
+      ],
+      "tipo": "wazuh",
+      "titulo": "SOC/Falco: shell interactiva detectada",
+      "wazuh_ids": [
+        "110010"
+      ]
+    },
+    {
+      "clase": "auto_analisis",
+      "clave": "infra:110020",
+      "familia": "linux",
+      "fichero": "wazuh/soc_rules.xml",
+      "logsource": "wazuh",
+      "nivel": "high",
+      "origen": "infra-socanalyst",
+      "sigma_id": "",
+      "splunk": "",
+      "tacticas": [],
+      "tecnicas": [
+        "T1003.008"
+      ],
+      "tipo": "wazuh",
+      "titulo": "SOC: acceso a /etc/shadow (volcado de credenciales)",
+      "wazuh_ids": [
+        "110020"
+      ]
+    },
+    {
+      "clase": "auto_analisis",
+      "clave": "infra:110030",
+      "familia": "linux",
+      "fichero": "wazuh/soc_rules.xml",
+      "logsource": "wazuh",
+      "nivel": "medium",
+      "origen": "infra-socanalyst",
+      "sigma_id": "",
+      "splunk": "",
+      "tacticas": [],
+      "tecnicas": [
+        "T1105"
+      ],
+      "tipo": "wazuh",
+      "titulo": "SOC/Falco: descarga de fichero remoto (posible payload)",
+      "wazuh_ids": [
+        "110030"
+      ]
+    },
+    {
+      "clase": "auto_cierre",
+      "clave": "infra:110040",
+      "familia": "linux",
+      "fichero": "wazuh/soc_rules.xml",
+      "logsource": "wazuh",
+      "nivel": "informational",
+      "origen": "infra-socanalyst",
+      "sigma_id": "",
+      "splunk": "",
+      "tacticas": [],
+      "tecnicas": [],
+      "tipo": "wazuh",
+      "titulo": "SOC/Falco: creación de packet socket por Suricata (FP suprimido)",
+      "wazuh_ids": [
+        "110040"
+      ]
+    },
+    {
+      "clase": "auto_analisis",
+      "clave": "infra:110050",
+      "familia": "linux",
+      "fichero": "wazuh/soc_rules.xml",
+      "logsource": "wazuh",
+      "nivel": "medium",
+      "origen": "infra-socanalyst",
+      "sigma_id": "",
+      "splunk": "",
+      "tacticas": [],
+      "tecnicas": [
+        "T1053.003"
+      ],
+      "tipo": "wazuh",
+      "titulo": "SOC/Tetragon: modificación de tareas cron (persistencia)",
+      "wazuh_ids": [
+        "110050"
+      ]
+    },
+    {
+      "clase": "auto_analisis",
+      "clave": "infra:110060",
+      "familia": "linux",
+      "fichero": "wazuh/soc_rules.xml",
+      "logsource": "wazuh",
+      "nivel": "medium",
+      "origen": "infra-socanalyst",
+      "sigma_id": "",
+      "splunk": "",
+      "tacticas": [],
+      "tecnicas": [
+        "T1110"
+      ],
+      "tipo": "wazuh",
+      "titulo": "SOC: fuerza bruta SSH (múltiples fallos del mismo origen)",
+      "wazuh_ids": [
+        "110060"
+      ]
+    }
+  ]
+}

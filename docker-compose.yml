@@ -1,0 +1,47 @@
+# Despliegue del motor: motor + proxy TLS.
+#
+#   cp .env.example .env        (y rellenarlo)
+#   docker compose up -d --build
+#
+# Los SIEM y los agentes hablan con https://<RL_DOMINIO>:8443. El motor no
+# expone puerto propio: solo el proxy lo ve.
+name: responselab
+
+services:
+  motor:
+    build: .
+    image: ghcr.io/blueshield-ch4rl13/responselab:latest
+    restart: unless-stopped
+    env_file: .env
+    volumes:
+      - ./clientes:/app/clientes:ro
+      - ./conectores:/app/conectores:ro
+      - datos:/var/lib/responselab
+    expose:
+      - "8080"
+    read_only: true
+    tmpfs:
+      - /tmp
+    cap_drop:
+      - ALL
+    security_opt:
+      - no-new-privileges:true
+
+  proxy:
+    image: caddy:2
+    restart: unless-stopped
+    depends_on:
+      motor:
+        condition: service_healthy
+    ports:
+      - "8443:8443"
+    environment:
+      RL_DOMINIO: ${RL_DOMINIO:-localhost}
+      RL_TLS: ${RL_TLS:-internal}
+    volumes:
+      - ./despliegue/Caddyfile:/etc/caddy/Caddyfile:ro
+      - caddy:/data
+
+volumes:
+  datos:
+  caddy:

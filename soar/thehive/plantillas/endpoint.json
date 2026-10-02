@@ -1,0 +1,209 @@
+{
+  "customFields": [],
+  "description": "Volcado de LSASS, borrado de copias sombra, cifrado masivo, inyeccion, LOLBins, PowerShell ofuscado, tareas y claves de arranque, creacion de servicios y cuentas, ejecucion desde rutas de usuario. Es la familia con mas volumen del catalogo y la que peor se tria mirando solo el evento: crear un servicio, lanzar una tarea programada o ejecutar PowerShell codificado es tambien la forma normal de administrar un parque Windows. Lo que decide el veredicto casi nunca esta en la linea de comandos sino en el contexto - quien es el padre, si el binario esta firmado y ya se conoce en el parque, si hay ventana de despliegue abierta y si la misma senal aparece en cien equipos o en uno. Por eso es donde el triaje automatico mas rebaja la cola, y tambien donde un cierre mal razonado tiene mas ocasiones de pasar desapercibido entre el ruido.\n\nGenerada por ResponseLab desde el playbook de DetectionLab (endpoint).",
+  "displayName": "ResponseLab · Ejecucion y persistencia en el puesto Windows",
+  "flag": false,
+  "name": "ResponseLab - endpoint",
+  "pap": 2,
+  "severity": 2,
+  "tags": [
+    "responselab",
+    "rl:familia=endpoint"
+  ],
+  "tasks": [
+    {
+      "description": "Como: Sysmon EID 1 filtrado por ProcessGuid ascendente, 3 niveles\nDonde: siem",
+      "flag": false,
+      "group": "1. Evidencia",
+      "mandatory": false,
+      "order": 0,
+      "title": "Arbol de procesos completo, tres niveles hacia arriba"
+    },
+    {
+      "description": "Como: Sysmon EID 3 por ProcessGuid\nDonde: siem",
+      "flag": false,
+      "group": "1. Evidencia",
+      "mandatory": false,
+      "order": 1,
+      "title": "Conexiones de red del proceso en los 10 minutos previos y posteriores"
+    },
+    {
+      "description": "Como: Sysmon EID 11 por ProcessGuid\nDonde: siem",
+      "flag": false,
+      "group": "1. Evidencia",
+      "mandatory": false,
+      "order": 2,
+      "title": "Ficheros escritos por el proceso, para separar descarga de ejecucion"
+    },
+    {
+      "description": "Como: stats min(_time) dc(host) by Hashes\nDonde: siem",
+      "flag": false,
+      "group": "1. Evidencia",
+      "mandatory": false,
+      "order": 3,
+      "title": "Hash del binario y su primera aparicion y difusion en el parque"
+    },
+    {
+      "description": "Como: schtasks /query /fo LIST /v y reg query de las claves Run y RunOnce\nDonde: agente",
+      "flag": false,
+      "group": "1. Evidencia",
+      "mandatory": false,
+      "order": 4,
+      "title": "Persistencia declarada en el equipo en el momento del evento"
+    },
+    {
+      "description": "Como: query user\nDonde: agente",
+      "flag": false,
+      "group": "1. Evidencia",
+      "mandatory": false,
+      "order": 5,
+      "title": "Sesiones abiertas y quien las abrio"
+    },
+    {
+      "description": "Fuente: inventario. Si es afirmativa, baja la severidad (un escalon como mucho).\nResponseLab la contesta sola si hay datos; si queda pendiente, contestarla aqui.",
+      "flag": false,
+      "group": "2. Triaje",
+      "mandatory": false,
+      "order": 6,
+      "title": "El proceso padre es el agente de distribucion de software del parque y hay ventana de despliegue abierta"
+    },
+    {
+      "description": "Fuente: catalogo_software. Si es afirmativa, baja la severidad (un escalon como mucho).\nPregunta para el analista: la maquina no tiene datos para contestarla.\nReduce, no descarta. Los LOLBins que cubren varias de estas reglas estan firmados por Microsoft y llevan ahi desde la instalacion.",
+      "flag": false,
+      "group": "2. Triaje",
+      "mandatory": false,
+      "order": 7,
+      "title": "El binario esta firmado por un fabricante del catalogo y lleva mas de 30 dias en el parque"
+    },
+    {
+      "description": "Fuente: historico_siem. Si es afirmativa, baja la severidad (un escalon como mucho).\nResponseLab la contesta sola si hay datos; si queda pendiente, contestarla aqui.\nLa administracion es masiva y programada; la intrusion suele ser puntual.",
+      "flag": false,
+      "group": "2. Triaje",
+      "mandatory": false,
+      "order": 8,
+      "title": "La misma senal aparece hoy en mas de veinte equipos en la misma hora"
+    },
+    {
+      "description": "Fuente: historico_siem. Si es afirmativa, sube la severidad.\nResponseLab la contesta sola si hay datos; si queda pendiente, contestarla aqui.\nCuenta lo que el motor ha visto en alertas, no toda la telemetria. Para \"primera vez en el parque\" de verdad, consulta el SIEM.",
+      "flag": false,
+      "group": "2. Triaje",
+      "mandatory": false,
+      "order": 9,
+      "title": "Es la primera vez que ese hash se ejecuta en todo el parque"
+    },
+    {
+      "description": "Fuente: historico_siem. Si es afirmativa, sube la severidad.\nResponseLab la contesta sola si hay datos; si queda pendiente, contestarla aqui.\nEn esta familia el caso rara vez lo hace una alerta; lo hace la secuencia.",
+      "flag": false,
+      "group": "2. Triaje",
+      "mandatory": false,
+      "order": 10,
+      "title": "El equipo acumula alertas de otras familias en las ultimas 24 h"
+    },
+    {
+      "description": "Fuente: evento. Si es afirmativa, sube la severidad.\nResponseLab la contesta sola si hay datos; si queda pendiente, contestarla aqui.\nAhi el plazo deja de contarse en minutos de triaje y pasa a contarse en ficheros cifrados.",
+      "flag": false,
+      "group": "2. Triaje",
+      "mandatory": false,
+      "order": 11,
+      "title": "El evento es borrado de copias sombra o cifrado masivo"
+    },
+    {
+      "description": "Alcance: El equipo afectado. No toca cuentas ni otros equipos.\nRadio: equipo · Reversible: si\nAutomatica en clase auto_contener si la politica del cliente lo permite.\nAccion de ResponseLab: endpoint.aislar · se deshace con endpoint.liberar\nExcepcion: Si el inventario marca el equipo como servidor de produccion, NO se\naisla: se prepara la accion y se pide aprobacion. Aislar un servidor\nautomaticamente convierte un incidente de seguridad en una caida.\n\nPor que: Reversible en un comando y el peor caso es veinte minutos sin trabajar.\nFrente a eso, un cifrado en marcha o un canal de C2 abierto avanzan\ndurante todo el tiempo que dura el triaje.\n",
+      "flag": false,
+      "group": "3. Contencion",
+      "mandatory": false,
+      "order": 12,
+      "title": "Aislar el endpoint en la red, dejando solo la comunicacion con el manager"
+    },
+    {
+      "description": "Alcance: Un unico proceso identificado por GUID, nunca por nombre de imagen\nRadio: proceso · Reversible: no\nAutomatica en clase auto_contener si la politica del cliente lo permite.\nAccion de ResponseLab: proceso.matar\nExcepcion: Si el binario esta firmado y en el catalogo de aplicaciones de negocio,\no el equipo es servidor de produccion, se prepara y espera.\n\nPor que: No se deshace, pero el alcance es un proceso concreto y el error se\npaga con un servicio que hay que rearrancar. Matar por nombre de imagen\nsi seria peligroso, porque el mismo nombre puede corresponder a diez\nprocesos legitimos; por eso la accion solo acepta GUID.\n",
+      "flag": false,
+      "group": "3. Contencion",
+      "mandatory": false,
+      "order": 13,
+      "title": "Matar el proceso por su ProcessGuid"
+    },
+    {
+      "description": "Alcance: Un fichero. No borra, mueve.\nRadio: objeto · Reversible: si\nAutomatica en clase auto_contener si la politica del cliente lo permite.\nAccion de ResponseLab: fichero.cuarentena · se deshace con fichero.restaurar\nPor que: Es un movimiento con registro, no un borrado: si resulta ser legitimo se\ndevuelve a su sitio con la ruta guardada. Dejarlo donde esta permite que\nla tarea programada que lo invoca lo vuelva a lanzar cada cinco minutos.\n",
+      "flag": false,
+      "group": "3. Contencion",
+      "mandatory": false,
+      "order": 14,
+      "title": "Poner el fichero en cuarentena moviendolo a la ruta de custodia, conservando hash y ruta original"
+    },
+    {
+      "description": "Alcance: El elemento de persistencia concreto, no la cuenta ni el equipo\nRadio: objeto · Reversible: si\nAutomatica en clase auto_contener si la politica del cliente lo permite.\nAccion de ResponseLab: persistencia.deshabilitar · se deshace con persistencia.restaurar\nPor que: Se exporta antes, asi que restaurarlo es un comando. Y es la accion que\nevita el fallo mas comun de esta familia: contener el proceso y dejar\nviva la persistencia que lo relanza en el siguiente arranque.\n",
+      "flag": false,
+      "group": "3. Contencion",
+      "mandatory": false,
+      "order": 15,
+      "title": "Deshabilitar la tarea programada o el valor Run creado, exportando antes su definicion"
+    },
+    {
+      "description": "Alcance: Toda la flota Windows\nRadio: organizacion · Reversible: si\nRequiere aprobacion.\nAccion de ResponseLab: flota.bloquear_hash · se deshace con flota.desbloquear_hash\nPor que: Se revierte quitando la regla, pero mientras esta puesta impide arrancar\nese binario en todos los equipos a la vez. Si el hash resulta ser el de\nuna utilidad de negocio poco conocida, el sintoma que ve la gente es una\naplicacion que deja de abrir sin explicacion, y nadie lo relaciona con\nel incidente. Se deja preparada con el hash resuelto y espera.\n",
+      "flag": false,
+      "group": "3. Contencion",
+      "mandatory": false,
+      "order": 16,
+      "title": "Bloquear la ejecucion del hash en todo el parque mediante politica de control de aplicaciones"
+    },
+    {
+      "description": "Ejecucion desde ruta de usuario o creacion de servicio (soc_edr_012, proc_service_create_scexe) cuyo proceso padre es el agente de distribucion de software del parque, con binario firmado por un fabricante del catalogo, dentro de una ventana de despliegue publicada en el ITSM y con la misma senal presente en al menos otros cinco equipos del mismo grupo en esa ventana.\n\nPor que es seguro: Un ciclo de despliegue produce esta alerta cientos de veces y siempre igual. Las cuatro condiciones son hechos independientes - parentesco, firma, ventana declarada y caracter masivo - y un atacante tendria que reunirlas todas a la vez; con solo el parentesco bastaria con lanzar el binario desde un hijo del agente. El coste de no cerrarlas no es cero: es una cola en la que el turno aprende a descartar de un vistazo esta regla concreta, que es como se pierde la vez que si importa.",
+      "flag": false,
+      "group": "4. Cierre",
+      "mandatory": false,
+      "order": 17,
+      "title": "Comprobar si se puede cerrar: Ejecucion desde ruta de usuario o creacion de servicio (soc_edr_012, proc_service_create_scexe) cuyo proceso padre es el agente de distribucion de software del parque, con binario firmado por un fabri"
+    },
+    {
+      "description": "Conexion saliente inusual de un proceso del sistema (net_rare_process_external_conn) cuando el proceso esta firmado, reside en System32, el destino figura en la lista de puntos de actualizacion aprobados y el par proceso-destino coincide con el de la linea base del grupo de equipos.\n\nPor que es seguro: La rareza que dispara esta regla es estadistica, no semantica: un proceso del sistema hablando con el servicio de actualizacion de su propio fabricante es raro para el equipo y normal para el parque. La condicion decisiva no es la firma, que un atacante que vive de binarios del sistema ya tiene, sino que el par proceso-destino sea el mismo que el resto del grupo. Si el destino no esta en la lista aprobada la condicion no se cumple y el caso sigue vivo.",
+      "flag": false,
+      "group": "4. Cierre",
+      "mandatory": false,
+      "order": 18,
+      "title": "Comprobar si se puede cerrar: Conexion saliente inusual de un proceso del sistema (net_rare_process_external_conn) cuando el proceso esta firmado, reside en System32, el destino figura en la lista de puntos de actualizacion aproba"
+    },
+    {
+      "description": "Decision de negocio, no tecnica.",
+      "flag": false,
+      "group": "5. Requiere persona",
+      "mandatory": false,
+      "order": 19,
+      "title": "Reinstalar el equipo"
+    },
+    {
+      "description": "Hay que decidir el punto de restauracion y asumir la perdida de datos entre ese punto y ahora. Eso lo firma alguien.",
+      "flag": false,
+      "group": "5. Requiere persona",
+      "mandatory": false,
+      "order": 20,
+      "title": "Restaurar desde copia tras un cifrado"
+    },
+    {
+      "description": "Afecta a mas equipos que el incidente y tiene coste propio.",
+      "flag": false,
+      "group": "5. Requiere persona",
+      "mandatory": false,
+      "order": 21,
+      "title": "Activar el plan de continuidad"
+    },
+    {
+      "description": "Cortar el acceso a quien no debia tiene coste inmediato y visible.",
+      "flag": false,
+      "group": "5. Requiere persona",
+      "mandatory": false,
+      "order": 22,
+      "title": "Deshabilitar la cuenta local creada o el usuario implicado"
+    },
+    {
+      "description": "Escalar a L2 en 20 minutos.\nA L3 si: Hay borrado de copias sombra, cifrado masivo o named pipe de framework de C2\nA guardia si: El cifrado esta en marcha o el equipo afectado es un servidor de ficheros",
+      "flag": false,
+      "group": "6. Escalado",
+      "mandatory": false,
+      "order": 23,
+      "title": "Escalado: L2 en 20 min"
+    }
+  ],
+  "titlePrefix": "[RL Endpoint]",
+  "tlp": 2
+}

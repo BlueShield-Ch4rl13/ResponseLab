@@ -1,0 +1,153 @@
+{
+  "customFields": [],
+  "description": "Coincidencias contra las listas de News CTI. Lo que las distingue es que la fiabilidad depende por completo del tipo de indicador, no de la regla: un hash coincide o no coincide, mientras que una IP coincide muchas veces por sinkholes, CDN compartidas y dominios reciclados. Por eso aqui el triaje no empieza preguntando que paso, sino que clase de indicador es.\n\nGenerada por ResponseLab desde el playbook de DetectionLab (inteligencia).",
+  "displayName": "ResponseLab · Coincidencias con la inteligencia de amenazas",
+  "flag": false,
+  "name": "ResponseLab - inteligencia",
+  "pap": 2,
+  "severity": 2,
+  "tags": [
+    "responselab",
+    "rl:familia=inteligencia"
+  ],
+  "tasks": [
+    {
+      "description": "Como: Sysmon EID 1 y 3 correlados por ProcessGuid\nDonde: siem",
+      "flag": false,
+      "group": "1. Evidencia",
+      "mandatory": false,
+      "order": 0,
+      "title": "Proceso que origino la conexion o escribio el fichero"
+    },
+    {
+      "description": "Como: Lookup contra intel/listas/\nDonde: manager",
+      "flag": false,
+      "group": "1. Evidencia",
+      "mandatory": false,
+      "order": 1,
+      "title": "Antiguedad del indicador en la lista y su puntuacion"
+    },
+    {
+      "description": "Como: dc(agent.name) filtrando por el valor del indicador en 24 h\nDonde: siem",
+      "flag": false,
+      "group": "1. Evidencia",
+      "mandatory": false,
+      "order": 2,
+      "title": "Cuantos equipos distintos del parque han tocado el indicador"
+    },
+    {
+      "description": "Fuente: evento. Si es afirmativa, sube la severidad.\nResponseLab la contesta sola si hay datos; si queda pendiente, contestarla aqui.\nUn hash no comparte infraestructura con nada legitimo.",
+      "flag": false,
+      "group": "2. Triaje",
+      "mandatory": false,
+      "order": 3,
+      "title": "El indicador es un hash de fichero"
+    },
+    {
+      "description": "Fuente: resolucion_dns. Si es afirmativa, baja la severidad (un escalon como mucho).\nResponseLab la contesta sola si hay datos; si queda pendiente, contestarla aqui.",
+      "flag": false,
+      "group": "2. Triaje",
+      "mandatory": false,
+      "order": 4,
+      "title": "El destino resuelve a un proveedor de CDN o de nube reconocido"
+    },
+    {
+      "description": "Fuente: historico_siem. Si es afirmativa, baja la severidad (un escalon como mucho).\nResponseLab la contesta sola si hay datos; si queda pendiente, contestarla aqui.\nInfraestructura compartida, no objetivo dirigido.",
+      "flag": false,
+      "group": "2. Triaje",
+      "mandatory": false,
+      "order": 5,
+      "title": "Mas de diez equipos han tocado el mismo destino en 24 h"
+    },
+    {
+      "description": "Fuente: cti_local. Si es afirmativa, baja la severidad (un escalon como mucho).\nResponseLab la contesta sola si hay datos; si queda pendiente, contestarla aqui.",
+      "flag": false,
+      "group": "2. Triaje",
+      "mandatory": false,
+      "order": 6,
+      "title": "El indicador tiene mas de 20 dias"
+    },
+    {
+      "description": "Alcance: Un par equipo-destino\nRadio: equipo · Reversible: si\nAutomatica en clase auto_contener si la politica del cliente lo permite.\nAccion de ResponseLab: red.bloquear_destino_equipo · se deshace con red.desbloquear_destino_equipo\nPor que: Se deshace borrando una linea y solo afecta al equipo que ya esta bajo\nsospecha. Corta el canal sin tener que decidir todavia si el destino es\nmalicioso para toda la organizacion.\n",
+      "flag": false,
+      "group": "3. Contencion",
+      "mandatory": false,
+      "order": 7,
+      "title": "Bloquear el destino en el proxy de salida solo para el equipo afectado"
+    },
+    {
+      "description": "Alcance: Un fichero en un equipo, movido al almacen de cuarentena\nRadio: objeto · Reversible: si\nAutomatica en clase auto_contener si la politica del cliente lo permite.\nAccion de ResponseLab: fichero.cuarentena · se deshace con fichero.restaurar\nPor que: El fichero se conserva, no se borra, asi que la accion se deshace y la\nevidencia sobrevive. Solo se aplica a coincidencias de hash, que son las\nunicas fiables por si solas.\n",
+      "flag": false,
+      "group": "3. Contencion",
+      "mandatory": false,
+      "order": 8,
+      "title": "Poner en cuarentena el fichero cuyo hash coincidio"
+    },
+    {
+      "description": "Alcance: El equipo afectado\nRadio: equipo · Reversible: si\nAutomatica en clase auto_contener si la politica del cliente lo permite.\nAccion de ResponseLab: endpoint.aislar · se deshace con endpoint.liberar\nExcepcion: Si el inventario marca el equipo como servidor de produccion, no se\naisla: se prepara y se pide aprobacion.\n\nPor que: Reversible en un comando y el peor caso son veinte minutos de trabajo\nperdidos. Solo se aplica cuando el indicador es un hash o cuando el\nequipo acumula varios indicadores distintos.\n",
+      "flag": false,
+      "group": "3. Contencion",
+      "mandatory": false,
+      "order": 9,
+      "title": "Aislar el endpoint en la red, dejando solo la comunicacion con el manager"
+    },
+    {
+      "description": "Alcance: Todo el trafico saliente de la organizacion hacia ese destino\nRadio: organizacion · Reversible: si\nRequiere aprobacion.\nAccion de ResponseLab: perimetro.bloquear_destino · se deshace con perimetro.desbloquear_destino\nPor que: Reversible, pero el radio es toda la organizacion. Un destino mal\nbloqueado corta un servicio a gente que no se entera de por que, y la\ninteligencia de reputacion se equivoca lo suficiente como para que esa\ndecision no la tome una maquina.\n",
+      "flag": false,
+      "group": "3. Contencion",
+      "mandatory": false,
+      "order": 10,
+      "title": "Bloquear el destino en el cortafuegos perimetral para toda la organizacion"
+    },
+    {
+      "description": "Coincidencia unica de IP o dominio, de nivel medio o bajo, cuyo PTR y ASN corresponden a un proveedor de CDN o de nube publica reconocido, con mas de diez equipos del parque hablando con ese mismo destino en 24 h y ninguno de ellos con otra alerta abierta.\n\nPor que es seguro: Es el patron exacto del indicador reciclado: el atacante alquilo una IP que ahora sirve a cientos de sitios legitimos. Cerrarlo es correcto y no cerrarlo es lo que hace que el turno deje de mirar esta clase de alerta.",
+      "flag": false,
+      "group": "4. Cierre",
+      "mandatory": false,
+      "order": 11,
+      "title": "Comprobar si se puede cerrar: Coincidencia unica de IP o dominio, de nivel medio o bajo, cuyo PTR y ASN corresponden a un proveedor de CDN o de nube publica reconocido, con mas de diez equipos del parque hablando con ese mismo des"
+    },
+    {
+      "description": "Coincidencia de dominio contra un indicador de mas de 25 dias que ya no figura en el feed de la ultima sincronizacion.\n\nPor que es seguro: La lista se refresca a diario con caducidad de 30 dias. Un indicador que salio del feed y sigue coincidiendo es un residuo de la lista, no una deteccion.",
+      "flag": false,
+      "group": "4. Cierre",
+      "mandatory": false,
+      "order": 12,
+      "title": "Comprobar si se puede cerrar: Coincidencia de dominio contra un indicador de mas de 25 dias que ya no figura en el feed de la ultima sincronizacion."
+    },
+    {
+      "description": "Afecta a todas las detecciones futuras. Hay que confirmar que es ruido y no una infeccion que nadie ha mirado.",
+      "flag": false,
+      "group": "5. Requiere persona",
+      "mandatory": false,
+      "order": 13,
+      "title": "Retirar un indicador de la lista por falso positivo repetido"
+    },
+    {
+      "description": "Radio de toda la organizacion.",
+      "flag": false,
+      "group": "5. Requiere persona",
+      "mandatory": false,
+      "order": 14,
+      "title": "Bloquear en el perimetro o en el DNS corporativo"
+    },
+    {
+      "description": "Casi nunca es correcto. Hace falta una segunda senal independiente.",
+      "flag": false,
+      "group": "5. Requiere persona",
+      "mandatory": false,
+      "order": 15,
+      "title": "Declarar comprometido un equipo por una sola coincidencia de reputacion"
+    },
+    {
+      "description": "Escalar a L2 en 30 minutos.\nA L3 si: La coincidencia es de hash o el equipo acumula tres indicadores distintos",
+      "flag": false,
+      "group": "6. Escalado",
+      "mandatory": false,
+      "order": 16,
+      "title": "Escalado: L2 en 30 min"
+    }
+  ],
+  "titlePrefix": "[RL Inteligencia]",
+  "tlp": 2
+}

@@ -1,0 +1,27 @@
+# Webhook generico: cualquier accion del catalogo hacia una URL propia
+#
+# Util para herramientas que ya tienen un "receptor" (un flujo de Power
+# Automate, un endpoint interno, un runbook de Azure Automation). El receptor
+# recibe accion, objetivo y contexto, y decide.
+nombre: webhook-generico
+descripcion: Envia la accion a un endpoint HTTP propio
+base_url_env: WEBHOOK_GENERICO_URL
+autenticacion:
+  tipo: cabecera
+  nombre: X-ResponseLab-Token
+  valor_env: WEBHOOK_GENERICO_TOKEN
+acciones:
+  correo.bloquear_remitente:
+    metodo: POST
+    ruta: /responselab/correo/bloquear-remitente
+    cuerpo: {remitente: "{{ alerta.correo.remitente }}", ip: "{{ alerta.red.ip_origen }}", incidente: "{{ incidente.id }}"}
+    detalle: "bloqueo de remitente enviado al receptor"
+  correo.desbloquear_remitente:
+    metodo: POST
+    ruta: /responselab/correo/desbloquear-remitente
+    cuerpo: {remitente: "{{ alerta.correo.remitente }}", incidente: "{{ incidente.id }}"}
+  aplicacion.invalidar_sesion:
+    metodo: POST
+    ruta: /responselab/aplicacion/invalidar-sesion
+    cuerpo: {sesion: "{{ alerta.sesion.id }}", usuario: "{{ alerta.usuario.nombre }}", incidente: "{{ incidente.id }}"}
+    detalle: "invalidacion de sesion enviada a la aplicacion"

@@ -1,0 +1,21 @@
+# Proxy TLS delante del motor.
+#
+# RL_DOMINIO: nombre por el que llegan los SIEM y los agentes.
+# RL_TLS: "internal" (CA propia de Caddy, para laboratorio: los clientes tienen
+# que confiar en su raiz, /data/caddy/pki/authorities/local/root.crt) o un
+# correo para certificados de Let's Encrypt con un dominio publico.
+{$RL_DOMINIO:localhost}:8443 {
+	tls {$RL_TLS:internal}
+	encode zstd gzip
+	reverse_proxy motor:8080
+	header {
+		Strict-Transport-Security "max-age=31536000"
+		X-Content-Type-Options "nosniff"
+		Referrer-Policy "no-referrer"
+		-Server
+	}
+	log {
+		output stdout
+		format json
+	}
+}

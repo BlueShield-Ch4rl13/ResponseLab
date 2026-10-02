@@ -1,0 +1,177 @@
+familia: correo
+nombre: Phishing y abuso del canal de correo
+descripcion: |
+    Dominio recien registrado, suplantacion de directivo, fallo de DMARC en el
+    dominio propio, adjunto de formato de entrega, URL pulsada, regla de buzon
+    con reenvio externo, envio masivo interno y HTML smuggling. La pregunta que
+    decide el caso no es si el correo era malicioso - de eso ya opina la
+    pasarela - sino si alguien actuo sobre el: si se entrego, si se abrio, si
+    se pulso el enlace y si despues hubo una autenticacion. Y esa cadena se
+    responde entera leyendo registros, sin molestar a nadie y sin tocar ningun
+    equipo, asi que el triaje de esta familia puede completarse antes de que
+    llegue una persona. La segunda particularidad es el alcance: nunca es un
+    buzon. Una campana entra en decenas de buzones y el caso solo esta bien
+    cerrado cuando se han mirado todos, no solo el del que la reporto.
+
+enriquecimiento:
+  - fuente: pasarela_correo
+    sobre: [mensaje]
+    detalle: Veredicto, estado de entrega por destinatario y a cuantos buzones alcanzo la campana
+  - fuente: cti_local
+    sobre: [url, dominio, hash, ip]
+    detalle: Listas de intel/listas/ generadas desde News CTI
+  - fuente: directorio
+    sobre: [usuario]
+    detalle: Departamento y si el destinatario tiene atribuciones de pago o acceso a datos
+  - fuente: historico_siem
+    sobre: [usuario]
+    detalle: Autenticaciones del destinatario en la hora posterior al clic, con IP y resultado
+  - fuente: inventario_dominios
+    sobre: [dominio]
+    detalle: Edad del dominio remitente y su distancia con el dominio propio
+
+evidencia:
+  - descripcion: Lista completa de destinatarios del mismo mensaje o campana
+    comando: "Busqueda por message-id, asunto y remitente en la pasarela, sin filtrar por el que reporto"
+    donde: api
+  - descripcion: Registro de clics del proveedor, con hora y usuario
+    comando: "Consulta del reescritor de enlaces por URL y por campana"
+    donde: api
+  - descripcion: "Estado de entrega por destinatario: entregado, en cuarentena o retirado"
+    comando: "Seguimiento de mensaje de la pasarela y del servicio de correo"
+    donde: api
+  - descripcion: Cabeceras completas con resultados de SPF, DKIM y DMARC
+    comando: "Cabeceras originales del mensaje desde la pasarela"
+    donde: api
+  - descripcion: Comportamiento del adjunto detonado en la caja de arena
+    comando: "Informe de detonacion del proveedor, no solo su veredicto"
+    donde: api
+  - descripcion: Autenticaciones del usuario que pulso en los 60 minutos siguientes
+    comando: "search user=X earliest=<hora_clic> latest=+60m | table _time src_ip result mfa"
+    donde: siem
+    nota: Es lo que separa un clic de un robo de credencial consumado.
+  - descripcion: Reglas de buzon y reenvios creados en ese buzon en las 24 h siguientes
+    comando: "Get-InboxRule -Mailbox X y auditoria de New-InboxRule"
+    donde: api
+
+triaje:
+  - pregunta: El mensaje quedo en cuarentena y ningun buzon lo recibio
+    fuente: pasarela_correo
+    si_afirmativo: bajar_severidad
+  - pregunta: El registro de clics no tiene ninguna entrada para las URL del mensaje
+    fuente: pasarela_correo
+    si_afirmativo: bajar_severidad
+    nota: Sin entrega y sin clic no hubo accion del usuario. Es la unica combinacion de esta familia que cierra un caso por si sola.
+  - pregunta: Hay un clic registrado por algun destinatario
+    fuente: pasarela_correo
+    si_afirmativo: subir_severidad
+  - pregunta: Hay un inicio de sesion correcto del usuario que pulso, desde una IP nueva, en los 60 minutos siguientes
+    fuente: correlacion
+    si_afirmativo: subir_severidad
+    nota: Es el patron del robo de credencial completado, y a partir de ahi el caso deja de ser de correo y pasa a ser de identidad.
+  - pregunta: El remitente suplanta a un directivo y el destinatario tiene atribuciones de pago
+    fuente: directorio
+    si_afirmativo: subir_severidad
+  - pregunta: El dominio remitente se registro hace menos de 30 dias
+    fuente: inventario_dominios
+    si_afirmativo: subir_severidad
+
+cierre_automatico:
+  - condicion: |
+        Mensaje bloqueado o puesto en cuarentena por la pasarela antes de la
+        entrega, con cero destinatarios en estado entregado y sin ninguna
+        entrada en el registro de clics para las URL que contiene.
+    justificacion: |
+        Si no llego a ningun buzon no hubo nada sobre lo que nadie pudiera
+        actuar, y las dos comprobaciones se hacen sobre registros del proveedor
+        que existen con independencia del criterio de quien mira el caso: no se
+        esta interpretando, se esta leyendo. El unico escenario que se escapa
+        - que el mismo remitente entrase tambien por otro canal - esta regla no
+        lo ve de ninguna forma, y lo cubre la caza programada sobre el dominio
+        remitente. Sostener estos casos abiertos supondria dedicar el turno a
+        confirmar que la pasarela hizo su trabajo.
+  - condicion: |
+        Envio masivo interno (soc_mail_007) desde un buzon de la lista de
+        emisores autorizados - comunicacion interna, recursos humanos,
+        sistemas - dentro de una ventana de campana registrada.
+    justificacion: |
+        Es una operacion planificada que se repite cada mes y produce
+        exactamente la misma senal que una cuenta comprometida enviando
+        phishing interno. Distinguirla por buzon emisor y ventana registrada es
+        barato y objetivo. Y el riesgo de que la cuenta autorizada sea
+        precisamente la comprometida no queda sin cubrir: la senal que
+        importaria en ese caso - regla de reenvio nueva, inicio de sesion
+        anomalo, autenticacion desde IP nueva - sale por otras reglas que no
+        cierran solas.
+
+contencion:
+  - accion: Retirar el mensaje de todos los buzones que lo recibieron mediante borrado reversible
+    alcance: Un mensaje, en los buzones que lo tienen. Queda recuperable en Elementos recuperables.
+    radio: equipo
+    reversible: "si"
+    requiere_aprobacion: "no"
+    justificacion: |
+        Retirar un correo legitimo por error molesta a quien lo esperaba y se
+        deshace en un comando, con el mensaje intacto. Dejar un phishing en
+        cincuenta buzones mientras se tria garantiza que alguien mas lo pulse,
+        y el clic no se deshace en ningun comando.
+    excepcion: |
+        Si el remitente pertenece a un dominio de cliente o proveedor
+        registrado, se prepara y se avisa antes de retirar: sacar correo de
+        negocio de los buzones sin explicacion genera mas ruido y mas llamadas
+        de las que ahorra.
+  - accion: Deshabilitar la regla de reenvio externa creada, guardando antes su definicion completa
+    alcance: Una regla de buzon. No toca el buzon, la cuenta ni el resto de reglas.
+    radio: objeto
+    reversible: "si"
+    requiere_aprobacion: "no"
+    justificacion: |
+        La definicion se exporta antes, asi que restaurarla es un comando. Y es
+        el unico canal de esta familia que sigue trabajando por su cuenta,
+        correo a correo, mientras el caso espera turno.
+    excepcion: |
+        Si el buzon es funcional o compartido, se prepara y se pide aprobacion:
+        un reenvio en soporte@ o en facturacion@ puede ser parte de un flujo de
+        negocio y desactivarlo pierde correo de clientes sin que nadie lo note
+        hasta que reclaman.
+  - accion: Anadir la URL concreta a la lista de bloqueo del reescritor de enlaces del proveedor
+    alcance: Una URL. No el dominio que la aloja.
+    radio: equipo
+    reversible: "si"
+    requiere_aprobacion: "no"
+    justificacion: |
+        Bloquea el segundo clic de los mensajes ya entregados sin tocar el resto
+        del dominio, que en el caso habitual - un alojamiento compartido o un
+        acortador - sirve tambien contenido legitimo. Se quita en un minuto y
+        el peor caso es que alguien vea una pagina de aviso en lugar de un
+        enlace bueno.
+  - accion: Bloquear el dominio o la IP remitente en la pasarela de correo
+    alcance: Todo el correo entrante de ese origen, para toda la organizacion
+    radio: organizacion
+    reversible: "si"
+    requiere_aprobacion: "si"
+    justificacion: |
+        Si el dominio suplantado es el de un proveedor real, o el remitente es
+        un servicio de envio compartido, el bloqueo tira correo de negocio y el
+        rebote lo ve el cliente, no el SOC. Ademas un bloqueo por dominio dura
+        mucho mas que la campana que lo motivo y acaba en una lista que nadie
+        revisa. Se deja preparada y espera.
+
+requiere_persona:
+  - situacion: Contactar con el usuario que pulso
+    motivo: |
+        Hay que preguntarle si escribio credenciales, y esa conversacion
+        determina el resto del caso. No la hace un correo automatico.
+  - situacion: Restablecer la credencial del usuario
+    motivo: Cortar el acceso a quien no debia tiene coste inmediato y visible.
+  - situacion: Avisar al resto de la organizacion de la campana
+    motivo: |
+        Un aviso general mal calibrado ensena a la gente a ignorar los avisos.
+        Se decide con comunicacion.
+  - situacion: Denunciar el dominio o pedir su retirada
+    motivo: Tramite externo con implicaciones legales y de imagen.
+
+escalado:
+  a: L2
+  plazo_min: 20
+  a_L3_si: Hay clic confirmado con autenticacion posterior desde IP nueva, o se creo una regla de reenvio externa en el buzon del que pulso

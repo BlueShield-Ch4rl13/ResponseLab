@@ -1,0 +1,41 @@
+{
+  "customFields": [],
+  "description": "Alerta de una regla que el catalogo no conoce o de una familia sin playbook. Se trata como analisis: enriquecimiento, caso y escalado a L2. La clase se limita a auto_analisis aunque el SIEM la marque como critica, porque contener sin saber que se contiene es exactamente el fallo que este proyecto existe para evitar.\n\nGenerada por ResponseLab desde el playbook de ResponseLab (_generico).",
+  "displayName": "ResponseLab · Generico (regla o familia sin playbook)",
+  "flag": false,
+  "name": "ResponseLab - _generico",
+  "pap": 2,
+  "severity": 2,
+  "tags": [
+    "responselab",
+    "rl:familia=_generico"
+  ],
+  "tasks": [
+    {
+      "description": "Como: Busqueda del identificador de la alerta en el SIEM\nDonde: siem",
+      "flag": false,
+      "group": "1. Evidencia",
+      "mandatory": false,
+      "order": 0,
+      "title": "Revisar el evento original y localizar la regla que lo genero"
+    },
+    {
+      "description": "No hay playbook para esta regla o familia",
+      "flag": false,
+      "group": "5. Requiere persona",
+      "mandatory": false,
+      "order": 1,
+      "title": "Toda la alerta"
+    },
+    {
+      "description": "Escalar a L2 en 30 minutos.",
+      "flag": false,
+      "group": "6. Escalado",
+      "mandatory": false,
+      "order": 2,
+      "title": "Escalado: L2 en 30 min"
+    }
+  ],
+  "titlePrefix": "[RL Generico]",
+  "tlp": 2
+}

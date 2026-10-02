@@ -1,0 +1,70 @@
+{
+  "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
+  "contentVersion": "1.0.0.0",
+  "metadata": {
+    "descripcion": "ResponseLab: regla de automatizacion que lanza el playbook en cada incidente nuevo. Despliega antes playbooks.json y ejecuta conceder-permisos.ps1."
+  },
+  "parameters": {
+    "Workspace": {
+      "type": "string",
+      "metadata": {
+        "description": "Nombre del workspace de Log Analytics con Sentinel"
+      }
+    },
+    "Modo": {
+      "type": "string",
+      "allowedValues": [
+        "nativo",
+        "motor"
+      ],
+      "defaultValue": "nativo",
+      "metadata": {
+        "description": "nativo = RL-Respuesta decide en Azure; motor = RL-Reenviar-al-motor envia el incidente a ResponseLab"
+      }
+    },
+    "GrupoPlaybooks": {
+      "type": "string",
+      "defaultValue": "[resourceGroup().name]",
+      "metadata": {
+        "description": "Grupo de recursos donde se desplego playbooks.json"
+      }
+    },
+    "Orden": {
+      "type": "int",
+      "defaultValue": 100,
+      "minValue": 1,
+      "maxValue": 1000
+    }
+  },
+  "variables": {
+    "playbook": "[if(equals(parameters('Modo'), 'motor'), 'RL-Reenviar-al-motor', 'RL-Respuesta')]"
+  },
+  "resources": [
+    {
+      "type": "Microsoft.SecurityInsights/automationRules",
+      "apiVersion": "2024-09-01",
+      "scope": "[format('Microsoft.OperationalInsights/workspaces/{0}', parameters('Workspace'))]",
+      "name": "8751ae3c-9ba6-5472-a640-b9f06c960d83",
+      "properties": {
+        "displayName": "ResponseLab - respuesta a incidentes",
+        "order": "[parameters('Orden')]",
+        "triggeringLogic": {
+          "isEnabled": true,
+          "triggersOn": "Incidents",
+          "triggersWhen": "Created",
+          "conditions": []
+        },
+        "actions": [
+          {
+            "order": 1,
+            "actionType": "RunPlaybook",
+            "actionConfiguration": {
+              "logicAppResourceId": "[resourceId(parameters('GrupoPlaybooks'), 'Microsoft.Logic/workflows', variables('playbook'))]",
+              "tenantId": "[subscription().tenantId]"
+            }
+          }
+        ]
+      }
+    }
+  ]
+}

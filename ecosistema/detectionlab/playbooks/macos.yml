@@ -1,0 +1,167 @@
+familia: macos
+nombre: Endpoint macOS
+descripcion: |
+    Volcado del llavero, persistencia por LaunchAgent y LaunchDaemon,
+    manipulacion de TCC, Gatekeeper deshabilitado, osascript sospechoso,
+    descarga y ejecucion directa, usuario oculto y borrado de registros. El
+    parque de Mac es pequeno y homogeneo, y eso mueve el triaje en dos
+    direcciones a la vez. A favor: cualquier desviacion destaca sobre una linea
+    base corta y el propietario del equipo casi siempre se conoce por nombre.
+    En contra: hay muy pocos ejemplos previos con los que comparar, asi que las
+    reglas de cierre por poblacion que funcionan en Windows aqui no tienen
+    poblacion sobre la que decidir. La consecuencia practica es que se
+    enriquece mucho y se automatiza poco: casi todo termina en una persona,
+    pero llega con la respuesta ya montada y sin que haya que tocar el equipo
+    para averiguar nada.
+
+enriquecimiento:
+  - fuente: cti_local
+    sobre: [hash, dominio, ip]
+    detalle: Listas de intel/listas/ generadas desde News CTI
+  - fuente: mdm
+    sobre: [agente]
+    detalle: Perfil de gestion aplicado, version del sistema, estado de SIP y de FileVault
+  - fuente: inventario
+    sobre: [agente]
+    detalle: Propietario, si es equipo de direccion, de desarrollo o nodo de firma de aplicaciones
+  - fuente: directorio
+    sobre: [usuario]
+    detalle: Grupos del usuario y si tiene administracion local sobre ese equipo
+  - fuente: historico_siem
+    sobre: [hash, agente]
+    detalle: Cuantas veces se ha ejecutado ese binario antes en este equipo y en el resto del parque
+  - fuente: catalogo_software
+    sobre: [team_id]
+    detalle: Si el Team ID del firmante esta en el catalogo aprobado
+
+evidencia:
+  - descripcion: Firma, notarizacion y Team ID del binario
+    comando: "codesign -dv --verbose=4 <ruta> y spctl -a -vv <ruta>"
+    donde: agente
+  - descripcion: Procedencia del fichero segun el atributo de cuarentena
+    comando: "xattr -p com.apple.quarantine <ruta>"
+    donde: agente
+  - descripcion: Persistencia declarada y su contenido
+    comando: "launchctl list y cat de los plist en ~/Library/LaunchAgents y /Library/LaunchDaemons"
+    donde: agente
+  - descripcion: Concesiones TCC vigentes, en copia y solo lectura
+    comando: "cp de TCC.db al almacen de evidencia y sqlite3 sobre la copia"
+    donde: agente
+  - descripcion: Arbol de procesos y actividad en la ventana, desde el registro unificado
+    comando: "log show --predicate 'eventMessage CONTAINS \"<indicador>\"' --last 30m"
+    donde: agente
+  - descripcion: Usuarios locales incluidos los ocultos por UniqueID bajo 500
+    comando: "dscl . -list /Users UniqueID"
+    donde: agente
+
+triaje:
+  - pregunta: El binario esta notarizado y su Team ID figura en el catalogo aprobado
+    fuente: catalogo_software
+    si_afirmativo: bajar_severidad
+    nota: La notarizacion dice que Apple no vio malware al firmarlo, no que el software sea de la organizacion ni que este haciendo lo que deberia.
+  - pregunta: El proceso padre es el agente de gestion del parque y hay ventana de despliegue abierta
+    fuente: mdm
+    si_afirmativo: bajar_severidad
+  - pregunta: SIP esta deshabilitado o Gatekeeper se desactivo en la misma sesion
+    fuente: evento
+    si_afirmativo: subir_severidad
+    nota: En un parque gestionado eso no ocurre por accidente ni lo hace un instalador.
+  - pregunta: El equipo pertenece a direccion o guarda claves de firma de aplicaciones
+    fuente: inventario
+    si_afirmativo: subir_severidad
+  - pregunta: Es la primera vez que ese binario se ejecuta en todo el parque
+    fuente: historico_siem
+    si_afirmativo: subir_severidad
+    nota: "Con un parque corto, la primera aparicion pesa mas que en Windows: hay pocas novedades legitimas al mes."
+
+cierre_automatico:
+  # Una sola entrada, y es deliberado. Con un parque de esta talla no hay
+  # poblacion suficiente para sostener condiciones estadisticas, asi que solo
+  # se automatiza el caso en el que la causa es conocida, repetitiva y
+  # verificable por parentesco. El resto se enriquece y se encola.
+  - condicion: |
+        Descarga y ejecucion desde /tmp, /var/folders o la cache del gestor
+        (mac_descarga_y_ejecucion) cuyo proceso padre es el agente de gestion
+        del parque o el gestor de paquetes registrado del equipo, firmado con
+        un Team ID del catalogo, dentro de la ventana de mantenimiento
+        publicada en el ITSM.
+    justificacion: |
+        Descargar en un directorio temporal y ejecutar desde ahi es el
+        funcionamiento normal de estas herramientas, y produce la alerta en
+        cada ciclo de parcheo, en todos los equipos y siempre igual. Parentesco,
+        Team ID y ventana son tres hechos independientes; con solo el
+        parentesco no valdria, porque bastaria con que un atacante lanzara su
+        binario desde un hijo del gestor. El coste de no cerrarlo es que la
+        regla dispare en bloque cada martes y el turno la descarte de memoria,
+        que es justo como se pierde la ejecucion que no venia del gestor.
+
+contencion:
+  - accion: Aislar el equipo en la red, dejando solo la comunicacion con el manager
+    alcance: El equipo afectado. No toca cuentas ni otros equipos.
+    radio: equipo
+    reversible: "si"
+    requiere_aprobacion: "no"
+    justificacion: |
+        Reversible en un comando y el peor caso son veinte minutos de trabajo
+        perdidos. Frente a eso, un volcado de llavero sin contener sigue
+        subiendo credenciales de navegador y certificados mientras el turno
+        tria.
+    excepcion: |
+        Si el inventario marca el equipo como nodo de compilacion o de firma de
+        aplicaciones, NO se aisla: se prepara y se pide aprobacion. Cortar un
+        nodo de firma en mitad de una entrega detiene el proceso de publicacion
+        entero.
+  - accion: Matar el proceso por PID y hora de arranque
+    alcance: Un unico proceso, identificado tambien por su hora de arranque para no matar a un homonimo
+    radio: proceso
+    reversible: "no"
+    requiere_aprobacion: "no"
+    justificacion: |
+        No se deshace, pero el alcance es un proceso y el error se paga con una
+        aplicacion que hay que volver a abrir. Identificarlo por PID mas hora de
+        arranque evita el fallo clasico de matar el proceso equivocado despues
+        de que el PID se reutilice.
+    excepcion: |
+        Si el binario esta notarizado y su Team ID esta en el catalogo, no se
+        mata: se anota y se prepara.
+  - accion: Poner el binario en cuarentena moviendolo al almacen de custodia, conservando hash y atributos extendidos
+    alcance: Un fichero. No borra, mueve.
+    radio: objeto
+    reversible: "si"
+    requiere_aprobacion: "no"
+    justificacion: |
+        Se conserva la ruta y los xattr, asi que devolverlo es un comando; y
+        conservar el atributo de cuarentena importa porque es la evidencia de
+        por donde entro.
+  - accion: Descargar y retirar el elemento de persistencia (launchctl bootout mas mover el plist)
+    alcance: Un LaunchAgent o LaunchDaemon concreto
+    radio: objeto
+    reversible: "si"
+    requiere_aprobacion: "si"
+    justificacion: |
+        El plist se guarda antes, asi que la accion se deshace, pero en un
+        parque pequeno una parte de los LaunchDaemons son de herramientas
+        internas que nadie inventario nunca: retirar el equivocado deja un
+        equipo sin VPN, sin copia de seguridad o sin el agente de gestion, y
+        nadie lo relaciona con el incidente hasta dias despues. Preparar la
+        accion cuesta lo mismo que ejecutarla y la valida quien conoce el
+        parque.
+
+requiere_persona:
+  - situacion: Rotar las credenciales guardadas en el llavero afectado
+    motivo: |
+        Hay que saber primero que hay dentro. Rotar a ciegas certificados de
+        firma o claves de despliegue rompe procesos que no tienen nada que ver.
+  - situacion: Restablecer la base de datos TCC
+    motivo: |
+        Devuelve todas las concesiones a cero y deja al usuario reautorizando
+        camara, microfono y disco aplicacion por aplicacion.
+  - situacion: Reinstalar el equipo
+    motivo: Decision de negocio, no tecnica.
+  - situacion: Eliminar el usuario local oculto creado
+    motivo: Cortar el acceso a quien no debia tiene coste inmediato y visible.
+
+escalado:
+  a: L2
+  plazo_min: 30
+  a_L3_si: Se volco el llavero, se deshabilito SIP o el equipo guarda claves de firma

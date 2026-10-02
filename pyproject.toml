@@ -1,0 +1,72 @@
+[build-system]
+requires = ["setuptools>=69"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "responselab"
+version = "1.0.0"
+description = "Respuesta a incidentes como codigo: un motor de decision multi-cliente que traduce los playbooks de DetectionLab a acciones en cualquier SIEM, SOAR y herramienta de contencion."
+readme = "README.md"
+license = { text = "MIT" }
+authors = [{ name = "Carlos Villalba Lagos", email = "contact@carlosvillalbalagos.com" }]
+requires-python = ">=3.10"
+keywords = ["soar", "incident-response", "siem", "wazuh", "sentinel", "splunk", "xsoar", "detection-engineering", "dfir"]
+classifiers = [
+  "Development Status :: 4 - Beta",
+  "Intended Audience :: Information Technology",
+  "License :: OSI Approved :: MIT License",
+  "Natural Language :: Spanish",
+  "Programming Language :: Python :: 3",
+  "Topic :: Security",
+]
+dependencies = [
+  "fastapi>=0.110",
+  "uvicorn>=0.29",
+  "httpx>=0.27",
+  "PyYAML>=6.0",
+  "tzdata>=2024.1",
+]
+
+[project.optional-dependencies]
+dev = [
+  "pytest>=8.0",
+  "pytest-asyncio>=0.23",
+  "ruff>=0.6",
+]
+
+[project.urls]
+Repositorio = "https://github.com/BlueShield-Ch4rl13/ResponseLab"
+Ecosistema = "https://github.com/BlueShield-Ch4rl13"
+
+[project.scripts]
+responselab = "responselab.__main__:main"
+
+[tool.setuptools]
+packages = ["responselab", "responselab.conectores", "responselab.exportadores"]
+
+[tool.setuptools.package-data]
+responselab = ["panel.html"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+pythonpath = ["."]
+asyncio_mode = "auto"
+asyncio_default_fixture_loop_scope = "function"
+addopts = "-ra"
+filterwarnings = [
+  "ignore::DeprecationWarning:httpx.*",
+  # Starlette recomienda otro cliente para TestClient; no afecta a las pruebas
+  "ignore:Using .httpx. with .starlette.testclient.:Warning",
+]
+
+[tool.ruff]
+line-length = 130
+target-version = "py310"
+extend-exclude = ["ecosistema/"]
+
+[tool.ruff.lint]
+select = ["E9", "F", "B"]
+# B008: Depends()/Body() en los argumentos es el patron de FastAPI.
+# B905: zip(strict=) no existe en Python 3.9, y el nucleo se incrusta en SOAR
+# que todavia lo usan (Splunk SOAR).
+ignore = ["B008", "B905"]

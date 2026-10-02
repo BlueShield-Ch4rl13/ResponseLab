@@ -1,0 +1,35 @@
+# ServiceNow: tickets de incidente desde ResponseLab (capacidad itsm)
+nombre: servicenow
+descripcion: Abre y anota incidentes en ServiceNow (Table API)
+base_url_env: SNOW_URL
+autenticacion:
+  tipo: basica
+  usuario_env: SNOW_USUARIO
+  clave_env: SNOW_CLAVE
+cabeceras: {Accept: application/json, Content-Type: application/json}
+acciones:
+  itsm.ticket:
+    metodo: POST
+    ruta: /api/now/table/incident
+    cuerpo:
+      short_description: "[ResponseLab] {{ alerta.titulo }}"
+      description: "{{ plan.resumen }}"
+      category: security
+      urgency: "{{ parametros.urgencia|default:2 }}"
+      correlation_id: "{{ incidente.id }}"
+    exito: [200, 201]
+    guardar: {sys_id: result.sys_id, numero: result.number}
+    detalle: "ticket ServiceNow abierto"
+    simulada: {result: {sys_id: sys-simulado, number: INC0000000}}
+  caso.tarea_desviacion:
+    metodo: POST
+    ruta: /api/now/table/incident
+    cuerpo:
+      short_description: "[ResponseLab] Desviacion: {{ alerta.titulo }}"
+      description: "Activo {{ alerta.equipo.nombre }}. {{ plan.resumen }}"
+      category: security
+      correlation_id: "{{ incidente.id }}"
+    exito: [200, 201]
+    guardar: {sys_id: result.sys_id}
+    detalle: "ticket de desviacion abierto en ServiceNow"
+    simulada: {result: {sys_id: sys-simulado}}

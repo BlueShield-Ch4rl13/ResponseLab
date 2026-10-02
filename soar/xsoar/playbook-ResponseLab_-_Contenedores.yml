@@ -1,0 +1,1079 @@
+id: ResponseLab - Contenedores
+version: -1
+name: ResponseLab - Contenedores
+description: Kubernetes y runtime de contenedores. Generado por ResponseLab desde el playbook de DetectionLab (contenedores). Necesita que ResponseLabDecidir haya dejado el plan en ResponseLab.Plan.
+starttaskid: '0'
+tasks:
+  '0':
+    id: '0'
+    taskid: 3701e43c-525d-5dbf-8c6e-c433d18a2279
+    type: start
+    task:
+      id: 3701e43c-525d-5dbf-8c6e-c433d18a2279
+      version: -1
+      name: ''
+      description: ''
+      type: start
+      iscommand: false
+      brand: ''
+    separatecontext: false
+    continueonerrortype: ''
+    view: "{\n  \"position\": {\n    \"x\": 450,\n    \"y\": 50\n  }\n}"
+    note: false
+    timertriggers: []
+    ignoreworker: false
+    skipunavailable: false
+    quietmode: 0
+    isoversize: false
+    isautoswitchedtoquietmode: false
+    nexttasks:
+      '#none#':
+      - '1'
+  '1':
+    id: '1'
+    taskid: 36a52d19-606e-575d-96a4-efc3f956c636
+    type: title
+    task:
+      id: 36a52d19-606e-575d-96a4-efc3f956c636
+      version: -1
+      name: Contencion automatica
+      description: Pasos que ResponseLab marco como automaticos. No hay tareas manuales en esta fase.
+      type: title
+      iscommand: false
+      brand: ''
+    separatecontext: false
+    continueonerrortype: ''
+    view: "{\n  \"position\": {\n    \"x\": 450,\n    \"y\": 240\n  }\n}"
+    note: false
+    timertriggers: []
+    ignoreworker: false
+    skipunavailable: false
+    quietmode: 0
+    isoversize: false
+    isautoswitchedtoquietmode: false
+    nexttasks:
+      '#none#':
+      - '2'
+  '2':
+    id: '2'
+    taskid: 104c59a9-bcb6-5b73-a2dc-8785762c28a1
+    type: title
+    task:
+      id: 104c59a9-bcb6-5b73-a2dc-8785762c28a1
+      version: -1
+      name: Aprobaciones y acciones a mano
+      description: Lo que pide aprobacion se aprueba aqui; lo que no tiene traduccion en XSOAR es una tarea.
+      type: title
+      iscommand: false
+      brand: ''
+    separatecontext: false
+    continueonerrortype: ''
+    view: "{\n  \"position\": {\n    \"x\": 450,\n    \"y\": 430\n  }\n}"
+    note: false
+    timertriggers: []
+    ignoreworker: false
+    skipunavailable: false
+    quietmode: 0
+    isoversize: false
+    isautoswitchedtoquietmode: false
+    nexttasks:
+      '#none#':
+      - '3'
+  '3':
+    id: '3'
+    taskid: d37ddbbe-158c-5907-b79e-c2776b444acd
+    type: condition
+    task:
+      id: d37ddbbe-158c-5907-b79e-c2776b444acd
+      version: -1
+      name: 'c1: Acordonar el nodo donde corre el pod - que modo?'
+      description: 'Motivo del modo en la War Room (salida de ResponseLabDecidir). Origen: Acordonar el nodo donde corre el pod'
+      type: condition
+      iscommand: false
+      brand: ''
+    separatecontext: false
+    continueonerrortype: ''
+    view: "{\n  \"position\": {\n    \"x\": 450,\n    \"y\": 620\n  }\n}"
+    note: false
+    timertriggers: []
+    ignoreworker: false
+    skipunavailable: false
+    quietmode: 0
+    isoversize: false
+    isautoswitchedtoquietmode: false
+    conditions:
+    - label: aprobacion
+      condition:
+      - - operator: isEqualString
+          left:
+            value:
+              simple: ResponseLab.Plan.modos.c1
+            iscontext: true
+          right:
+            value:
+              simple: aprobacion
+    - label: manual
+      condition:
+      - - operator: isEqualString
+          left:
+            value:
+              simple: ResponseLab.Plan.modos.c1
+            iscontext: true
+          right:
+            value:
+              simple: manual
+    - label: automatica
+      condition:
+      - - operator: isEqualString
+          left:
+            value:
+              simple: ResponseLab.Plan.modos.c1
+            iscontext: true
+          right:
+            value:
+              simple: automatica
+    nexttasks:
+      '#default#':
+      - '4'
+      aprobacion:
+      - '5'
+      manual:
+      - '7'
+      automatica:
+      - '7'
+  '4':
+    id: '4'
+    taskid: 77d6e7cd-c6c8-5770-bf58-c6d8bbcaaa4f
+    type: title
+    task:
+      id: 77d6e7cd-c6c8-5770-bf58-c6d8bbcaaa4f
+      version: -1
+      name: c1 resuelto
+      description: ''
+      type: title
+      iscommand: false
+      brand: ''
+    separatecontext: false
+    continueonerrortype: ''
+    view: "{\n  \"position\": {\n    \"x\": 450,\n    \"y\": 1190\n  }\n}"
+    note: false
+    timertriggers: []
+    ignoreworker: false
+    skipunavailable: false
+    quietmode: 0
+    isoversize: false
+    isautoswitchedtoquietmode: false
+    nexttasks:
+      '#none#':
+      - '8'
+  '5':
+    id: '5'
+    taskid: d2dc4b5c-8833-57e4-8928-46fe054f23a2
+    type: condition
+    task:
+      id: d2dc4b5c-8833-57e4-8928-46fe054f23a2
+      version: -1
+      name: 'Aprobar: Acordonar el nodo donde corre el pod'
+      description: 'Radio equipo, reversible si, se deshace con k8s.desacordonar_nodo. Origen: Acordonar el nodo donde corre el pod Por que: Es la unica accion de esta familia cuyo peor caso es que el planificador reparta trabajo con un nodo menos durante unos minutos: no corta ningun servicio en marcha ni desaloja nada. Y cubre el riesgo especifico de un escape, que es que el nodo comprometido siga recibiendo cargas de trabajo nuevas con secretos nuevos.'
+      type: condition
+      iscommand: false
+      brand: ''
+    separatecontext: false
+    continueonerrortype: ''
+    view: "{\n  \"position\": {\n    \"x\": 30,\n    \"y\": 810\n  }\n}"
+    note: false
+    timertriggers: []
+    ignoreworker: false
+    skipunavailable: false
+    quietmode: 0
+    isoversize: false
+    isautoswitchedtoquietmode: false
+    nexttasks:
+      Si:
+      - '6'
+      'No':
+      - '4'
+  '6':
+    id: '6'
+    taskid: 0ad9744f-5b08-5360-a781-8b4c6ec337c3
+    type: regular
+    task:
+      id: 0ad9744f-5b08-5360-a781-8b4c6ec337c3
+      version: -1
+      name: 'Ejecutar a mano: Acordonar el nodo donde corre el pod'
+      description: 'Aprobada. XSOAR no tiene traduccion nativa de k8s.acordonar_nodo: hazla con la herramienta del cliente o con el motor de ResponseLab. Origen: Acordonar el nodo donde corre el pod'
+      type: regular
+      iscommand: false
+      brand: ''
+    separatecontext: false
+    continueonerrortype: ''
+    view: "{\n  \"position\": {\n    \"x\": 30,\n    \"y\": 1000\n  }\n}"
+    note: false
+    timertriggers: []
+    ignoreworker: false
+    skipunavailable: false
+    quietmode: 0
+    isoversize: false
+    isautoswitchedtoquietmode: false
+    nexttasks:
+      '#none#':
+      - '4'
+  '7':
+    id: '7'
+    taskid: 249f89af-4c4f-51c9-8c6a-69d4ee74c54d
+    type: regular
+    task:
+      id: 249f89af-4c4f-51c9-8c6a-69d4ee74c54d
+      version: -1
+      name: 'A mano: Acordonar el nodo donde corre el pod'
+      description: 'ResponseLab la deja al analista (motivo en la War Room). Origen: Acordonar el nodo donde corre el pod Por que: Es la unica accion de esta familia cuyo peor caso es que el planificador reparta trabajo con un nodo menos durante unos minutos: no corta ningun servicio en marcha ni desaloja nada. Y cubre el riesgo especifico de un escape, que es que el nodo comprometido siga recibiendo cargas de trabajo nuevas con secretos nuevos.'
+      type: regular
+      iscommand: false
+      brand: ''
+    separatecontext: false
+    continueonerrortype: ''
+    view: "{\n  \"position\": {\n    \"x\": 870,\n    \"y\": 810\n  }\n}"
+    note: false
+    timertriggers: []
+    ignoreworker: false
+    skipunavailable: false
+    quietmode: 0
+    isoversize: false
+    isautoswitchedtoquietmode: false
+    nexttasks:
+      '#none#':
+      - '4'
+  '8':
+    id: '8'
+    taskid: 676639df-7eb8-5ec0-a330-7b831b82c580
+    type: condition
+    task:
+      id: 676639df-7eb8-5ec0-a330-7b831b82c580
+      version: -1
+      name: 'c2: Aplicar una NetworkPolicy que deniega la salida del pod - que modo?'
+      description: 'Motivo del modo en la War Room (salida de ResponseLabDecidir). Origen: Aplicar una NetworkPolicy de denegacion de salida sobre las etiquetas del pod'
+      type: condition
+      iscommand: false
+      brand: ''
+    separatecontext: false
+    continueonerrortype: ''
+    view: "{\n  \"position\": {\n    \"x\": 450,\n    \"y\": 1380\n  }\n}"
+    note: false
+    timertriggers: []
+    ignoreworker: false
+    skipunavailable: false
+    quietmode: 0
+    isoversize: false
+    isautoswitchedtoquietmode: false
+    conditions:
+    - label: aprobacion
+      condition:
+      - - operator: isEqualString
+          left:
+            value:
+              simple: ResponseLab.Plan.modos.c2
+            iscontext: true
+          right:
+            value:
+              simple: aprobacion
+    - label: manual
+      condition:
+      - - operator: isEqualString
+          left:
+            value:
+              simple: ResponseLab.Plan.modos.c2
+            iscontext: true
+          right:
+            value:
+              simple: manual
+    - label: automatica
+      condition:
+      - - operator: isEqualString
+          left:
+            value:
+              simple: ResponseLab.Plan.modos.c2
+            iscontext: true
+          right:
+            value:
+              simple: automatica
+    nexttasks:
+      '#default#':
+      - '9'
+      aprobacion:
+      - '10'
+      manual:
+      - '12'
+      automatica:
+      - '12'
+  '9':
+    id: '9'
+    taskid: 0a640b19-55a6-5a13-bdff-0fb06832e24d
+    type: title
+    task:
+      id: 0a640b19-55a6-5a13-bdff-0fb06832e24d
+      version: -1
+      name: c2 resuelto
+      description: ''
+      type: title
+      iscommand: false
+      brand: ''
+    separatecontext: false
+    continueonerrortype: ''
+    view: "{\n  \"position\": {\n    \"x\": 450,\n    \"y\": 1950\n  }\n}"
+    note: false
+    timertriggers: []
+    ignoreworker: false
+    skipunavailable: false
+    quietmode: 0
+    isoversize: false
+    isautoswitchedtoquietmode: false
+    nexttasks:
+      '#none#':
+      - '13'
+  '10':
+    id: '10'
+    taskid: 4f247bb2-dd87-5cd1-932c-b46a5132665a
+    type: condition
+    task:
+      id: 4f247bb2-dd87-5cd1-932c-b46a5132665a
+      version: -1
+      name: 'Aprobar: Aplicar una NetworkPolicy que deniega la salida del pod'
+      description: 'Radio objeto, reversible si, se deshace con k8s.liberar_pod. Origen: Aplicar una NetworkPolicy de denegacion de salida sobre las etiquetas del pod Por que: Se deshace borrando el objeto y no destruye estado ni evidencia, a diferencia de matar el pod. Corta el canal de salida sin impedir que el contenedor siga existiendo para poder mirarlo.'
+      type: condition
+      iscommand: false
+      brand: ''
+    separatecontext: false
+    continueonerrortype: ''
+    view: "{\n  \"position\": {\n    \"x\": 30,\n    \"y\": 1570\n  }\n}"
+    note: false
+    timertriggers: []
+    ignoreworker: false
+    skipunavailable: false
+    quietmode: 0
+    isoversize: false
+    isautoswitchedtoquietmode: false
+    nexttasks:
+      Si:
+      - '11'
+      'No':
+      - '9'
+  '11':
+    id: '11'
+    taskid: 4e97e1f5-ceed-5ee9-aa5a-8b19311921a7
+    type: regular
+    task:
+      id: 4e97e1f5-ceed-5ee9-aa5a-8b19311921a7
+      version: -1
+      name: 'Ejecutar a mano: Aplicar una NetworkPolicy que deniega la salida del pod'
+      description: 'Aprobada. XSOAR no tiene traduccion nativa de k8s.aislar_pod: hazla con la herramienta del cliente o con el motor de ResponseLab. Origen: Aplicar una NetworkPolicy de denegacion de salida sobre las etiquetas del pod'
+      type: regular
+      iscommand: false
+      brand: ''
+    separatecontext: false
+    continueonerrortype: ''
+    view: "{\n  \"position\": {\n    \"x\": 30,\n    \"y\": 1760\n  }\n}"
+    note: false
+    timertriggers: []
+    ignoreworker: false
+    skipunavailable: false
+    quietmode: 0
+    isoversize: false
+    isautoswitchedtoquietmode: false
+    nexttasks:
+      '#none#':
+      - '9'
+  '12':
+    id: '12'
+    taskid: 14f6adc2-76ea-5a6e-a212-6367c9f0cebc
+    type: regular
+    task:
+      id: 14f6adc2-76ea-5a6e-a212-6367c9f0cebc
+      version: -1
+      name: 'A mano: Aplicar una NetworkPolicy que deniega la salida del pod'
+      description: 'ResponseLab la deja al analista (motivo en la War Room). Origen: Aplicar una NetworkPolicy de denegacion de salida sobre las etiquetas del pod Por que: Se deshace borrando el objeto y no destruye estado ni evidencia, a diferencia de matar el pod. Corta el canal de salida sin impedir que el contenedor siga existiendo para poder mirarlo.'
+      type: regular
+      iscommand: false
+      brand: ''
+    separatecontext: false
+    continueonerrortype: ''
+    view: "{\n  \"position\": {\n    \"x\": 870,\n    \"y\": 1570\n  }\n}"
+    note: false
+    timertriggers: []
+    ignoreworker: false
+    skipunavailable: false
+    quietmode: 0
+    isoversize: false
+    isautoswitchedtoquietmode: false
+    nexttasks:
+      '#none#':
+      - '9'
+  '13':
+    id: '13'
+    taskid: da5bb017-4520-514a-8d63-26562d5e1ebb
+    type: condition
+    task:
+      id: da5bb017-4520-514a-8d63-26562d5e1ebb
+      version: -1
+      name: 'c3: Retirar un RoleBinding o ClusterRoleBinding guardando su manifiesto - que modo?'
+      description: 'Motivo del modo en la War Room (salida de ResponseLabDecidir). Origen: Retirar el RoleBinding o ClusterRoleBinding creado en la escalada, guardando su manifiesto'
+      type: condition
+      iscommand: false
+      brand: ''
+    separatecontext: false
+    continueonerrortype: ''
+    view: "{\n  \"position\": {\n    \"x\": 450,\n    \"y\": 2140\n  }\n}"
+    note: false
+    timertriggers: []
+    ignoreworker: false
+    skipunavailable: false
+    quietmode: 0
+    isoversize: false
+    isautoswitchedtoquietmode: false
+    conditions:
+    - label: aprobacion
+      condition:
+      - - operator: isEqualString
+          left:
+            value:
+              simple: ResponseLab.Plan.modos.c3
+            iscontext: true
+          right:
+            value:
+              simple: aprobacion
+    - label: manual
+      condition:
+      - - operator: isEqualString
+          left:
+            value:
+              simple: ResponseLab.Plan.modos.c3
+            iscontext: true
+          right:
+            value:
+              simple: manual
+    - label: automatica
+      condition:
+      - - operator: isEqualString
+          left:
+            value:
+              simple: ResponseLab.Plan.modos.c3
+            iscontext: true
+          right:
+            value:
+              simple: automatica
+    nexttasks:
+      '#default#':
+      - '14'
+      aprobacion:
+      - '15'
+      manual:
+      - '17'
+      automatica:
+      - '17'
+  '14':
+    id: '14'
+    taskid: aa4ed236-adfe-5a2b-a0dd-3a8e8bf5c9e0
+    type: title
+    task:
+      id: aa4ed236-adfe-5a2b-a0dd-3a8e8bf5c9e0
+      version: -1
+      name: c3 resuelto
+      description: ''
+      type: title
+      iscommand: false
+      brand: ''
+    separatecontext: false
+    continueonerrortype: ''
+    view: "{\n  \"position\": {\n    \"x\": 450,\n    \"y\": 2710\n  }\n}"
+    note: false
+    timertriggers: []
+    ignoreworker: false
+    skipunavailable: false
+    quietmode: 0
+    isoversize: false
+    isautoswitchedtoquietmode: false
+    nexttasks:
+      '#none#':
+      - '18'
+  '15':
+    id: '15'
+    taskid: e5957ad2-01c7-5cd3-8709-2eee6aa9bcf5
+    type: condition
+    task:
+      id: e5957ad2-01c7-5cd3-8709-2eee6aa9bcf5
+      version: -1
+      name: 'Aprobar: Retirar un RoleBinding o ClusterRoleBinding guardando su manifiesto'
+      description: 'Radio objeto, reversible si, se deshace con k8s.restaurar_rolebinding. Origen: Retirar el RoleBinding o ClusterRoleBinding creado en la escalada, guardando su manifiesto Por que: Es el artefacto del ataque, no una pieza de la aplicacion, y se vuelve a aplicar en un comando con el manifiesto guardado. Dejarlo puesto significa que el atacante conserva los permisos aunque se contenga todo lo demas, que es la forma tipica de que este caso vuelva la semana siguiente.'
+      type: condition
+      iscommand: false
+      brand: ''
+    separatecontext: false
+    continueonerrortype: ''
+    view: "{\n  \"position\": {\n    \"x\": 30,\n    \"y\": 2330\n  }\n}"
+    note: false
+    timertriggers: []
+    ignoreworker: false
+    skipunavailable: false
+    quietmode: 0
+    isoversize: false
+    isautoswitchedtoquietmode: false
+    nexttasks:
+      Si:
+      - '16'
+      'No':
+      - '14'
+  '16':
+    id: '16'
+    taskid: 0d2fa1e2-766d-5f1c-80f7-e1bc701b1a40
+    type: regular
+    task:
+      id: 0d2fa1e2-766d-5f1c-80f7-e1bc701b1a40
+      version: -1
+      name: 'Ejecutar a mano: Retirar un RoleBinding o ClusterRoleBinding guardando su manifiesto'
+      description: 'Aprobada. XSOAR no tiene traduccion nativa de k8s.retirar_rolebinding: hazla con la herramienta del cliente o con el motor de ResponseLab. Origen: Retirar el RoleBinding o ClusterRoleBinding creado en la escalada, guardando su manifiesto'
+      type: regular
+      iscommand: false
+      brand: ''
+    separatecontext: false
+    continueonerrortype: ''
+    view: "{\n  \"position\": {\n    \"x\": 30,\n    \"y\": 2520\n  }\n}"
+    note: false
+    timertriggers: []
+    ignoreworker: false
+    skipunavailable: false
+    quietmode: 0
+    isoversize: false
+    isautoswitchedtoquietmode: false
+    nexttasks:
+      '#none#':
+      - '14'
+  '17':
+    id: '17'
+    taskid: eb7fc693-e037-5672-b719-42544eb0908e
+    type: regular
+    task:
+      id: eb7fc693-e037-5672-b719-42544eb0908e
+      version: -1
+      name: 'A mano: Retirar un RoleBinding o ClusterRoleBinding guardando su manifiesto'
+      description: 'ResponseLab la deja al analista (motivo en la War Room). Origen: Retirar el RoleBinding o ClusterRoleBinding creado en la escalada, guardando su manifiesto Por que: Es el artefacto del ataque, no una pieza de la aplicacion, y se vuelve a aplicar en un comando con el manifiesto guardado. Dejarlo puesto significa que el atacante conserva los permisos aunque se contenga todo lo demas, que es la forma tipica de que este caso vuelva la semana siguiente.'
+      type: regular
+      iscommand: false
+      brand: ''
+    separatecontext: false
+    continueonerrortype: ''
+    view: "{\n  \"position\": {\n    \"x\": 870,\n    \"y\": 2330\n  }\n}"
+    note: false
+    timertriggers: []
+    ignoreworker: false
+    skipunavailable: false
+    quietmode: 0
+    isoversize: false
+    isautoswitchedtoquietmode: false
+    nexttasks:
+      '#none#':
+      - '14'
+  '18':
+    id: '18'
+    taskid: 9594c969-6e21-500c-8c28-068a6917c821
+    type: condition
+    task:
+      id: 9594c969-6e21-500c-8c28-068a6917c821
+      version: -1
+      name: 'c4: Escalar el workload a cero replicas - que modo?'
+      description: 'Motivo del modo en la War Room (salida de ResponseLabDecidir). Origen: Escalar el workload a cero replicas'
+      type: condition
+      iscommand: false
+      brand: ''
+    separatecontext: false
+    continueonerrortype: ''
+    view: "{\n  \"position\": {\n    \"x\": 450,\n    \"y\": 2900\n  }\n}"
+    note: false
+    timertriggers: []
+    ignoreworker: false
+    skipunavailable: false
+    quietmode: 0
+    isoversize: false
+    isautoswitchedtoquietmode: false
+    conditions:
+    - label: aprobacion
+      condition:
+      - - operator: isEqualString
+          left:
+            value:
+              simple: ResponseLab.Plan.modos.c4
+            iscontext: true
+          right:
+            value:
+              simple: aprobacion
+    - label: manual
+      condition:
+      - - operator: isEqualString
+          left:
+            value:
+              simple: ResponseLab.Plan.modos.c4
+            iscontext: true
+          right:
+            value:
+              simple: manual
+    - label: automatica
+      condition:
+      - - operator: isEqualString
+          left:
+            value:
+              simple: ResponseLab.Plan.modos.c4
+            iscontext: true
+          right:
+            value:
+              simple: automatica
+    nexttasks:
+      '#default#':
+      - '19'
+      aprobacion:
+      - '20'
+      manual:
+      - '22'
+      automatica:
+      - '22'
+  '19':
+    id: '19'
+    taskid: e306e47a-52e6-5d80-a713-2d248da5805e
+    type: title
+    task:
+      id: e306e47a-52e6-5d80-a713-2d248da5805e
+      version: -1
+      name: c4 resuelto
+      description: ''
+      type: title
+      iscommand: false
+      brand: ''
+    separatecontext: false
+    continueonerrortype: ''
+    view: "{\n  \"position\": {\n    \"x\": 450,\n    \"y\": 3470\n  }\n}"
+    note: false
+    timertriggers: []
+    ignoreworker: false
+    skipunavailable: false
+    quietmode: 0
+    isoversize: false
+    isautoswitchedtoquietmode: false
+    nexttasks:
+      '#none#':
+      - '23'
+  '20':
+    id: '20'
+    taskid: 4f95b853-ba56-5305-b437-034eb8e099fc
+    type: condition
+    task:
+      id: 4f95b853-ba56-5305-b437-034eb8e099fc
+      version: -1
+      name: 'Aprobar: Escalar el workload a cero replicas'
+      description: 'Radio equipo, reversible si, se deshace con k8s.restaurar_replicas. Origen: Escalar el workload a cero replicas Por que: Es la unica contencion que de verdad impide que el pod vuelva, y por eso mismo es una caida de servicio: el controlador deja de reprogramar porque ya no hay nada que reprogramar. El SOAR no sabe si ese workload es el proceso de compra de la tienda o un cron de limpieza, y el sintoma que ve negocio no se parece en nada a la causa. Se deja preparada con el objeto resuelto y espera.'
+      type: condition
+      iscommand: false
+      brand: ''
+    separatecontext: false
+    continueonerrortype: ''
+    view: "{\n  \"position\": {\n    \"x\": 30,\n    \"y\": 3090\n  }\n}"
+    note: false
+    timertriggers: []
+    ignoreworker: false
+    skipunavailable: false
+    quietmode: 0
+    isoversize: false
+    isautoswitchedtoquietmode: false
+    nexttasks:
+      Si:
+      - '21'
+      'No':
+      - '19'
+  '21':
+    id: '21'
+    taskid: 6bd594a5-b3d4-5324-a8b5-0f9222156f01
+    type: regular
+    task:
+      id: 6bd594a5-b3d4-5324-a8b5-0f9222156f01
+      version: -1
+      name: 'Ejecutar a mano: Escalar el workload a cero replicas'
+      description: 'Aprobada. XSOAR no tiene traduccion nativa de k8s.escalar_cero: hazla con la herramienta del cliente o con el motor de ResponseLab. Origen: Escalar el workload a cero replicas'
+      type: regular
+      iscommand: false
+      brand: ''
+    separatecontext: false
+    continueonerrortype: ''
+    view: "{\n  \"position\": {\n    \"x\": 30,\n    \"y\": 3280\n  }\n}"
+    note: false
+    timertriggers: []
+    ignoreworker: false
+    skipunavailable: false
+    quietmode: 0
+    isoversize: false
+    isautoswitchedtoquietmode: false
+    nexttasks:
+      '#none#':
+      - '19'
+  '22':
+    id: '22'
+    taskid: 91177ddb-4606-5ee8-b1ec-76e03eb2bebd
+    type: regular
+    task:
+      id: 91177ddb-4606-5ee8-b1ec-76e03eb2bebd
+      version: -1
+      name: 'A mano: Escalar el workload a cero replicas'
+      description: 'ResponseLab la deja al analista (motivo en la War Room). Origen: Escalar el workload a cero replicas Por que: Es la unica contencion que de verdad impide que el pod vuelva, y por eso mismo es una caida de servicio: el controlador deja de reprogramar porque ya no hay nada que reprogramar. El SOAR no sabe si ese workload es el proceso de compra de la tienda o un cron de limpieza, y el sintoma que ve negocio no se parece en nada a la causa. Se deja preparada con el objeto resuelto y espera.'
+      type: regular
+      iscommand: false
+      brand: ''
+    separatecontext: false
+    continueonerrortype: ''
+    view: "{\n  \"position\": {\n    \"x\": 870,\n    \"y\": 3090\n  }\n}"
+    note: false
+    timertriggers: []
+    ignoreworker: false
+    skipunavailable: false
+    quietmode: 0
+    isoversize: false
+    isautoswitchedtoquietmode: false
+    nexttasks:
+      '#none#':
+      - '19'
+  '23':
+    id: '23'
+    taskid: 8a913c88-ec67-5e24-9898-d063f8823b55
+    type: title
+    task:
+      id: 8a913c88-ec67-5e24-9898-d063f8823b55
+      version: -1
+      name: Checklist del playbook
+      description: ''
+      type: title
+      iscommand: false
+      brand: ''
+    separatecontext: false
+    continueonerrortype: ''
+    view: "{\n  \"position\": {\n    \"x\": 450,\n    \"y\": 3660\n  }\n}"
+    note: false
+    timertriggers: []
+    ignoreworker: false
+    skipunavailable: false
+    quietmode: 0
+    isoversize: false
+    isautoswitchedtoquietmode: false
+    nexttasks:
+      '#none#':
+      - '24'
+  '24':
+    id: '24'
+    taskid: 84f185db-e9ef-59fb-b248-8a96219796cc
+    type: regular
+    task:
+      id: 84f185db-e9ef-59fb-b248-8a96219796cc
+      version: -1
+      name: Escalar segun el plan
+      description: 'Plazo del playbook: L2 en 15 min. El plan de este incidente: ${ResponseLab.Plan.escalado.a} en ${ResponseLab.Plan.escalado.plazo_min} min.
+
+        A L3 si: Hay escape a los namespaces del host, acceso al socket del runtime o montaje de hostPath sobre una ruta sensible'
+      type: regular
+      iscommand: false
+      brand: ''
+    separatecontext: false
+    continueonerrortype: ''
+    view: "{\n  \"position\": {\n    \"x\": 450,\n    \"y\": 3850\n  }\n}"
+    note: false
+    timertriggers: []
+    ignoreworker: false
+    skipunavailable: false
+    quietmode: 0
+    isoversize: false
+    isautoswitchedtoquietmode: false
+    nexttasks:
+      '#none#':
+      - '25'
+  '25':
+    id: '25'
+    taskid: ce53a8a2-7488-5133-808d-ded13daa57fa
+    type: regular
+    task:
+      id: ce53a8a2-7488-5133-808d-ded13daa57fa
+      version: -1
+      name: 'Evidencia: Manifiesto del pod y de su propietario, antes de que se reprograme'
+      description: 'Como: kubectl get pod <pod> -n <ns> -o yaml y kubectl get <owner> -n <ns> -o yaml
+
+        Donde: api'
+      type: regular
+      iscommand: false
+      brand: ''
+    separatecontext: false
+    continueonerrortype: ''
+    view: "{\n  \"position\": {\n    \"x\": 450,\n    \"y\": 4040\n  }\n}"
+    note: false
+    timertriggers: []
+    ignoreworker: false
+    skipunavailable: false
+    quietmode: 0
+    isoversize: false
+    isautoswitchedtoquietmode: false
+    nexttasks:
+      '#none#':
+      - '26'
+  '26':
+    id: '26'
+    taskid: b3e8a4b7-bd56-5631-a733-ba6fe7bb4a64
+    type: regular
+    task:
+      id: b3e8a4b7-bd56-5631-a733-ba6fe7bb4a64
+      version: -1
+      name: 'Evidencia: Registros del contenedor mientras el pod aun existe'
+      description: 'Como: kubectl logs <pod> -n <ns> --all-containers --timestamps
+
+        Donde: api'
+      type: regular
+      iscommand: false
+      brand: ''
+    separatecontext: false
+    continueonerrortype: ''
+    view: "{\n  \"position\": {\n    \"x\": 450,\n    \"y\": 4230\n  }\n}"
+    note: false
+    timertriggers: []
+    ignoreworker: false
+    skipunavailable: false
+    quietmode: 0
+    isoversize: false
+    isautoswitchedtoquietmode: false
+    nexttasks:
+      '#none#':
+      - '27'
+  '27':
+    id: '27'
+    taskid: 27315618-e776-5c36-be24-265bac266823
+    type: regular
+    task:
+      id: 27315618-e776-5c36-be24-265bac266823
+      version: -1
+      name: 'Evidencia: Todas las peticiones del mismo sujeto al API server en 1 h'
+      description: 'Como: search sourceIPs OR user.username=<sujeto> en el registro de auditoria de Kubernetes
+
+        Donde: siem'
+      type: regular
+      iscommand: false
+      brand: ''
+    separatecontext: false
+    continueonerrortype: ''
+    view: "{\n  \"position\": {\n    \"x\": 450,\n    \"y\": 4420\n  }\n}"
+    note: false
+    timertriggers: []
+    ignoreworker: false
+    skipunavailable: false
+    quietmode: 0
+    isoversize: false
+    isautoswitchedtoquietmode: false
+    nexttasks:
+      '#none#':
+      - '28'
+  '28':
+    id: '28'
+    taskid: 05643801-312a-55ef-9ca9-5db3e0e027da
+    type: regular
+    task:
+      id: 05643801-312a-55ef-9ca9-5db3e0e027da
+      version: -1
+      name: 'Evidencia: Procesos y llamadas al sistema vistos desde el nodo'
+      description: 'Como: Eventos de Falco o Tetragon filtrados por container.id
+
+        Donde: siem'
+      type: regular
+      iscommand: false
+      brand: ''
+    separatecontext: false
+    continueonerrortype: ''
+    view: "{\n  \"position\": {\n    \"x\": 450,\n    \"y\": 4610\n  }\n}"
+    note: false
+    timertriggers: []
+    ignoreworker: false
+    skipunavailable: false
+    quietmode: 0
+    isoversize: false
+    isautoswitchedtoquietmode: false
+    nexttasks:
+      '#none#':
+      - '29'
+  '29':
+    id: '29'
+    taskid: a209f931-99cf-5cc5-b980-8d883eb60526
+    type: regular
+    task:
+      id: a209f931-99cf-5cc5-b980-8d883eb60526
+      version: -1
+      name: 'Evidencia: Permisos efectivos del ServiceAccount implicado'
+      description: 'Como: kubectl get rolebindings,clusterrolebindings -A -o json | filtro por el ServiceAccount
+
+        Donde: api'
+      type: regular
+      iscommand: false
+      brand: ''
+    separatecontext: false
+    continueonerrortype: ''
+    view: "{\n  \"position\": {\n    \"x\": 450,\n    \"y\": 4800\n  }\n}"
+    note: false
+    timertriggers: []
+    ignoreworker: false
+    skipunavailable: false
+    quietmode: 0
+    isoversize: false
+    isautoswitchedtoquietmode: false
+    nexttasks:
+      '#none#':
+      - '30'
+  '30':
+    id: '30'
+    taskid: 791a2846-ff09-5451-b854-95ccbcc704bf
+    type: regular
+    task:
+      id: 791a2846-ff09-5451-b854-95ccbcc704bf
+      version: -1
+      name: 'Evidencia: Digest de la imagen en ejecucion, no su etiqueta'
+      description: 'Como: kubectl get pod <pod> -o jsonpath=''{.status.containerStatuses[*].imageID}''
+
+        Donde: api'
+      type: regular
+      iscommand: false
+      brand: ''
+    separatecontext: false
+    continueonerrortype: ''
+    view: "{\n  \"position\": {\n    \"x\": 450,\n    \"y\": 4990\n  }\n}"
+    note: false
+    timertriggers: []
+    ignoreworker: false
+    skipunavailable: false
+    quietmode: 0
+    isoversize: false
+    isautoswitchedtoquietmode: false
+    nexttasks:
+      '#none#':
+      - '31'
+  '31':
+    id: '31'
+    taskid: fdd93223-0fed-5c5f-b53e-0b68b475f379
+    type: regular
+    task:
+      id: fdd93223-0fed-5c5f-b53e-0b68b475f379
+      version: -1
+      name: Contestar el triaje pendiente
+      description: 'Pendientes en este incidente: ${ResponseLab.Plan.triaje_pendiente}
+
+
+        Preguntas del playbook:
+
+        - El sujeto es un ServiceAccount de la lista de controladores aprobados y la peticion llega desde la IP del pod de ese controlador
+
+        - El namespace figura como no productivo en el inventario
+
+        - El pod monta hostPath sobre /, /etc, /var/run o el socket del runtime
+
+        - El sujeto es una identidad humana y actua fuera de la ventana de guardia
+
+        - La imagen no procede del registro corporativo o su digest no coincide con el firmado
+
+        - El mismo sujeto ha hecho otras peticiones al API server que la politica RBAC deberia haber denegado'
+      type: regular
+      iscommand: false
+      brand: ''
+    separatecontext: false
+    continueonerrortype: ''
+    view: "{\n  \"position\": {\n    \"x\": 450,\n    \"y\": 5180\n  }\n}"
+    note: false
+    timertriggers: []
+    ignoreworker: false
+    skipunavailable: false
+    quietmode: 0
+    isoversize: false
+    isautoswitchedtoquietmode: false
+    nexttasks:
+      '#none#':
+      - '32'
+  '32':
+    id: '32'
+    taskid: ba1b9c7d-706d-5072-a451-21e70096d4a6
+    type: regular
+    task:
+      id: ba1b9c7d-706d-5072-a451-21e70096d4a6
+      version: -1
+      name: Comprobar las condiciones de cierre
+      description: 'Se puede cerrar como benigno si:
+
+        - Lectura de secretos (k8s_lectura_masiva_secretos) cuyo sujeto es un ServiceAccount de la lista de operadores aprobados, con la peticion llegando desde la IP del pod de ese operador, el user-agent del controlador y los secretos leidos dentro del conjunto que ese operador ya reconcilia habitualmente.'
+      type: regular
+      iscommand: false
+      brand: ''
+    separatecontext: false
+    continueonerrortype: ''
+    view: "{\n  \"position\": {\n    \"x\": 450,\n    \"y\": 5370\n  }\n}"
+    note: false
+    timertriggers: []
+    ignoreworker: false
+    skipunavailable: false
+    quietmode: 0
+    isoversize: false
+    isautoswitchedtoquietmode: false
+    nexttasks:
+      '#none#':
+      - '33'
+  '33':
+    id: '33'
+    taskid: d7104e1a-ab9e-50c1-8cc5-ceae6be327d8
+    type: regular
+    task:
+      id: d7104e1a-ab9e-50c1-8cc5-ceae6be327d8
+      version: -1
+      name: Situaciones que requieren a una persona
+      description: 'Nunca automatico:
+
+        - Rotar los secretos que se hayan leido
+
+        - Reconstruir o retirar la imagen del registro
+
+        - Declarar el nodo o el cluster comprometido
+
+        - Revisar el resto de workloads con la misma configuracion insegura'
+      type: regular
+      iscommand: false
+      brand: ''
+    separatecontext: false
+    continueonerrortype: ''
+    view: "{\n  \"position\": {\n    \"x\": 450,\n    \"y\": 5560\n  }\n}"
+    note: false
+    timertriggers: []
+    ignoreworker: false
+    skipunavailable: false
+    quietmode: 0
+    isoversize: false
+    isautoswitchedtoquietmode: false
+    nexttasks:
+      '#none#':
+      - '34'
+  '34':
+    id: '34'
+    taskid: 085f7f58-8a15-54ca-a7b0-ef8cfd37cfd5
+    type: title
+    task:
+      id: 085f7f58-8a15-54ca-a7b0-ef8cfd37cfd5
+      version: -1
+      name: Hecho
+      description: ''
+      type: title
+      iscommand: false
+      brand: ''
+    separatecontext: false
+    continueonerrortype: ''
+    view: "{\n  \"position\": {\n    \"x\": 450,\n    \"y\": 5750\n  }\n}"
+    note: false
+    timertriggers: []
+    ignoreworker: false
+    skipunavailable: false
+    quietmode: 0
+    isoversize: false
+    isautoswitchedtoquietmode: false
+view: "{\n  \"linkLabelsPosition\": {},\n  \"paper\": {\n    \"dimensions\": {\n      \"height\": 5900,\n      \"width\": 1240,\n      \"x\": -20,\n      \"y\": 0\n    }\n  }\n}"
+inputs: []
+outputs: []
+tests:
+- No tests
+fromversion: 6.10.0

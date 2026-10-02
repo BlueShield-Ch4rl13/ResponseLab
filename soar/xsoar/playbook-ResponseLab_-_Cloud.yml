@@ -1,0 +1,1173 @@
+id: ResponseLab - Cloud
+version: -1
+name: ResponseLab - Cloud
+description: Identidad y plano de control en la nube. Generado por ResponseLab desde el playbook de DetectionLab (cloud). Necesita que ResponseLabDecidir haya dejado el plan en ResponseLab.Plan.
+starttaskid: '0'
+tasks:
+  '0':
+    id: '0'
+    taskid: 24bc59de-9f09-5082-8bd8-3fab079d12ba
+    type: start
+    task:
+      id: 24bc59de-9f09-5082-8bd8-3fab079d12ba
+      version: -1
+      name: ''
+      description: ''
+      type: start
+      iscommand: false
+      brand: ''
+    separatecontext: false
+    continueonerrortype: ''
+    view: "{\n  \"position\": {\n    \"x\": 450,\n    \"y\": 50\n  }\n}"
+    note: false
+    timertriggers: []
+    ignoreworker: false
+    skipunavailable: false
+    quietmode: 0
+    isoversize: false
+    isautoswitchedtoquietmode: false
+    nexttasks:
+      '#none#':
+      - '1'
+  '1':
+    id: '1'
+    taskid: ec069bf1-7d54-5d54-8c46-303fbcbf0a53
+    type: title
+    task:
+      id: ec069bf1-7d54-5d54-8c46-303fbcbf0a53
+      version: -1
+      name: Contencion automatica
+      description: Pasos que ResponseLab marco como automaticos. No hay tareas manuales en esta fase.
+      type: title
+      iscommand: false
+      brand: ''
+    separatecontext: false
+    continueonerrortype: ''
+    view: "{\n  \"position\": {\n    \"x\": 450,\n    \"y\": 240\n  }\n}"
+    note: false
+    timertriggers: []
+    ignoreworker: false
+    skipunavailable: false
+    quietmode: 0
+    isoversize: false
+    isautoswitchedtoquietmode: false
+    nexttasks:
+      '#none#':
+      - '2'
+  '2':
+    id: '2'
+    taskid: 569834fe-4323-5aa1-a9e2-1d24d65327c9
+    type: condition
+    task:
+      id: 569834fe-4323-5aa1-a9e2-1d24d65327c9
+      version: -1
+      name: 'c1: Revocar las sesiones y los tokens de refresco de una identidad - automatica?'
+      description: 'Origen: Revocar las sesiones y los tokens de refresco de la identidad'
+      type: condition
+      iscommand: false
+      brand: ''
+    separatecontext: false
+    continueonerrortype: ''
+    view: "{\n  \"position\": {\n    \"x\": 450,\n    \"y\": 430\n  }\n}"
+    note: false
+    timertriggers: []
+    ignoreworker: false
+    skipunavailable: false
+    quietmode: 0
+    isoversize: false
+    isautoswitchedtoquietmode: false
+    conditions:
+    - label: 'yes'
+      condition:
+      - - operator: isEqualString
+          left:
+            value:
+              simple: ResponseLab.Plan.modos.c1
+            iscontext: true
+          right:
+            value:
+              simple: automatica
+    nexttasks:
+      'yes':
+      - '3'
+      '#default#':
+      - '4'
+  '3':
+    id: '3'
+    taskid: c4c5dfec-5703-5ddf-b9a5-22b23993a344
+    type: regular
+    task:
+      id: c4c5dfec-5703-5ddf-b9a5-22b23993a344
+      version: -1
+      name: msgraph-user-session-revoke
+      description: 'ResponseLab c1: Revocar las sesiones y los tokens de refresco de una identidad'
+      type: regular
+      iscommand: true
+      brand: ''
+      script: '|||msgraph-user-session-revoke'
+    separatecontext: false
+    continueonerrortype: ''
+    view: "{\n  \"position\": {\n    \"x\": 870,\n    \"y\": 620\n  }\n}"
+    note: false
+    timertriggers: []
+    ignoreworker: false
+    skipunavailable: true
+    quietmode: 0
+    isoversize: false
+    isautoswitchedtoquietmode: false
+    scriptarguments:
+      user:
+        complex:
+          root: ResponseLab.Plan.entradas.c1
+          accessor: user
+    continueonerror: true
+    nexttasks:
+      '#none#':
+      - '4'
+  '4':
+    id: '4'
+    taskid: 4f2f23b7-2628-5b9a-a8d0-38e962fb8c8b
+    type: title
+    task:
+      id: 4f2f23b7-2628-5b9a-a8d0-38e962fb8c8b
+      version: -1
+      name: c1 hecho
+      description: ''
+      type: title
+      iscommand: false
+      brand: ''
+    separatecontext: false
+    continueonerrortype: ''
+    view: "{\n  \"position\": {\n    \"x\": 450,\n    \"y\": 810\n  }\n}"
+    note: false
+    timertriggers: []
+    ignoreworker: false
+    skipunavailable: false
+    quietmode: 0
+    isoversize: false
+    isautoswitchedtoquietmode: false
+    nexttasks:
+      '#none#':
+      - '5'
+  '5':
+    id: '5'
+    taskid: 0c154620-eb2f-5215-974c-3f13c8a65827
+    type: title
+    task:
+      id: 0c154620-eb2f-5215-974c-3f13c8a65827
+      version: -1
+      name: Aprobaciones y acciones a mano
+      description: Lo que pide aprobacion se aprueba aqui; lo que no tiene traduccion en XSOAR es una tarea.
+      type: title
+      iscommand: false
+      brand: ''
+    separatecontext: false
+    continueonerrortype: ''
+    view: "{\n  \"position\": {\n    \"x\": 450,\n    \"y\": 1000\n  }\n}"
+    note: false
+    timertriggers: []
+    ignoreworker: false
+    skipunavailable: false
+    quietmode: 0
+    isoversize: false
+    isautoswitchedtoquietmode: false
+    nexttasks:
+      '#none#':
+      - '6'
+  '6':
+    id: '6'
+    taskid: b3f9d54b-faaf-5c2f-9a23-5e14dcff19a3
+    type: condition
+    task:
+      id: b3f9d54b-faaf-5c2f-9a23-5e14dcff19a3
+      version: -1
+      name: 'c1: Revocar las sesiones y los tokens de refresco de una identidad - que modo?'
+      description: 'Motivo del modo en la War Room (salida de ResponseLabDecidir). Origen: Revocar las sesiones y los tokens de refresco de la identidad'
+      type: condition
+      iscommand: false
+      brand: ''
+    separatecontext: false
+    continueonerrortype: ''
+    view: "{\n  \"position\": {\n    \"x\": 450,\n    \"y\": 1190\n  }\n}"
+    note: false
+    timertriggers: []
+    ignoreworker: false
+    skipunavailable: false
+    quietmode: 0
+    isoversize: false
+    isautoswitchedtoquietmode: false
+    conditions:
+    - label: aprobacion
+      condition:
+      - - operator: isEqualString
+          left:
+            value:
+              simple: ResponseLab.Plan.modos.c1
+            iscontext: true
+          right:
+            value:
+              simple: aprobacion
+    - label: manual
+      condition:
+      - - operator: isEqualString
+          left:
+            value:
+              simple: ResponseLab.Plan.modos.c1
+            iscontext: true
+          right:
+            value:
+              simple: manual
+    nexttasks:
+      '#default#':
+      - '7'
+      aprobacion:
+      - '8'
+      manual:
+      - '10'
+  '7':
+    id: '7'
+    taskid: fa435586-e230-55a7-b612-36e751926ad9
+    type: title
+    task:
+      id: fa435586-e230-55a7-b612-36e751926ad9
+      version: -1
+      name: c1 resuelto
+      description: ''
+      type: title
+      iscommand: false
+      brand: ''
+    separatecontext: false
+    continueonerrortype: ''
+    view: "{\n  \"position\": {\n    \"x\": 450,\n    \"y\": 1760\n  }\n}"
+    note: false
+    timertriggers: []
+    ignoreworker: false
+    skipunavailable: false
+    quietmode: 0
+    isoversize: false
+    isautoswitchedtoquietmode: false
+    nexttasks:
+      '#none#':
+      - '11'
+  '8':
+    id: '8'
+    taskid: fb59a493-7028-5480-8bfe-c1d0d2e8cd02
+    type: condition
+    task:
+      id: fb59a493-7028-5480-8bfe-c1d0d2e8cd02
+      version: -1
+      name: 'Aprobar: Revocar las sesiones y los tokens de refresco de una identidad'
+      description: 'Radio sesion, reversible si. Origen: Revocar las sesiones y los tokens de refresco de la identidad Por que: El peor caso es que un usuario legitimo tenga que volver a autenticarse en sus dispositivos: un minuto de molestia y ninguna perdida de datos. Frente a eso, una sesion robada sigue leyendo correo y descargando ficheros mientras el caso espera turno, y a diferencia de un endpoint no hay nada fisico que la detenga ni nadie que note que esta pasando.'
+      type: condition
+      iscommand: false
+      brand: ''
+    separatecontext: false
+    continueonerrortype: ''
+    view: "{\n  \"position\": {\n    \"x\": 30,\n    \"y\": 1380\n  }\n}"
+    note: false
+    timertriggers: []
+    ignoreworker: false
+    skipunavailable: false
+    quietmode: 0
+    isoversize: false
+    isautoswitchedtoquietmode: false
+    nexttasks:
+      Si:
+      - '9'
+      'No':
+      - '7'
+  '9':
+    id: '9'
+    taskid: ee88b5f1-2f0c-562d-9b9b-9fe8e073146f
+    type: regular
+    task:
+      id: ee88b5f1-2f0c-562d-9b9b-9fe8e073146f
+      version: -1
+      name: msgraph-user-session-revoke
+      description: 'ResponseLab c1: Revocar las sesiones y los tokens de refresco de una identidad'
+      type: regular
+      iscommand: true
+      brand: ''
+      script: '|||msgraph-user-session-revoke'
+    separatecontext: false
+    continueonerrortype: ''
+    view: "{\n  \"position\": {\n    \"x\": 30,\n    \"y\": 1570\n  }\n}"
+    note: false
+    timertriggers: []
+    ignoreworker: false
+    skipunavailable: true
+    quietmode: 0
+    isoversize: false
+    isautoswitchedtoquietmode: false
+    scriptarguments:
+      user:
+        complex:
+          root: ResponseLab.Plan.entradas.c1
+          accessor: user
+    continueonerror: true
+    nexttasks:
+      '#none#':
+      - '7'
+  '10':
+    id: '10'
+    taskid: b1161699-a2f3-5766-9c15-42f85e67956e
+    type: regular
+    task:
+      id: b1161699-a2f3-5766-9c15-42f85e67956e
+      version: -1
+      name: 'A mano: Revocar las sesiones y los tokens de refresco de una identidad'
+      description: 'ResponseLab la deja al analista (motivo en la War Room). Origen: Revocar las sesiones y los tokens de refresco de la identidad Por que: El peor caso es que un usuario legitimo tenga que volver a autenticarse en sus dispositivos: un minuto de molestia y ninguna perdida de datos. Frente a eso, una sesion robada sigue leyendo correo y descargando ficheros mientras el caso espera turno, y a diferencia de un endpoint no hay nada fisico que la detenga ni nadie que note que esta pasando.'
+      type: regular
+      iscommand: false
+      brand: ''
+    separatecontext: false
+    continueonerrortype: ''
+    view: "{\n  \"position\": {\n    \"x\": 870,\n    \"y\": 1380\n  }\n}"
+    note: false
+    timertriggers: []
+    ignoreworker: false
+    skipunavailable: false
+    quietmode: 0
+    isoversize: false
+    isautoswitchedtoquietmode: false
+    nexttasks:
+      '#none#':
+      - '7'
+  '11':
+    id: '11'
+    taskid: 5c92e68c-7dd8-55d0-a1d5-a40388d96b3b
+    type: condition
+    task:
+      id: 5c92e68c-7dd8-55d0-a1d5-a40388d96b3b
+      version: -1
+      name: 'c2: Marcar la identidad como comprometida en la proteccion de identidad - que modo?'
+      description: 'Motivo del modo en la War Room (salida de ResponseLabDecidir). Origen: Marcar la identidad como en riesgo para forzar reautenticacion con MFA en el siguiente acceso'
+      type: condition
+      iscommand: false
+      brand: ''
+    separatecontext: false
+    continueonerrortype: ''
+    view: "{\n  \"position\": {\n    \"x\": 450,\n    \"y\": 1950\n  }\n}"
+    note: false
+    timertriggers: []
+    ignoreworker: false
+    skipunavailable: false
+    quietmode: 0
+    isoversize: false
+    isautoswitchedtoquietmode: false
+    conditions:
+    - label: aprobacion
+      condition:
+      - - operator: isEqualString
+          left:
+            value:
+              simple: ResponseLab.Plan.modos.c2
+            iscontext: true
+          right:
+            value:
+              simple: aprobacion
+    - label: manual
+      condition:
+      - - operator: isEqualString
+          left:
+            value:
+              simple: ResponseLab.Plan.modos.c2
+            iscontext: true
+          right:
+            value:
+              simple: manual
+    - label: automatica
+      condition:
+      - - operator: isEqualString
+          left:
+            value:
+              simple: ResponseLab.Plan.modos.c2
+            iscontext: true
+          right:
+            value:
+              simple: automatica
+    nexttasks:
+      '#default#':
+      - '12'
+      aprobacion:
+      - '13'
+      manual:
+      - '15'
+      automatica:
+      - '15'
+  '12':
+    id: '12'
+    taskid: c1e1a7a1-f663-506a-bdec-161ef93d7c57
+    type: title
+    task:
+      id: c1e1a7a1-f663-506a-bdec-161ef93d7c57
+      version: -1
+      name: c2 resuelto
+      description: ''
+      type: title
+      iscommand: false
+      brand: ''
+    separatecontext: false
+    continueonerrortype: ''
+    view: "{\n  \"position\": {\n    \"x\": 450,\n    \"y\": 2520\n  }\n}"
+    note: false
+    timertriggers: []
+    ignoreworker: false
+    skipunavailable: false
+    quietmode: 0
+    isoversize: false
+    isautoswitchedtoquietmode: false
+    nexttasks:
+      '#none#':
+      - '16'
+  '13':
+    id: '13'
+    taskid: 95131597-ee9c-5e6d-8fe0-1e6497d243d2
+    type: condition
+    task:
+      id: 95131597-ee9c-5e6d-8fe0-1e6497d243d2
+      version: -1
+      name: 'Aprobar: Marcar la identidad como comprometida en la proteccion de identidad'
+      description: 'Radio sesion, reversible si, se deshace con identidad.descartar_riesgo. Origen: Marcar la identidad como en riesgo para forzar reautenticacion con MFA en el siguiente acceso Por que: No cierra ninguna puerta, la condiciona: el falso positivo cuesta una peticion de MFA a alguien que la puede responder, y el verdadero positivo cuesta al atacante un factor que no tiene.'
+      type: condition
+      iscommand: false
+      brand: ''
+    separatecontext: false
+    continueonerrortype: ''
+    view: "{\n  \"position\": {\n    \"x\": 30,\n    \"y\": 2140\n  }\n}"
+    note: false
+    timertriggers: []
+    ignoreworker: false
+    skipunavailable: false
+    quietmode: 0
+    isoversize: false
+    isautoswitchedtoquietmode: false
+    nexttasks:
+      Si:
+      - '14'
+      'No':
+      - '12'
+  '14':
+    id: '14'
+    taskid: 1a7e97d0-8a6f-5c6b-bfc8-7b6fe038a29e
+    type: regular
+    task:
+      id: 1a7e97d0-8a6f-5c6b-bfc8-7b6fe038a29e
+      version: -1
+      name: 'Ejecutar a mano: Marcar la identidad como comprometida en la proteccion de identidad'
+      description: 'Aprobada. XSOAR no tiene traduccion nativa de identidad.marcar_riesgo: hazla con la herramienta del cliente o con el motor de ResponseLab. Origen: Marcar la identidad como en riesgo para forzar reautenticacion con MFA en el siguiente acceso'
+      type: regular
+      iscommand: false
+      brand: ''
+    separatecontext: false
+    continueonerrortype: ''
+    view: "{\n  \"position\": {\n    \"x\": 30,\n    \"y\": 2330\n  }\n}"
+    note: false
+    timertriggers: []
+    ignoreworker: false
+    skipunavailable: false
+    quietmode: 0
+    isoversize: false
+    isautoswitchedtoquietmode: false
+    nexttasks:
+      '#none#':
+      - '12'
+  '15':
+    id: '15'
+    taskid: 9d558ac9-8a97-56ba-ad4e-ebc9b2c0abc8
+    type: regular
+    task:
+      id: 9d558ac9-8a97-56ba-ad4e-ebc9b2c0abc8
+      version: -1
+      name: 'A mano: Marcar la identidad como comprometida en la proteccion de identidad'
+      description: 'ResponseLab la deja al analista (motivo en la War Room). Origen: Marcar la identidad como en riesgo para forzar reautenticacion con MFA en el siguiente acceso Por que: No cierra ninguna puerta, la condiciona: el falso positivo cuesta una peticion de MFA a alguien que la puede responder, y el verdadero positivo cuesta al atacante un factor que no tiene.'
+      type: regular
+      iscommand: false
+      brand: ''
+    separatecontext: false
+    continueonerrortype: ''
+    view: "{\n  \"position\": {\n    \"x\": 870,\n    \"y\": 2140\n  }\n}"
+    note: false
+    timertriggers: []
+    ignoreworker: false
+    skipunavailable: false
+    quietmode: 0
+    isoversize: false
+    isautoswitchedtoquietmode: false
+    nexttasks:
+      '#none#':
+      - '12'
+  '16':
+    id: '16'
+    taskid: 69977c72-4dc9-5cba-853f-010e00c36e48
+    type: condition
+    task:
+      id: 69977c72-4dc9-5cba-853f-010e00c36e48
+      version: -1
+      name: 'c3: Anotar en el caso - que modo?'
+      description: 'Motivo del modo en la War Room (salida de ResponseLabDecidir). Origen: Anotar en el caso los permisos concedidos y dejar preparada su retirada'
+      type: condition
+      iscommand: false
+      brand: ''
+    separatecontext: false
+    continueonerrortype: ''
+    view: "{\n  \"position\": {\n    \"x\": 450,\n    \"y\": 2710\n  }\n}"
+    note: false
+    timertriggers: []
+    ignoreworker: false
+    skipunavailable: false
+    quietmode: 0
+    isoversize: false
+    isautoswitchedtoquietmode: false
+    conditions:
+    - label: aprobacion
+      condition:
+      - - operator: isEqualString
+          left:
+            value:
+              simple: ResponseLab.Plan.modos.c3
+            iscontext: true
+          right:
+            value:
+              simple: aprobacion
+    - label: manual
+      condition:
+      - - operator: isEqualString
+          left:
+            value:
+              simple: ResponseLab.Plan.modos.c3
+            iscontext: true
+          right:
+            value:
+              simple: manual
+    - label: automatica
+      condition:
+      - - operator: isEqualString
+          left:
+            value:
+              simple: ResponseLab.Plan.modos.c3
+            iscontext: true
+          right:
+            value:
+              simple: automatica
+    nexttasks:
+      '#default#':
+      - '17'
+      aprobacion:
+      - '18'
+      manual:
+      - '20'
+      automatica:
+      - '20'
+  '17':
+    id: '17'
+    taskid: d6e5652f-1cc9-510b-961e-ec7f2789e415
+    type: title
+    task:
+      id: d6e5652f-1cc9-510b-961e-ec7f2789e415
+      version: -1
+      name: c3 resuelto
+      description: ''
+      type: title
+      iscommand: false
+      brand: ''
+    separatecontext: false
+    continueonerrortype: ''
+    view: "{\n  \"position\": {\n    \"x\": 450,\n    \"y\": 3280\n  }\n}"
+    note: false
+    timertriggers: []
+    ignoreworker: false
+    skipunavailable: false
+    quietmode: 0
+    isoversize: false
+    isautoswitchedtoquietmode: false
+    nexttasks:
+      '#none#':
+      - '21'
+  '18':
+    id: '18'
+    taskid: 34871846-e212-5c75-96c9-938ca3bb7e27
+    type: condition
+    task:
+      id: 34871846-e212-5c75-96c9-938ca3bb7e27
+      version: -1
+      name: 'Aprobar: Anotar en el caso'
+      description: 'Radio objeto, reversible si. Origen: Anotar en el caso los permisos concedidos y dejar preparada su retirada Por que: Resolver el identificador de aplicacion, los permisos exactos y el comando de retirada no rompe nada y es justo lo que se pierde cuando el caso cambia de turno. Sin esto, la conversacion de la manana empieza preguntando que aplicacion era.'
+      type: condition
+      iscommand: false
+      brand: ''
+    separatecontext: false
+    continueonerrortype: ''
+    view: "{\n  \"position\": {\n    \"x\": 30,\n    \"y\": 2900\n  }\n}"
+    note: false
+    timertriggers: []
+    ignoreworker: false
+    skipunavailable: false
+    quietmode: 0
+    isoversize: false
+    isautoswitchedtoquietmode: false
+    nexttasks:
+      Si:
+      - '19'
+      'No':
+      - '17'
+  '19':
+    id: '19'
+    taskid: 5dcfac68-91b2-5e4c-aae7-eda021d7d2f5
+    type: regular
+    task:
+      id: 5dcfac68-91b2-5e4c-aae7-eda021d7d2f5
+      version: -1
+      name: 'Ejecutar a mano: Anotar en el caso'
+      description: 'Aprobada. XSOAR no tiene traduccion nativa de caso.nota: hazla con la herramienta del cliente o con el motor de ResponseLab. Origen: Anotar en el caso los permisos concedidos y dejar preparada su retirada'
+      type: regular
+      iscommand: false
+      brand: ''
+    separatecontext: false
+    continueonerrortype: ''
+    view: "{\n  \"position\": {\n    \"x\": 30,\n    \"y\": 3090\n  }\n}"
+    note: false
+    timertriggers: []
+    ignoreworker: false
+    skipunavailable: false
+    quietmode: 0
+    isoversize: false
+    isautoswitchedtoquietmode: false
+    nexttasks:
+      '#none#':
+      - '17'
+  '20':
+    id: '20'
+    taskid: 533a8194-29cd-59f2-8640-fc4ceb2e06a5
+    type: regular
+    task:
+      id: 533a8194-29cd-59f2-8640-fc4ceb2e06a5
+      version: -1
+      name: 'A mano: Anotar en el caso'
+      description: 'ResponseLab la deja al analista (motivo en la War Room). Origen: Anotar en el caso los permisos concedidos y dejar preparada su retirada Por que: Resolver el identificador de aplicacion, los permisos exactos y el comando de retirada no rompe nada y es justo lo que se pierde cuando el caso cambia de turno. Sin esto, la conversacion de la manana empieza preguntando que aplicacion era.'
+      type: regular
+      iscommand: false
+      brand: ''
+    separatecontext: false
+    continueonerrortype: ''
+    view: "{\n  \"position\": {\n    \"x\": 870,\n    \"y\": 2900\n  }\n}"
+    note: false
+    timertriggers: []
+    ignoreworker: false
+    skipunavailable: false
+    quietmode: 0
+    isoversize: false
+    isautoswitchedtoquietmode: false
+    nexttasks:
+      '#none#':
+      - '17'
+  '21':
+    id: '21'
+    taskid: e3349645-034f-5eb5-9bb9-5b7ffc621737
+    type: condition
+    task:
+      id: e3349645-034f-5eb5-9bb9-5b7ffc621737
+      version: -1
+      name: 'c4: Retirar el consentimiento concedido a una aplicacion - que modo?'
+      description: 'Motivo del modo en la War Room (salida de ResponseLabDecidir). Origen: Retirar el consentimiento de la aplicacion o anular la credencial anadida al service principal'
+      type: condition
+      iscommand: false
+      brand: ''
+    separatecontext: false
+    continueonerrortype: ''
+    view: "{\n  \"position\": {\n    \"x\": 450,\n    \"y\": 3470\n  }\n}"
+    note: false
+    timertriggers: []
+    ignoreworker: false
+    skipunavailable: false
+    quietmode: 0
+    isoversize: false
+    isautoswitchedtoquietmode: false
+    conditions:
+    - label: aprobacion
+      condition:
+      - - operator: isEqualString
+          left:
+            value:
+              simple: ResponseLab.Plan.modos.c4
+            iscontext: true
+          right:
+            value:
+              simple: aprobacion
+    - label: manual
+      condition:
+      - - operator: isEqualString
+          left:
+            value:
+              simple: ResponseLab.Plan.modos.c4
+            iscontext: true
+          right:
+            value:
+              simple: manual
+    - label: automatica
+      condition:
+      - - operator: isEqualString
+          left:
+            value:
+              simple: ResponseLab.Plan.modos.c4
+            iscontext: true
+          right:
+            value:
+              simple: automatica
+    nexttasks:
+      '#default#':
+      - '22'
+      aprobacion:
+      - '23'
+      manual:
+      - '25'
+      automatica:
+      - '25'
+  '22':
+    id: '22'
+    taskid: 30b4bd30-bbc3-51a3-997d-effcf8beab43
+    type: title
+    task:
+      id: 30b4bd30-bbc3-51a3-997d-effcf8beab43
+      version: -1
+      name: c4 resuelto
+      description: ''
+      type: title
+      iscommand: false
+      brand: ''
+    separatecontext: false
+    continueonerrortype: ''
+    view: "{\n  \"position\": {\n    \"x\": 450,\n    \"y\": 4040\n  }\n}"
+    note: false
+    timertriggers: []
+    ignoreworker: false
+    skipunavailable: false
+    quietmode: 0
+    isoversize: false
+    isautoswitchedtoquietmode: false
+    nexttasks:
+      '#none#':
+      - '26'
+  '23':
+    id: '23'
+    taskid: 9fce955a-bc3c-5ef0-9773-84df0a0b0890
+    type: condition
+    task:
+      id: 9fce955a-bc3c-5ef0-9773-84df0a0b0890
+      version: -1
+      name: 'Aprobar: Retirar el consentimiento concedido a una aplicacion'
+      description: 'Radio cuenta, reversible si, se deshace con identidad.restaurar_consentimiento. Origen: Retirar el consentimiento de la aplicacion o anular la credencial anadida al service principal Por que: Esto no corta una sesion, corta un permiso, y por eso si detiene al atacante aunque vuelva a entrar. Pero si la aplicacion resulta ser una integracion de negocio, el corte no se nota en el SOC: se nota en un proceso que deja de ejecutarse esa noche y que nadie relaciona con el incidente. Ademas la rotacion planificada de secretos produce exactamente esta alerta. Se prepara con el identificador de aplicacion y el de la credencial ya resueltos, y se ejecuta en cuanto alguien confirma que la aplicacion no es de negocio.'
+      type: condition
+      iscommand: false
+      brand: ''
+    separatecontext: false
+    continueonerrortype: ''
+    view: "{\n  \"position\": {\n    \"x\": 30,\n    \"y\": 3660\n  }\n}"
+    note: false
+    timertriggers: []
+    ignoreworker: false
+    skipunavailable: false
+    quietmode: 0
+    isoversize: false
+    isautoswitchedtoquietmode: false
+    nexttasks:
+      Si:
+      - '24'
+      'No':
+      - '22'
+  '24':
+    id: '24'
+    taskid: aee81306-4d32-5cb6-8a96-40c099062350
+    type: regular
+    task:
+      id: aee81306-4d32-5cb6-8a96-40c099062350
+      version: -1
+      name: 'Ejecutar a mano: Retirar el consentimiento concedido a una aplicacion'
+      description: 'Aprobada. XSOAR no tiene traduccion nativa de identidad.retirar_consentimiento: hazla con la herramienta del cliente o con el motor de ResponseLab. Origen: Retirar el consentimiento de la aplicacion o anular la credencial anadida al service principal'
+      type: regular
+      iscommand: false
+      brand: ''
+    separatecontext: false
+    continueonerrortype: ''
+    view: "{\n  \"position\": {\n    \"x\": 30,\n    \"y\": 3850\n  }\n}"
+    note: false
+    timertriggers: []
+    ignoreworker: false
+    skipunavailable: false
+    quietmode: 0
+    isoversize: false
+    isautoswitchedtoquietmode: false
+    nexttasks:
+      '#none#':
+      - '22'
+  '25':
+    id: '25'
+    taskid: 8f1b9def-9970-5e00-8d63-dfb61d7790d2
+    type: regular
+    task:
+      id: 8f1b9def-9970-5e00-8d63-dfb61d7790d2
+      version: -1
+      name: 'A mano: Retirar el consentimiento concedido a una aplicacion'
+      description: 'ResponseLab la deja al analista (motivo en la War Room). Origen: Retirar el consentimiento de la aplicacion o anular la credencial anadida al service principal Por que: Esto no corta una sesion, corta un permiso, y por eso si detiene al atacante aunque vuelva a entrar. Pero si la aplicacion resulta ser una integracion de negocio, el corte no se nota en el SOC: se nota en un proceso que deja de ejecutarse esa noche y que nadie relaciona con el incidente. Ademas la rotacion planificada de secretos produce exactamente esta alerta. Se prepara con el identificador de aplicacion y el de la credencial ya resueltos, y se ejecuta en cuanto alguien confirma que la aplicacion no es de negocio.'
+      type: regular
+      iscommand: false
+      brand: ''
+    separatecontext: false
+    continueonerrortype: ''
+    view: "{\n  \"position\": {\n    \"x\": 870,\n    \"y\": 3660\n  }\n}"
+    note: false
+    timertriggers: []
+    ignoreworker: false
+    skipunavailable: false
+    quietmode: 0
+    isoversize: false
+    isautoswitchedtoquietmode: false
+    nexttasks:
+      '#none#':
+      - '22'
+  '26':
+    id: '26'
+    taskid: e0c78f8f-0093-58bb-ae95-3bd69f836691
+    type: title
+    task:
+      id: e0c78f8f-0093-58bb-ae95-3bd69f836691
+      version: -1
+      name: Checklist del playbook
+      description: ''
+      type: title
+      iscommand: false
+      brand: ''
+    separatecontext: false
+    continueonerrortype: ''
+    view: "{\n  \"position\": {\n    \"x\": 450,\n    \"y\": 4230\n  }\n}"
+    note: false
+    timertriggers: []
+    ignoreworker: false
+    skipunavailable: false
+    quietmode: 0
+    isoversize: false
+    isautoswitchedtoquietmode: false
+    nexttasks:
+      '#none#':
+      - '27'
+  '27':
+    id: '27'
+    taskid: 52a0fdbe-c3d6-536b-8c04-15d5462a021e
+    type: regular
+    task:
+      id: 52a0fdbe-c3d6-536b-8c04-15d5462a021e
+      version: -1
+      name: Escalar segun el plan
+      description: 'Plazo del playbook: L2 en 15 min. El plan de este incidente: ${ResponseLab.Plan.escalado.a} en ${ResponseLab.Plan.escalado.plazo_min} min.
+
+        A L3 si: Hay alta en un rol de administracion global, modificacion de acceso condicional o consentimiento con permisos de aplicacion'
+      type: regular
+      iscommand: false
+      brand: ''
+    separatecontext: false
+    continueonerrortype: ''
+    view: "{\n  \"position\": {\n    \"x\": 450,\n    \"y\": 4420\n  }\n}"
+    note: false
+    timertriggers: []
+    ignoreworker: false
+    skipunavailable: false
+    quietmode: 0
+    isoversize: false
+    isautoswitchedtoquietmode: false
+    nexttasks:
+      '#none#':
+      - '28'
+  '28':
+    id: '28'
+    taskid: 5865433e-9f14-5939-9550-8aac0c2351ce
+    type: regular
+    task:
+      id: 5865433e-9f14-5939-9550-8aac0c2351ce
+      version: -1
+      name: 'Evidencia: Sesiones vivas y tokens de refresco de la identidad, con hora de emision'
+      description: 'Como: Consulta de sesiones de la identidad en el proveedor, antes de revocar nada
+
+        Donde: api'
+      type: regular
+      iscommand: false
+      brand: ''
+    separatecontext: false
+    continueonerrortype: ''
+    view: "{\n  \"position\": {\n    \"x\": 450,\n    \"y\": 4610\n  }\n}"
+    note: false
+    timertriggers: []
+    ignoreworker: false
+    skipunavailable: false
+    quietmode: 0
+    isoversize: false
+    isautoswitchedtoquietmode: false
+    nexttasks:
+      '#none#':
+      - '29'
+  '29':
+    id: '29'
+    taskid: 16662ab8-406d-5dee-9c11-6eae0b7b149f
+    type: regular
+    task:
+      id: 16662ab8-406d-5dee-9c11-6eae0b7b149f
+      version: -1
+      name: 'Evidencia: Permisos concretos concedidos en el consentimiento, no el nombre de la aplicacion'
+      description: 'Como: Lectura de los oauth2PermissionGrants y appRoleAssignments del service principal
+
+        Donde: api'
+      type: regular
+      iscommand: false
+      brand: ''
+    separatecontext: false
+    continueonerrortype: ''
+    view: "{\n  \"position\": {\n    \"x\": 450,\n    \"y\": 4800\n  }\n}"
+    note: false
+    timertriggers: []
+    ignoreworker: false
+    skipunavailable: false
+    quietmode: 0
+    isoversize: false
+    isautoswitchedtoquietmode: false
+    nexttasks:
+      '#none#':
+      - '30'
+  '30':
+    id: '30'
+    taskid: 0cf33bc8-b824-5a05-86f8-b412c4de0c3e
+    type: regular
+    task:
+      id: 0cf33bc8-b824-5a05-86f8-b412c4de0c3e
+      version: -1
+      name: 'Evidencia: Cambios en el inquilino hechos por esa identidad en las 24 h siguientes'
+      description: 'Como: search en auditlogs por initiatedBy, ordenado por tiempo
+
+        Donde: siem'
+      type: regular
+      iscommand: false
+      brand: ''
+    separatecontext: false
+    continueonerrortype: ''
+    view: "{\n  \"position\": {\n    \"x\": 450,\n    \"y\": 4990\n  }\n}"
+    note: false
+    timertriggers: []
+    ignoreworker: false
+    skipunavailable: false
+    quietmode: 0
+    isoversize: false
+    isautoswitchedtoquietmode: false
+    nexttasks:
+      '#none#':
+      - '31'
+  '31':
+    id: '31'
+    taskid: 06c5647a-8b1a-58d9-acfe-eccf48851970
+    type: regular
+    task:
+      id: 06c5647a-8b1a-58d9-acfe-eccf48851970
+      version: -1
+      name: 'Evidencia: Cadena completa del inicio de sesion'
+      description: 'Como: search en signinlogs por correlationId: IP, ASN, dispositivo, resultado de acceso condicional y claim de MFA
+
+        Donde: siem'
+      type: regular
+      iscommand: false
+      brand: ''
+    separatecontext: false
+    continueonerrortype: ''
+    view: "{\n  \"position\": {\n    \"x\": 450,\n    \"y\": 5180\n  }\n}"
+    note: false
+    timertriggers: []
+    ignoreworker: false
+    skipunavailable: false
+    quietmode: 0
+    isoversize: false
+    isautoswitchedtoquietmode: false
+    nexttasks:
+      '#none#':
+      - '32'
+  '32':
+    id: '32'
+    taskid: 911d0807-3d20-51b8-847d-cc87038c4f31
+    type: regular
+    task:
+      id: 911d0807-3d20-51b8-847d-cc87038c4f31
+      version: -1
+      name: 'Evidencia: Que ha leido la aplicacion o el service principal desde la concesion'
+      description: 'Como: Registro de acceso a datos por appId, agrupado por recurso
+
+        Donde: siem'
+      type: regular
+      iscommand: false
+      brand: ''
+    separatecontext: false
+    continueonerrortype: ''
+    view: "{\n  \"position\": {\n    \"x\": 450,\n    \"y\": 5370\n  }\n}"
+    note: false
+    timertriggers: []
+    ignoreworker: false
+    skipunavailable: false
+    quietmode: 0
+    isoversize: false
+    isautoswitchedtoquietmode: false
+    nexttasks:
+      '#none#':
+      - '33'
+  '33':
+    id: '33'
+    taskid: 8c6ea5d4-06fe-5b3e-8d84-c89b96222969
+    type: regular
+    task:
+      id: 8c6ea5d4-06fe-5b3e-8d84-c89b96222969
+      version: -1
+      name: 'Evidencia: Reglas de buzon y reenvios creados por esa identidad'
+      description: 'Como: Auditoria de New-InboxRule y Set-Mailbox por UserId
+
+        Donde: api'
+      type: regular
+      iscommand: false
+      brand: ''
+    separatecontext: false
+    continueonerrortype: ''
+    view: "{\n  \"position\": {\n    \"x\": 450,\n    \"y\": 5560\n  }\n}"
+    note: false
+    timertriggers: []
+    ignoreworker: false
+    skipunavailable: false
+    quietmode: 0
+    isoversize: false
+    isautoswitchedtoquietmode: false
+    nexttasks:
+      '#none#':
+      - '34'
+  '34':
+    id: '34'
+    taskid: 776661c0-74c1-5b88-bf9e-6dcacd1bc9eb
+    type: regular
+    task:
+      id: 776661c0-74c1-5b88-bf9e-6dcacd1bc9eb
+      version: -1
+      name: Contestar el triaje pendiente
+      description: 'Pendientes en este incidente: ${ResponseLab.Plan.triaje_pendiente}
+
+
+        Preguntas del playbook:
+
+        - La IP y el ASN estan en la linea base de esa cuenta en 30 dias
+
+        - El inicio de sesion presenta claim de MFA reciente y dispositivo conforme
+
+        - El rol asignado es de administracion global, de aplicaciones o de seguridad
+
+        - La aplicacion que recibe consentimiento pide permisos de aplicacion y no delegados
+
+        - Se modifico o deshabilito una politica de acceso condicional sin ticket de cambio
+
+        - La identidad es un service principal o una cuenta de emergencia'
+      type: regular
+      iscommand: false
+      brand: ''
+    separatecontext: false
+    continueonerrortype: ''
+    view: "{\n  \"position\": {\n    \"x\": 450,\n    \"y\": 5750\n  }\n}"
+    note: false
+    timertriggers: []
+    ignoreworker: false
+    skipunavailable: false
+    quietmode: 0
+    isoversize: false
+    isautoswitchedtoquietmode: false
+    nexttasks:
+      '#none#':
+      - '35'
+  '35':
+    id: '35'
+    taskid: d60019bf-c827-5eda-8773-62efdb7a8434
+    type: regular
+    task:
+      id: d60019bf-c827-5eda-8773-62efdb7a8434
+      version: -1
+      name: Comprobar las condiciones de cierre
+      description: 'Se puede cerrar como benigno si:
+
+        - Password spraying (soc_cld_003) cuyos fallos se concentran en una sola cuenta y proceden de una unica IP que el inventario resuelve a un dispositivo corporativo gestionado, con codigo de error de credencial cacheada o expirada.
+
+        - Subida a SaaS no aprobado (soc_cld_010) cuando el servicio de destino figura en el catalogo de aplicaciones con aprobacion vigente y contrato de tratamiento, y el volumen queda por debajo del umbral de la regla de exfiltracion.'
+      type: regular
+      iscommand: false
+      brand: ''
+    separatecontext: false
+    continueonerrortype: ''
+    view: "{\n  \"position\": {\n    \"x\": 450,\n    \"y\": 5940\n  }\n}"
+    note: false
+    timertriggers: []
+    ignoreworker: false
+    skipunavailable: false
+    quietmode: 0
+    isoversize: false
+    isautoswitchedtoquietmode: false
+    nexttasks:
+      '#none#':
+      - '36'
+  '36':
+    id: '36'
+    taskid: 7a219067-66d1-52a2-8581-f696f783d00f
+    type: regular
+    task:
+      id: 7a219067-66d1-52a2-8581-f696f783d00f
+      version: -1
+      name: Situaciones que requieren a una persona
+      description: 'Nunca automatico:
+
+        - Deshabilitar la cuenta
+
+        - Restablecer la contrasena
+
+        - Revertir la politica de acceso condicional modificada
+
+        - Retirar el rol privilegiado asignado
+
+        - Declarar el inquilino comprometido'
+      type: regular
+      iscommand: false
+      brand: ''
+    separatecontext: false
+    continueonerrortype: ''
+    view: "{\n  \"position\": {\n    \"x\": 450,\n    \"y\": 6130\n  }\n}"
+    note: false
+    timertriggers: []
+    ignoreworker: false
+    skipunavailable: false
+    quietmode: 0
+    isoversize: false
+    isautoswitchedtoquietmode: false
+    nexttasks:
+      '#none#':
+      - '37'
+  '37':
+    id: '37'
+    taskid: f56e59f0-4890-54bc-b01e-183f3cddf0ed
+    type: title
+    task:
+      id: f56e59f0-4890-54bc-b01e-183f3cddf0ed
+      version: -1
+      name: Hecho
+      description: ''
+      type: title
+      iscommand: false
+      brand: ''
+    separatecontext: false
+    continueonerrortype: ''
+    view: "{\n  \"position\": {\n    \"x\": 450,\n    \"y\": 6320\n  }\n}"
+    note: false
+    timertriggers: []
+    ignoreworker: false
+    skipunavailable: false
+    quietmode: 0
+    isoversize: false
+    isautoswitchedtoquietmode: false
+view: "{\n  \"linkLabelsPosition\": {},\n  \"paper\": {\n    \"dimensions\": {\n      \"height\": 6470,\n      \"width\": 1240,\n      \"x\": -20,\n      \"y\": 0\n    }\n  }\n}"
+inputs: []
+outputs: []
+tests:
+- No tests
+fromversion: 6.10.0

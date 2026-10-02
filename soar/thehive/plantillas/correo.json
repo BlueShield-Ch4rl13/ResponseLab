@@ -1,0 +1,209 @@
+{
+  "customFields": [],
+  "description": "Dominio recien registrado, suplantacion de directivo, fallo de DMARC en el dominio propio, adjunto de formato de entrega, URL pulsada, regla de buzon con reenvio externo, envio masivo interno y HTML smuggling. La pregunta que decide el caso no es si el correo era malicioso - de eso ya opina la pasarela - sino si alguien actuo sobre el: si se entrego, si se abrio, si se pulso el enlace y si despues hubo una autenticacion. Y esa cadena se responde entera leyendo registros, sin molestar a nadie y sin tocar ningun equipo, asi que el triaje de esta familia puede completarse antes de que llegue una persona. La segunda particularidad es el alcance: nunca es un buzon. Una campana entra en decenas de buzones y el caso solo esta bien cerrado cuando se han mirado todos, no solo el del que la reporto.\n\nGenerada por ResponseLab desde el playbook de DetectionLab (correo).",
+  "displayName": "ResponseLab · Phishing y abuso del canal de correo",
+  "flag": false,
+  "name": "ResponseLab - correo",
+  "pap": 2,
+  "severity": 2,
+  "tags": [
+    "responselab",
+    "rl:familia=correo"
+  ],
+  "tasks": [
+    {
+      "description": "Como: Busqueda por message-id, asunto y remitente en la pasarela, sin filtrar por el que reporto\nDonde: api",
+      "flag": false,
+      "group": "1. Evidencia",
+      "mandatory": false,
+      "order": 0,
+      "title": "Lista completa de destinatarios del mismo mensaje o campana"
+    },
+    {
+      "description": "Como: Consulta del reescritor de enlaces por URL y por campana\nDonde: api",
+      "flag": false,
+      "group": "1. Evidencia",
+      "mandatory": false,
+      "order": 1,
+      "title": "Registro de clics del proveedor, con hora y usuario"
+    },
+    {
+      "description": "Como: Seguimiento de mensaje de la pasarela y del servicio de correo\nDonde: api",
+      "flag": false,
+      "group": "1. Evidencia",
+      "mandatory": false,
+      "order": 2,
+      "title": "Estado de entrega por destinatario: entregado, en cuarentena o retirado"
+    },
+    {
+      "description": "Como: Cabeceras originales del mensaje desde la pasarela\nDonde: api",
+      "flag": false,
+      "group": "1. Evidencia",
+      "mandatory": false,
+      "order": 3,
+      "title": "Cabeceras completas con resultados de SPF, DKIM y DMARC"
+    },
+    {
+      "description": "Como: Informe de detonacion del proveedor, no solo su veredicto\nDonde: api",
+      "flag": false,
+      "group": "1. Evidencia",
+      "mandatory": false,
+      "order": 4,
+      "title": "Comportamiento del adjunto detonado en la caja de arena"
+    },
+    {
+      "description": "Como: search user=X earliest=<hora_clic> latest=+60m | table _time src_ip result mfa\nDonde: siem",
+      "flag": false,
+      "group": "1. Evidencia",
+      "mandatory": false,
+      "order": 5,
+      "title": "Autenticaciones del usuario que pulso en los 60 minutos siguientes"
+    },
+    {
+      "description": "Como: Get-InboxRule -Mailbox X y auditoria de New-InboxRule\nDonde: api",
+      "flag": false,
+      "group": "1. Evidencia",
+      "mandatory": false,
+      "order": 6,
+      "title": "Reglas de buzon y reenvios creados en ese buzon en las 24 h siguientes"
+    },
+    {
+      "description": "Fuente: pasarela_correo. Si es afirmativa, baja la severidad (un escalon como mucho).\nPregunta para el analista: la maquina no tiene datos para contestarla.",
+      "flag": false,
+      "group": "2. Triaje",
+      "mandatory": false,
+      "order": 7,
+      "title": "El mensaje quedo en cuarentena y ningun buzon lo recibio"
+    },
+    {
+      "description": "Fuente: pasarela_correo. Si es afirmativa, baja la severidad (un escalon como mucho).\nPregunta para el analista: la maquina no tiene datos para contestarla.\nSin entrega y sin clic no hubo accion del usuario. Es la unica combinacion de esta familia que cierra un caso por si sola.",
+      "flag": false,
+      "group": "2. Triaje",
+      "mandatory": false,
+      "order": 8,
+      "title": "El registro de clics no tiene ninguna entrada para las URL del mensaje"
+    },
+    {
+      "description": "Fuente: pasarela_correo. Si es afirmativa, sube la severidad.\nPregunta para el analista: la maquina no tiene datos para contestarla.",
+      "flag": false,
+      "group": "2. Triaje",
+      "mandatory": false,
+      "order": 9,
+      "title": "Hay un clic registrado por algun destinatario"
+    },
+    {
+      "description": "Fuente: correlacion. Si es afirmativa, sube la severidad.\nResponseLab la contesta sola si hay datos; si queda pendiente, contestarla aqui.\nEs el patron del robo de credencial completado, y a partir de ahi el caso deja de ser de correo y pasa a ser de identidad. Aproxima \"inicio de sesion desde IP nueva\" por cualquier alerta de identidad del mismo usuario en la hora.",
+      "flag": false,
+      "group": "2. Triaje",
+      "mandatory": false,
+      "order": 10,
+      "title": "Hay un inicio de sesion correcto del usuario que pulso, desde una IP nueva, en los 60 minutos siguientes"
+    },
+    {
+      "description": "Fuente: directorio. Si es afirmativa, sube la severidad.\nResponseLab la contesta sola si hay datos; si queda pendiente, contestarla aqui.",
+      "flag": false,
+      "group": "2. Triaje",
+      "mandatory": false,
+      "order": 11,
+      "title": "El remitente suplanta a un directivo y el destinatario tiene atribuciones de pago"
+    },
+    {
+      "description": "Fuente: inventario_dominios. Si es afirmativa, sube la severidad.\nResponseLab la contesta sola si hay datos; si queda pendiente, contestarla aqui.",
+      "flag": false,
+      "group": "2. Triaje",
+      "mandatory": false,
+      "order": 12,
+      "title": "El dominio remitente se registro hace menos de 30 dias"
+    },
+    {
+      "description": "Alcance: Un mensaje, en los buzones que lo tienen. Queda recuperable en Elementos recuperables.\nRadio: equipo · Reversible: si\nAutomatica en clase auto_contener si la politica del cliente lo permite.\nAccion de ResponseLab: correo.retirar_mensaje · se deshace con correo.restaurar_mensaje\nExcepcion: Si el remitente pertenece a un dominio de cliente o proveedor\nregistrado, se prepara y se avisa antes de retirar: sacar correo de\nnegocio de los buzones sin explicacion genera mas ruido y mas llamadas\nde las que ahorra.\n\nPor que: Retirar un correo legitimo por error molesta a quien lo esperaba y se\ndeshace en un comando, con el mensaje intacto. Dejar un phishing en\ncincuenta buzones mientras se tria garantiza que alguien mas lo pulse,\ny el clic no se deshace en ningun comando.\n",
+      "flag": false,
+      "group": "3. Contencion",
+      "mandatory": false,
+      "order": 13,
+      "title": "Retirar el mensaje de todos los buzones que lo recibieron mediante borrado reversible"
+    },
+    {
+      "description": "Alcance: Una regla de buzon. No toca el buzon, la cuenta ni el resto de reglas.\nRadio: objeto · Reversible: si\nAutomatica en clase auto_contener si la politica del cliente lo permite.\nAccion de ResponseLab: correo.deshabilitar_regla · se deshace con correo.habilitar_regla\nExcepcion: Si el buzon es funcional o compartido, se prepara y se pide aprobacion:\nun reenvio en soporte@ o en facturacion@ puede ser parte de un flujo de\nnegocio y desactivarlo pierde correo de clientes sin que nadie lo note\nhasta que reclaman.\n\nPor que: La definicion se exporta antes, asi que restaurarla es un comando. Y es\nel unico canal de esta familia que sigue trabajando por su cuenta,\ncorreo a correo, mientras el caso espera turno.\n",
+      "flag": false,
+      "group": "3. Contencion",
+      "mandatory": false,
+      "order": 14,
+      "title": "Deshabilitar la regla de reenvio externa creada, guardando antes su definicion completa"
+    },
+    {
+      "description": "Alcance: Una URL. No el dominio que la aloja.\nRadio: equipo · Reversible: si\nAutomatica en clase auto_contener si la politica del cliente lo permite.\nAccion de ResponseLab: correo.bloquear_url · se deshace con correo.desbloquear_url\nPor que: Bloquea el segundo clic de los mensajes ya entregados sin tocar el resto\ndel dominio, que en el caso habitual - un alojamiento compartido o un\nacortador - sirve tambien contenido legitimo. Se quita en un minuto y\nel peor caso es que alguien vea una pagina de aviso en lugar de un\nenlace bueno.\n",
+      "flag": false,
+      "group": "3. Contencion",
+      "mandatory": false,
+      "order": 15,
+      "title": "Anadir la URL concreta a la lista de bloqueo del reescritor de enlaces del proveedor"
+    },
+    {
+      "description": "Alcance: Todo el correo entrante de ese origen, para toda la organizacion\nRadio: organizacion · Reversible: si\nRequiere aprobacion.\nAccion de ResponseLab: correo.bloquear_remitente · se deshace con correo.desbloquear_remitente\nPor que: Si el dominio suplantado es el de un proveedor real, o el remitente es\nun servicio de envio compartido, el bloqueo tira correo de negocio y el\nrebote lo ve el cliente, no el SOC. Ademas un bloqueo por dominio dura\nmucho mas que la campana que lo motivo y acaba en una lista que nadie\nrevisa. Se deja preparada y espera.\n",
+      "flag": false,
+      "group": "3. Contencion",
+      "mandatory": false,
+      "order": 16,
+      "title": "Bloquear el dominio o la IP remitente en la pasarela de correo"
+    },
+    {
+      "description": "Mensaje bloqueado o puesto en cuarentena por la pasarela antes de la entrega, con cero destinatarios en estado entregado y sin ninguna entrada en el registro de clics para las URL que contiene.\n\nPor que es seguro: Si no llego a ningun buzon no hubo nada sobre lo que nadie pudiera actuar, y las dos comprobaciones se hacen sobre registros del proveedor que existen con independencia del criterio de quien mira el caso: no se esta interpretando, se esta leyendo. El unico escenario que se escapa - que el mismo remitente entrase tambien por otro canal - esta regla no lo ve de ninguna forma, y lo cubre la caza programada sobre el dominio remitente. Sostener estos casos abiertos supondria dedicar el turno a confirmar que la pasarela hizo su trabajo.",
+      "flag": false,
+      "group": "4. Cierre",
+      "mandatory": false,
+      "order": 17,
+      "title": "Comprobar si se puede cerrar: Mensaje bloqueado o puesto en cuarentena por la pasarela antes de la entrega, con cero destinatarios en estado entregado y sin ninguna entrada en el registro de clics para las URL que contiene."
+    },
+    {
+      "description": "Envio masivo interno (soc_mail_007) desde un buzon de la lista de emisores autorizados - comunicacion interna, recursos humanos, sistemas - dentro de una ventana de campana registrada.\n\nPor que es seguro: Es una operacion planificada que se repite cada mes y produce exactamente la misma senal que una cuenta comprometida enviando phishing interno. Distinguirla por buzon emisor y ventana registrada es barato y objetivo. Y el riesgo de que la cuenta autorizada sea precisamente la comprometida no queda sin cubrir: la senal que importaria en ese caso - regla de reenvio nueva, inicio de sesion anomalo, autenticacion desde IP nueva - sale por otras reglas que no cierran solas.",
+      "flag": false,
+      "group": "4. Cierre",
+      "mandatory": false,
+      "order": 18,
+      "title": "Comprobar si se puede cerrar: Envio masivo interno (soc_mail_007) desde un buzon de la lista de emisores autorizados - comunicacion interna, recursos humanos, sistemas - dentro de una ventana de campana registrada."
+    },
+    {
+      "description": "Hay que preguntarle si escribio credenciales, y esa conversacion determina el resto del caso. No la hace un correo automatico.",
+      "flag": false,
+      "group": "5. Requiere persona",
+      "mandatory": false,
+      "order": 19,
+      "title": "Contactar con el usuario que pulso"
+    },
+    {
+      "description": "Cortar el acceso a quien no debia tiene coste inmediato y visible.",
+      "flag": false,
+      "group": "5. Requiere persona",
+      "mandatory": false,
+      "order": 20,
+      "title": "Restablecer la credencial del usuario"
+    },
+    {
+      "description": "Un aviso general mal calibrado ensena a la gente a ignorar los avisos. Se decide con comunicacion.",
+      "flag": false,
+      "group": "5. Requiere persona",
+      "mandatory": false,
+      "order": 21,
+      "title": "Avisar al resto de la organizacion de la campana"
+    },
+    {
+      "description": "Tramite externo con implicaciones legales y de imagen.",
+      "flag": false,
+      "group": "5. Requiere persona",
+      "mandatory": false,
+      "order": 22,
+      "title": "Denunciar el dominio o pedir su retirada"
+    },
+    {
+      "description": "Escalar a L2 en 20 minutos.\nA L3 si: Hay clic confirmado con autenticacion posterior desde IP nueva, o se creo una regla de reenvio externa en el buzon del que pulso",
+      "flag": false,
+      "group": "6. Escalado",
+      "mandatory": false,
+      "order": 23,
+      "title": "Escalado: L2 en 20 min"
+    }
+  ],
+  "titlePrefix": "[RL Correo]",
+  "tlp": 2
+}

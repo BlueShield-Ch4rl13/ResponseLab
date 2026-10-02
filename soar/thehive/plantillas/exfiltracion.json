@@ -1,0 +1,193 @@
+{
+  "customFields": [],
+  "description": "Archivado masivo previo, subida a nube personal, copia a soporte extraible, protocolo alternativo, reenvio automatico a correo personal, repositorio publico de codigo, volcado de base de datos, impresion y captura masiva. Lo que distingue a esta familia es que cuando la alerta llega los datos ya han salido, o estan saliendo desde hace rato. Eso cambia el objetivo del triaje: no es contener, es determinar el alcance - que ficheros, de que sistema, con que clasificacion y de cuantos interesados - porque de esa respuesta dependen plazos que no se negocian: la alerta temprana de NIS2 a las 24 h y la notificacion del RGPD a las 72 h se cuentan desde que la organizacion conoce el hecho, no desde que termina de investigarlo. Un caso de esta familia se mide en si el informe llego a tiempo, no en si el equipo se aislo rapido.\n\nGenerada por ResponseLab desde el playbook de DetectionLab (exfiltracion).",
+  "displayName": "ResponseLab · Salida de informacion",
+  "flag": false,
+  "name": "ResponseLab - exfiltracion",
+  "pap": 2,
+  "severity": 2,
+  "tags": [
+    "responselab",
+    "rl:familia=exfiltracion"
+  ],
+  "tasks": [
+    {
+      "description": "Como: Sysmon EID 11 por ProcessGuid y auditoria de acceso a objetos del recurso de origen\nDonde: siem",
+      "flag": false,
+      "group": "1. Evidencia",
+      "mandatory": false,
+      "order": 0,
+      "title": "Lista de ficheros tocados con ruta, tamano y hora, que es la base del calculo de alcance"
+    },
+    {
+      "description": "Como: stats sum(bytes_out) sum(bytes_in) by dest_host user\nDonde: siem",
+      "flag": false,
+      "group": "1. Evidencia",
+      "mandatory": false,
+      "order": 1,
+      "title": "Volumen enviado y recibido por separado, con destino resuelto"
+    },
+    {
+      "description": "Como: 7z l <archivo> o tar -tvf <archivo>\nDonde: agente",
+      "flag": false,
+      "group": "1. Evidencia",
+      "mandatory": false,
+      "order": 2,
+      "title": "Manifiesto del archivo creado, no su contenido"
+    },
+    {
+      "description": "Como: Auditoria del recurso compartido, del gestor documental o del motor de base de datos\nDonde: siem",
+      "flag": false,
+      "group": "1. Evidencia",
+      "mandatory": false,
+      "order": 3,
+      "title": "Origen real de los datos, para saber que sistema hay que declarar"
+    },
+    {
+      "description": "Como: Get-InboxRule y Get-Mailbox -Identity X | select ForwardingSmtpAddress\nDonde: api",
+      "flag": false,
+      "group": "1. Evidencia",
+      "mandatory": false,
+      "order": 4,
+      "title": "Estado y fecha de creacion de las reglas de reenvio del buzon"
+    },
+    {
+      "description": "Como: Marcar la ventana en el gestor de retencion del indexador y del proxy\nDonde: manager",
+      "flag": false,
+      "group": "1. Evidencia",
+      "mandatory": false,
+      "order": 5,
+      "title": "Retencion extendida sobre los indices que cubren la ventana del hecho"
+    },
+    {
+      "description": "Fuente: catalogo_servicios. Si es afirmativa, baja la severidad (un escalon como mucho).\nResponseLab la contesta sola si hay datos; si queda pendiente, contestarla aqui.\nBaja la urgencia de la contencion, no la del calculo de alcance. Un servicio aprobado tambien sirve para sacar datos.",
+      "flag": false,
+      "group": "2. Triaje",
+      "mandatory": false,
+      "order": 6,
+      "title": "El destino figura en el catalogo de servicios aprobados con contrato de tratamiento"
+    },
+    {
+      "description": "Fuente: inventario. Si es afirmativa, sube la severidad.\nResponseLab la contesta sola si hay datos; si queda pendiente, contestarla aqui.\nEs la pregunta que decide si empieza a correr el plazo del RGPD, y por eso se responde antes que ninguna otra.",
+      "flag": false,
+      "group": "2. Triaje",
+      "mandatory": false,
+      "order": 7,
+      "title": "El activo de origen maneja datos personales o informacion clasificada segun el inventario"
+    },
+    {
+      "description": "Fuente: historico_siem. Si es afirmativa, sube la severidad.\nPregunta para el analista: la maquina no tiene datos para contestarla.",
+      "flag": false,
+      "group": "2. Triaje",
+      "mandatory": false,
+      "order": 8,
+      "title": "El volumen se desvia de la linea base de esa cuenta en 30 dias"
+    },
+    {
+      "description": "Fuente: itsm. Si es afirmativa, baja la severidad (un escalon como mucho).\nPregunta para el analista: la maquina no tiene datos para contestarla.",
+      "flag": false,
+      "group": "2. Triaje",
+      "mandatory": false,
+      "order": 9,
+      "title": "Hay ticket de migracion, de entrega a cliente o de renovacion de equipo que cubra la operacion"
+    },
+    {
+      "description": "Fuente: directorio. Si es afirmativa, sube la severidad.\nResponseLab la contesta sola si hay datos; si queda pendiente, contestarla aqui.",
+      "flag": false,
+      "group": "2. Triaje",
+      "mandatory": false,
+      "order": 10,
+      "title": "La cuenta tiene baja o cambio de empresa anunciado"
+    },
+    {
+      "description": "Fuente: evidencia. Si es afirmativa, sube la severidad.\nPregunta para el analista: la maquina no tiene datos para contestarla.\nRecorrer departamentos separa la copia de trabajo del barrido.",
+      "flag": false,
+      "group": "2. Triaje",
+      "mandatory": false,
+      "order": 11,
+      "title": "Los ficheros salen de un unico proyecto o recorren varios departamentos"
+    },
+    {
+      "description": "Alcance: Metadatos de registro. No toca al usuario ni al equipo.\nRadio: objeto · Reversible: si\nAutomatica en clase auto_contener si la politica del cliente lo permite.\nAccion de ResponseLab: evidencia.retener\nPor que: Es la accion mas util de esta familia y la que mas se olvida. Los\nregistros caducan antes que el plazo de notificacion: si el caso tarda\ndos dias en revisarse y la retencion del proxy son siete, el informe de\nalcance se escribe con la mitad de los datos. Cuesta disco y no rompe\nnada.\n",
+      "flag": false,
+      "group": "3. Contencion",
+      "mandatory": false,
+      "order": 12,
+      "title": "Fijar retencion extendida sobre los indices, el registro del proxy y el del correo que cubren la ventana"
+    },
+    {
+      "description": "Alcance: El equipo afectado. No toca cuentas ni otros equipos.\nRadio: equipo · Reversible: si\nAutomatica en clase auto_contener si la politica del cliente lo permite.\nAccion de ResponseLab: endpoint.aislar · se deshace con endpoint.liberar\nExcepcion: Si el inventario marca el equipo como servidor de produccion, NO se\naisla: se prepara la accion y se pide aprobacion.\n\nPor que: Llega tarde para lo ya subido, pero corta lo que queda en cola: una\nsubida de decenas de gigas no termina en el minuto en que salta la\nalerta, y la diferencia entre lo subido y lo pendiente es la diferencia\nentre dos informes de alcance distintos.\n",
+      "flag": false,
+      "group": "3. Contencion",
+      "mandatory": false,
+      "order": 13,
+      "title": "Aislar el endpoint en la red, dejando solo la comunicacion con el manager"
+    },
+    {
+      "description": "Alcance: Una regla de buzon. No toca el buzon, la cuenta ni el resto de reglas.\nRadio: objeto · Reversible: si\nAutomatica en clase auto_contener si la politica del cliente lo permite.\nAccion de ResponseLab: correo.deshabilitar_regla · se deshace con correo.habilitar_regla\nExcepcion: Si el buzon es funcional o compartido, se prepara y se pide aprobacion:\nun reenvio en soporte@ o en facturacion@ puede ser parte de un flujo de\nnegocio y desactivarlo pierde correo de clientes.\n\nPor que: La definicion se exporta antes, asi que restaurarla es un comando. Y es\nel unico canal de esta familia que sigue exfiltrando por si solo,\ncorreo a correo, mientras nadie mira: dejarlo vivo durante el triaje\namplia el alcance que despues hay que declarar.\n",
+      "flag": false,
+      "group": "3. Contencion",
+      "mandatory": false,
+      "order": 14,
+      "title": "Deshabilitar la regla de reenvio automatico creada, guardando antes su definicion completa"
+    },
+    {
+      "description": "Alcance: Toda la organizacion, para ese destino\nRadio: organizacion · Reversible: si\nRequiere aprobacion.\nAccion de ResponseLab: perimetro.bloquear_destino · se deshace con perimetro.desbloquear_destino\nPor que: Se quita en un minuto, pero mientras esta puesto corta el servicio a\ntodo el mundo, y los destinos de esta familia - transferencia de\nficheros, almacenamiento personal, repositorios publicos - son los\nmismos que usan a diario proveedores, clientes y desarrollo. El SOAR no\npuede saber cuantos flujos legitimos pasan por ahi. Se deja preparada\ncon el destino resuelto y espera.\n",
+      "flag": false,
+      "group": "3. Contencion",
+      "mandatory": false,
+      "order": 15,
+      "title": "Bloquear el destino de la subida en el proxy corporativo"
+    },
+    {
+      "description": "Es una decision juridica con plazo, y la toma el delegado de proteccion de datos con negocio. El SOC aporta el alcance, no la calificacion.",
+      "flag": false,
+      "group": "5. Requiere persona",
+      "mandatory": false,
+      "order": 16,
+      "title": "Calificar el hecho como brecha de datos personales"
+    },
+    {
+      "description": "Fuera del alcance tecnico y con consecuencias regulatorias propias.",
+      "flag": false,
+      "group": "5. Requiere persona",
+      "mandatory": false,
+      "order": 17,
+      "title": "Notificar a la autoridad o a los interesados"
+    },
+    {
+      "description": "Una persona de dentro con motivo tiene derechos laborales. Contactarla antes de tiempo tambien destruye evidencia.",
+      "flag": false,
+      "group": "5. Requiere persona",
+      "mandatory": false,
+      "order": 18,
+      "title": "Entrevistar al usuario o implicar a recursos humanos"
+    },
+    {
+      "description": "Decision contractual y reputacional, no tecnica.",
+      "flag": false,
+      "group": "5. Requiere persona",
+      "mandatory": false,
+      "order": 19,
+      "title": "Avisar al cliente cuyos datos han salido"
+    },
+    {
+      "description": "Cortar el acceso a quien no debia tiene coste inmediato y visible.",
+      "flag": false,
+      "group": "5. Requiere persona",
+      "mandatory": false,
+      "order": 20,
+      "title": "Deshabilitar la cuenta del usuario"
+    },
+    {
+      "description": "Escalar a L2 en 15 minutos.\nA L3 si: El activo de origen maneja datos personales o clasificados, o el volumen se desvia de la linea base\nAvisar ademas a: dpd, asesoria_juridica\nEl plazo de escalado no es el plazo regulatorio. Las 24 h de NIS2 y las 72 h del RGPD empiezan a contar cuando la organizacion conoce el hecho, es decir con esta alerta, no cuando el caso se asigna.",
+      "flag": false,
+      "group": "6. Escalado",
+      "mandatory": false,
+      "order": 21,
+      "title": "Escalado: L2 en 15 min"
+    }
+  ],
+  "titlePrefix": "[RL Exfiltracion]",
+  "tlp": 2
+}

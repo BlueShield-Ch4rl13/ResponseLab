@@ -1,0 +1,23 @@
+# Laboratorio: el motor en simulacion y los escenarios de ataque contra el.
+#
+#   cp .env.example .env
+#   docker compose -f docker-compose.yml -f docker-compose.lab.yml up -d --build
+#   docker compose -f docker-compose.yml -f docker-compose.lab.yml run --rm escenarios
+#
+# Despues, el panel en https://localhost:8443/panel con el token de aprobador
+# del laboratorio muestra que decidio el motor con cada alerta, que habria
+# ejecutado y que esta esperando aprobacion. Nada sale del motor: simulacion.
+services:
+  motor:
+    environment:
+      RL_SIMULACION_GLOBAL: "true"
+
+  escenarios:
+    image: ghcr.io/blueshield-ch4rl13/responselab:latest
+    build: .
+    profiles: ["escenarios"]
+    depends_on:
+      motor:
+        condition: service_healthy
+    env_file: .env
+    command: ["sh", "-c", "python tools/simular.py --enviar http://motor:8080 --cliente lab --token \"$$RL_LAB_TOKEN\""]

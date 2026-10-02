@@ -1,0 +1,201 @@
+{
+  "customFields": [],
+  "description": "Ejecucion desde /tmp, persistencia por cron, historial deshabilitado, creacion de cuentas, base64 a interprete, descarga tuberia a shell, lectura de /etc/shadow, shell inversa, clave en authorized_keys y modificacion de ld.so.preload. El parque es corto comparado con el de Windows y tiene una diferencia que pesa en todo el triaje: practicamente todo lo que ven estas reglas es tambien como se administra un servidor Linux a mano. No existe una version sospechosa de chmod, de cron o de curl; existe quien los ejecuta, desde donde entro y si habia una ventana abierta. Con pocos equipos no hay poblacion para decidirlo por estadistica, asi que el peso cae en el enriquecimiento y en una pregunta que discrimina mejor que ninguna otra: si el mismo comando aparece hoy en toda la flota es administracion, y si aparece en uno solo no lo es.\n\nGenerada por ResponseLab desde el playbook de DetectionLab (linux).",
+  "displayName": "ResponseLab · Endpoint y servidor Linux",
+  "flag": false,
+  "name": "ResponseLab - linux",
+  "pap": 2,
+  "severity": 2,
+  "tags": [
+    "responselab",
+    "rl:familia=linux"
+  ],
+  "tasks": [
+    {
+      "description": "Como: last -F, who -a y el registro de sesion del bastion para esa hora\nDonde: agente",
+      "flag": false,
+      "group": "1. Evidencia",
+      "mandatory": false,
+      "order": 0,
+      "title": "Sesion que ejecuto el comando y por donde entro"
+    },
+    {
+      "description": "Como: ps -eo pid,ppid,lstart,user,args --forest\nDonde: agente",
+      "flag": false,
+      "group": "1. Evidencia",
+      "mandatory": false,
+      "order": 1,
+      "title": "Arbol de procesos con el padre real y la hora de arranque"
+    },
+    {
+      "description": "Como: ss -tunap y flujo del colector de red por IP del equipo\nDonde: agente",
+      "flag": false,
+      "group": "1. Evidencia",
+      "mandatory": false,
+      "order": 2,
+      "title": "Conexiones abiertas por el proceso y su contraparte en el cortafuegos"
+    },
+    {
+      "description": "Como: cat del crontab, de la unit de systemd, de authorized_keys o de /etc/ld.so.preload, mas stat\nDonde: agente",
+      "flag": false,
+      "group": "1. Evidencia",
+      "mandatory": false,
+      "order": 3,
+      "title": "Contenido de la persistencia creada, con marca de tiempo"
+    },
+    {
+      "description": "Como: sha256sum <ruta> y dpkg -S <ruta> o rpm -qf <ruta>\nDonde: agente",
+      "flag": false,
+      "group": "1. Evidencia",
+      "mandatory": false,
+      "order": 4,
+      "title": "Hash del binario y a que paquete pertenece"
+    },
+    {
+      "description": "Como: cat de ~/.bash_history y del journal de la sesion\nDonde: agente",
+      "flag": false,
+      "group": "1. Evidencia",
+      "mandatory": false,
+      "order": 5,
+      "title": "Historial de la shell antes de que se borre"
+    },
+    {
+      "description": "Fuente: calendario_cambios. Si es afirmativa, baja la severidad (un escalon como mucho).\nResponseLab la contesta sola si hay datos; si queda pendiente, contestarla aqui.",
+      "flag": false,
+      "group": "2. Triaje",
+      "mandatory": false,
+      "order": 6,
+      "title": "El proceso padre es el gestor de paquetes o el agente de configuracion del parque y hay ventana de mantenimiento abierta"
+    },
+    {
+      "description": "Fuente: evento. Si es afirmativa, baja la severidad (un escalon como mucho).\nPregunta para el analista: la maquina no tiene datos para contestarla.\nReduce, no descarta. Los binarios del sistema son la herramienta preferida de quien ya esta dentro y no quiere traer nada suyo.",
+      "flag": false,
+      "group": "2. Triaje",
+      "mandatory": false,
+      "order": 7,
+      "title": "El binario pertenece a un paquete instalado y verificado por el gestor"
+    },
+    {
+      "description": "Fuente: historico_siem. Si es afirmativa, baja la severidad (un escalon como mucho).\nResponseLab la contesta sola si hay datos; si queda pendiente, contestarla aqui.\nLa administracion es masiva y programada; la intrusion suele ser puntual.",
+      "flag": false,
+      "group": "2. Triaje",
+      "mandatory": false,
+      "order": 8,
+      "title": "El mismo comando aparece hoy en varios equipos del mismo grupo y en la misma hora"
+    },
+    {
+      "description": "Fuente: gestion_accesos. Si es afirmativa, sube la severidad.\nResponseLab la contesta sola si hay datos; si queda pendiente, contestarla aqui.",
+      "flag": false,
+      "group": "2. Triaje",
+      "mandatory": false,
+      "order": 9,
+      "title": "La sesion no entro por el bastion"
+    },
+    {
+      "description": "Fuente: directorio. Si es afirmativa, sube la severidad.\nResponseLab la contesta sola si hay datos; si queda pendiente, contestarla aqui.",
+      "flag": false,
+      "group": "2. Triaje",
+      "mandatory": false,
+      "order": 10,
+      "title": "La cuenta que ejecuta es de servicio y no deberia tener shell interactiva"
+    },
+    {
+      "description": "Fuente: inventario. Si es afirmativa, sube la severidad.\nResponseLab la contesta sola si hay datos; si queda pendiente, contestarla aqui.",
+      "flag": false,
+      "group": "2. Triaje",
+      "mandatory": false,
+      "order": 11,
+      "title": "El equipo es servidor de produccion expuesto a Internet"
+    },
+    {
+      "description": "Alcance: El equipo afectado. No toca cuentas ni otros equipos.\nRadio: equipo · Reversible: si\nAutomatica en clase auto_contener si la politica del cliente lo permite.\nAccion de ResponseLab: endpoint.aislar · se deshace con endpoint.liberar\nExcepcion: Si el inventario marca el equipo como servidor de produccion, NO se\naisla: se prepara la accion y se pide aprobacion.\n\nPor que: Reversible en un comando. Conviene decir en voz alta que en este parque\nla excepcion es la norma y no la rareza: casi todo lo que corre Linux\naqui es servidor, asi que en la practica esta accion casi siempre acaba\npreparada y en espera. Se deja como automatica de todos modos para los\nequipos de desarrollo y los puestos, donde el coste de aislar es el de\nsiempre: veinte minutos.\n",
+      "flag": false,
+      "group": "3. Contencion",
+      "mandatory": false,
+      "order": 12,
+      "title": "Aislar el servidor en la red, dejando solo la comunicacion con el manager"
+    },
+    {
+      "description": "Alcance: Un unico proceso. La hora de arranque evita matar a un homonimo tras la reutilizacion del PID.\nRadio: proceso · Reversible: no\nAutomatica en clase auto_contener si la politica del cliente lo permite.\nAccion de ResponseLab: proceso.matar\nExcepcion: Si el proceso pertenece a una unidad de systemd gestionada por el\npaquete de una aplicacion de produccion, no se mata: se anota y se\nprepara, porque el gestor de servicios lo reiniciara igual y el unico\nefecto sera un corte sin contencion.\n\nPor que: No se deshace, pero el alcance es un proceso y el error se paga con un\nservicio que hay que rearrancar. Frente a eso, una shell inversa viva es\nuna sesion interactiva del atacante que avanza mientras se tria.\n",
+      "flag": false,
+      "group": "3. Contencion",
+      "mandatory": false,
+      "order": 13,
+      "title": "Matar el proceso por PID y hora de arranque"
+    },
+    {
+      "description": "Alcance: Copia de un fichero. No modifica el original.\nRadio: objeto · Reversible: si\nAutomatica en clase auto_contener si la politica del cliente lo permite.\nAccion de ResponseLab: evidencia.conservar_fichero\nPor que: Copiar no rompe nada, y el cron o la unit que se acaba de crear es lo\nprimero que un atacante limpia cuando nota que le miran. Sin la copia,\nel caso se queda sin la unica prueba de la persistencia.\n",
+      "flag": false,
+      "group": "3. Contencion",
+      "mandatory": false,
+      "order": 14,
+      "title": "Congelar el fichero de persistencia copiandolo al almacen de evidencia y fijando retencion"
+    },
+    {
+      "description": "Alcance: Una linea de un fichero de un usuario\nRadio: cuenta · Reversible: si\nRequiere aprobacion.\nAccion de ResponseLab: cuenta.retirar_clave_ssh · se deshace con cuenta.restaurar_clave_ssh\nPor que: La accion en si se deshace restaurando el fichero guardado, pero\nmientras esta aplicada corta el acceso de quien use esa clave, y en un\nservidor sin consola fisica el que se queda fuera puede ser el equipo de\nsistemas en mitad de un cambio. El SOAR no sabe cual de las claves del\nfichero es la del atacante y cual es la del proveedor que entra cada\nmartes: la marca de tiempo lo sugiere, no lo demuestra. Se deja\npreparada, con la huella de la clave resuelta y la copia hecha.\n",
+      "flag": false,
+      "group": "3. Contencion",
+      "mandatory": false,
+      "order": 15,
+      "title": "Retirar la clave publica anadida a authorized_keys, guardando antes el fichero completo"
+    },
+    {
+      "description": "Ejecucion o chmod +x sobre un fichero en /tmp, /var/tmp o /dev/shm (lin_chmod_tmp_exec) cuyo proceso padre es el gestor de paquetes o el agente de configuracion del parque, dentro de una ventana de mantenimiento abierta en el ITSM, y con el mismo evento presente en al menos otros dos equipos del mismo grupo en esa ventana.\n\nPor que es seguro: Desempaquetar y compilar en un directorio temporal es el funcionamiento normal de apt, dnf, ansible o salt, y produce esta alerta en cada ciclo de parcheo en todos los equipos a la vez. Parentesco, ventana declarada y caracter masivo de la operacion son tres hechos que no coinciden en una intrusion, que es puntual y no abre ticket. Si solo se comprobara el parentesco no valdria, porque bastaria con que un atacante lanzara su binario desde un hijo de apt; y si solo se comprobara la ventana tampoco, porque la ventana de parcheo es publica y es el mejor momento para esconderse.",
+      "flag": false,
+      "group": "4. Cierre",
+      "mandatory": false,
+      "order": 16,
+      "title": "Comprobar si se puede cerrar: Ejecucion o chmod +x sobre un fichero en /tmp, /var/tmp o /dev/shm (lin_chmod_tmp_exec) cuyo proceso padre es el gestor de paquetes o el agente de configuracion del parque, dentro de una ventana de ma"
+    },
+    {
+      "description": "Tocar el precargado en caliente puede dejar el sistema sin poder ejecutar nada, incluido lo que hace falta para arreglarlo.",
+      "flag": false,
+      "group": "5. Requiere persona",
+      "mandatory": false,
+      "order": 17,
+      "title": "Revertir /etc/ld.so.preload"
+    },
+    {
+      "description": "Es capacidad de produccion y el SOAR no sabe cuantos nodos quedan.",
+      "flag": false,
+      "group": "5. Requiere persona",
+      "mandatory": false,
+      "order": 18,
+      "title": "Sacar el servidor de balanceo"
+    },
+    {
+      "description": "Si la cuenta la usan aplicaciones, rotarla las tira. Hay que saber antes que depende de ella.",
+      "flag": false,
+      "group": "5. Requiere persona",
+      "mandatory": false,
+      "order": 19,
+      "title": "Rotar las credenciales de servicio del equipo"
+    },
+    {
+      "description": "Cortar el acceso a quien no debia tiene coste inmediato y visible.",
+      "flag": false,
+      "group": "5. Requiere persona",
+      "mandatory": false,
+      "order": 20,
+      "title": "Eliminar la cuenta local creada"
+    },
+    {
+      "description": "Decision de negocio, no tecnica.",
+      "flag": false,
+      "group": "5. Requiere persona",
+      "mandatory": false,
+      "order": 21,
+      "title": "Reconstruir el servidor"
+    },
+    {
+      "description": "Escalar a L2 en 20 minutos.\nA L3 si: Hay modificacion de ld.so.preload, shell inversa establecida o lectura de /etc/shadow en un servidor de produccion",
+      "flag": false,
+      "group": "6. Escalado",
+      "mandatory": false,
+      "order": 22,
+      "title": "Escalado: L2 en 20 min"
+    }
+  ],
+  "titlePrefix": "[RL Linux]",
+  "tlp": 2
+}

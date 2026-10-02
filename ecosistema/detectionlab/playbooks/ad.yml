@@ -1,0 +1,147 @@
+familia: ad
+nombre: Active Directory y movimiento lateral en dominio
+descripcion: |
+    Kerberoasting, AS-REP roasting, DCSync, DCShadow, Golden Ticket, delegacion,
+    SID history, AdminSDHolder, LAPS, ADCS, extraccion de NTDS, coercion NTLM y
+    ejecucion remota. Lo que distingue a esta familia en el triaje es que el
+    equipo que dispara la alerta casi nunca es el equipo que hay que arreglar:
+    el objeto danado esta en el directorio. Aislar el puesto desde el que se
+    lanzo la herramienta no invalida el ticket que ya se firmo, no retira el SID
+    que ya se inyecto y no revoca el certificado que la CA ya emitio. La primera
+    pregunta del triaje no es que hizo el endpoint, sino si el controlador de
+    dominio llego a atenderlo, porque de ahi sale el alcance: un equipo o todo
+    el dominio.
+
+enriquecimiento:
+  - fuente: cti_local
+    sobre: [hash, ip]
+    detalle: Listas de intel/listas/ generadas desde News CTI
+  - fuente: inventario
+    sobre: [agente]
+    detalle: Si el equipo es controlador de dominio, servidor de nivel 0 o puesto de administracion
+  - fuente: directorio
+    sobre: [usuario, objeto]
+    detalle: Grupos, adminCount, SPN, marcas de delegacion y whenChanged del objeto tocado
+  - fuente: historico_siem
+    sobre: [agente, usuario]
+    detalle: Otras alertas del mismo equipo o cuenta en las ultimas 24 h
+  - fuente: calendario_cambios
+    sobre: [objeto]
+    detalle: Si hay ventana abierta de cambio de GPO, de plantilla de certificado o de delegacion
+
+evidencia:
+  - descripcion: Tickets de servicio pedidos por la cuenta, con tipo de cifrado y nombre de servicio
+    comando: "EID 4769 por TargetUserName en ventana de 1 h, agrupado por ServiceName y TicketEncryptionType"
+    donde: siem
+  - descripcion: Peticiones de replicacion de directorio y quien las hizo
+    comando: "EID 4662 filtrado por los GUID de DS-Replication-Get-Changes y Get-Changes-All"
+    donde: siem
+  - descripcion: Modificacion del objeto de directorio con valor anterior y nuevo
+    comando: "EID 5136, 5137 y 5141 por ObjectDN"
+    donde: siem
+  - descripcion: Donde se uso despues el material de autenticacion
+    comando: "EID 4768 y 4624 por cuenta, con LogonType e IpAddress"
+    donde: siem
+  - descripcion: Descriptor de seguridad y atributos sensibles del objeto antes de tocar nada
+    comando: "Get-ADObject -Identity <dn> -Properties nTSecurityDescriptor,sIDHistory,msDS-AllowedToActOnBehalfOfOtherIdentity"
+    donde: api
+  - descripcion: Tickets Kerberos en cache en el equipo de origen
+    comando: "klist sessions y klist"
+    donde: agente
+
+triaje:
+  - pregunta: El equipo de origen esta en la unidad organizativa de puestos de administracion y hay ventana de cambio abierta
+    fuente: inventario
+    si_afirmativo: bajar_severidad
+  - pregunta: El controlador de dominio atendio la peticion y no solo la recibio
+    fuente: evento
+    si_afirmativo: subir_severidad
+    nota: Es la unica pregunta que separa intento de exito, y la que decide si el alcance es un equipo o el dominio.
+  - pregunta: El objeto tocado es krbtgt, AdminSDHolder, un grupo de nivel 0, una plantilla de certificado o el propio DC
+    fuente: directorio
+    si_afirmativo: subir_severidad
+  - pregunta: La cuenta afectada tiene SPN y su contrasena no se rota desde hace mas de un trimestre
+    fuente: directorio
+    si_afirmativo: subir_severidad
+    nota: Un ticket RC4 de una cuenta con contrasena vieja se rompe fuera de linea en horas.
+  - pregunta: Hay ticket de cambio en el ITSM que cubra la modificacion de GPO o la publicacion de la plantilla
+    fuente: itsm
+    si_afirmativo: bajar_severidad
+
+cierre_automatico: []
+# Deliberadamente vacio. Todas las reglas de esta familia crean persistencia en
+# el directorio o son el paso inmediatamente anterior a crearla, y esos
+# artefactos sobreviven a la reinstalacion de cualquier endpoint: un SID
+# inyectado, una delegacion configurada o un certificado emitido siguen ahi
+# despues de formatear el equipo que disparo la alerta. La unica regla que
+# parece inocua, la enumeracion de dominio, es exactamente lo primero que hace
+# una intrusion, y lo unico que la separa de un inventario de gobierno de
+# identidades es un contexto que el SOAR no puede verificar por si mismo.
+# Cerrar mal aqui no cuesta un incidente: cuesta una rotacion de krbtgt seis
+# meses tarde.
+
+contencion:
+  - accion: Aislar el endpoint de origen en la red, dejando solo la comunicacion con el manager
+    alcance: El equipo desde el que se lanzo la tecnica. No toca cuentas, objetos de directorio ni el DC.
+    radio: equipo
+    reversible: "si"
+    requiere_aprobacion: "no"
+    justificacion: |
+        Reversible en un comando y el peor caso es que alguien pierda veinte
+        minutos. No arregla el dominio, pero corta la sesion desde la que se
+        sigue pidiendo tickets mientras el turno tria.
+    excepcion: |
+        Si el inventario marca el equipo como servidor de produccion, NO se
+        aisla: se prepara la accion y se pide aprobacion.
+  - accion: Matar el proceso de la herramienta por su ProcessGuid
+    alcance: Un unico proceso, identificado por GUID, no por nombre de imagen
+    radio: proceso
+    reversible: "no"
+    requiere_aprobacion: "no"
+    justificacion: |
+        No se puede deshacer, pero solo afecta al proceso que esta pidiendo
+        tickets ahora mismo. Frente a eso, dejarlo vivo mientras se decide
+        significa que sigue acumulando material que despues hay que rotar.
+    excepcion: |
+        Si el binario esta firmado y figura en el catalogo de aplicaciones de
+        negocio, no se mata: se anota y se prepara.
+  - accion: Congelar el estado del objeto de directorio tocado en el caso
+    alcance: Se escribe el descriptor de seguridad previo, no se modifica nada en AD
+    radio: objeto
+    reversible: "si"
+    requiere_aprobacion: "no"
+    justificacion: |
+        Copiar el estado previo no rompe nada y es lo que hace falta para saber
+        despues que hay que revertir. Si nadie lo captura ahora, en dos horas ya
+        se habra replicado y no habra con que comparar.
+  - accion: Aislar el controlador de dominio
+    alcance: Un DC completo, con todo lo que autentica contra el
+    radio: equipo
+    reversible: "si"
+    requiere_aprobacion: "si"
+    justificacion: |
+        Tecnicamente es tan reversible como aislar un puesto, pero afecta a todo
+        el que se autentique contra ese DC, que no es el atacante. El SOAR no
+        sabe cuantos DC quedan en pie ni si el sitio remoto se queda sin
+        autenticacion. Se deja preparada con el comando resuelto y espera.
+
+requiere_persona:
+  - situacion: Rotar krbtgt
+    motivo: |
+        Se hace dos veces con horas de separacion. Hacerlo mal invalida todos
+        los tickets del dominio a la vez.
+  - situacion: Revertir el descriptor de seguridad, retirar sIDHistory o quitar la delegacion
+    motivo: |
+        Escribir en el directorio automaticamente puede romper permisos
+        legitimos que llevaban anos ahi y de los que no hay documentacion.
+  - situacion: Revocar los certificados emitidos por la CA
+    motivo: Revocar de mas deja sin acceso a servicios que autentican por certificado.
+  - situacion: Deshabilitar la cuenta de equipo o de usuario implicada
+    motivo: Cortar el acceso a quien no debia tiene coste inmediato y visible.
+  - situacion: Declarar el dominio comprometido
+    motivo: Decision de negocio con consecuencias de semanas, no tecnica.
+
+escalado:
+  a: L3
+  plazo_min: 10
+  a_guardia_si: El objeto tocado es krbtgt, la CA o ntds.dit, o el origen es un controlador de dominio

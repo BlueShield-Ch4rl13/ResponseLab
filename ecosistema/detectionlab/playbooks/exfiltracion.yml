@@ -1,0 +1,165 @@
+familia: exfiltracion
+nombre: Salida de informacion
+descripcion: |
+    Archivado masivo previo, subida a nube personal, copia a soporte extraible,
+    protocolo alternativo, reenvio automatico a correo personal, repositorio
+    publico de codigo, volcado de base de datos, impresion y captura masiva.
+    Lo que distingue a esta familia es que cuando la alerta llega los datos ya
+    han salido, o estan saliendo desde hace rato. Eso cambia el objetivo del
+    triaje: no es contener, es determinar el alcance - que ficheros, de que
+    sistema, con que clasificacion y de cuantos interesados - porque de esa
+    respuesta dependen plazos que no se negocian: la alerta temprana de NIS2 a
+    las 24 h y la notificacion del RGPD a las 72 h se cuentan desde que la
+    organizacion conoce el hecho, no desde que termina de investigarlo. Un caso
+    de esta familia se mide en si el informe llego a tiempo, no en si el equipo
+    se aislo rapido.
+
+enriquecimiento:
+  - fuente: cti_local
+    sobre: [dominio, url, ip]
+    detalle: Listas de intel/listas/ generadas desde News CTI
+  - fuente: inventario
+    sobre: [agente, activo]
+    detalle: Clasificacion del dato que maneja el origen, mas que la criticidad del equipo
+  - fuente: directorio
+    sobre: [usuario]
+    detalle: Departamento, responsable, si la cuenta esta en proceso de baja anunciada
+  - fuente: historico_siem
+    sobre: [usuario]
+    detalle: Linea base de volumen y de destinos de esa cuenta en 30 dias
+  - fuente: catalogo_servicios
+    sobre: [destino]
+    detalle: Si el servicio de destino esta aprobado y con que contrato de tratamiento
+
+evidencia:
+  - descripcion: Lista de ficheros tocados con ruta, tamano y hora, que es la base del calculo de alcance
+    comando: "Sysmon EID 11 por ProcessGuid y auditoria de acceso a objetos del recurso de origen"
+    donde: siem
+  - descripcion: Volumen enviado y recibido por separado, con destino resuelto
+    comando: "stats sum(bytes_out) sum(bytes_in) by dest_host user"
+    donde: siem
+  - descripcion: Manifiesto del archivo creado, no su contenido
+    comando: "7z l <archivo> o tar -tvf <archivo>"
+    donde: agente
+  - descripcion: Origen real de los datos, para saber que sistema hay que declarar
+    comando: "Auditoria del recurso compartido, del gestor documental o del motor de base de datos"
+    donde: siem
+  - descripcion: Estado y fecha de creacion de las reglas de reenvio del buzon
+    comando: "Get-InboxRule y Get-Mailbox -Identity X | select ForwardingSmtpAddress"
+    donde: api
+  - descripcion: Retencion extendida sobre los indices que cubren la ventana del hecho
+    comando: "Marcar la ventana en el gestor de retencion del indexador y del proxy"
+    donde: manager
+
+triaje:
+  - pregunta: El destino figura en el catalogo de servicios aprobados con contrato de tratamiento
+    fuente: catalogo_servicios
+    si_afirmativo: bajar_severidad
+    nota: Baja la urgencia de la contencion, no la del calculo de alcance. Un servicio aprobado tambien sirve para sacar datos.
+  - pregunta: El activo de origen maneja datos personales o informacion clasificada segun el inventario
+    fuente: inventario
+    si_afirmativo: subir_severidad
+    nota: Es la pregunta que decide si empieza a correr el plazo del RGPD, y por eso se responde antes que ninguna otra.
+  - pregunta: El volumen se desvia de la linea base de esa cuenta en 30 dias
+    fuente: historico_siem
+    si_afirmativo: subir_severidad
+  - pregunta: Hay ticket de migracion, de entrega a cliente o de renovacion de equipo que cubra la operacion
+    fuente: itsm
+    si_afirmativo: bajar_severidad
+  - pregunta: La cuenta tiene baja o cambio de empresa anunciado
+    fuente: directorio
+    si_afirmativo: subir_severidad
+  - pregunta: Los ficheros salen de un unico proyecto o recorren varios departamentos
+    fuente: evidencia
+    si_afirmativo: subir_severidad
+    nota: Recorrer departamentos separa la copia de trabajo del barrido.
+
+cierre_automatico: []
+# Deliberadamente vacio, y por un motivo distinto al de otras familias: aqui
+# equivocarse no se paga en un incidente, se paga en un plazo incumplido. Si
+# una salida real se cierra como benigna, el reloj de las 24 h de NIS2 y de las
+# 72 h del RGPD sigue corriendo igual, y la organizacion se entera de que
+# tenia que notificar cuando ya no puede hacerlo a tiempo. Ademas, las
+# condiciones que pareceria seguro automatizar - destino corporativo, usuario
+# conocido, horario laboral, volumen moderado - son exactamente las que reune
+# una persona de dentro, que es la mitad del catalogo de esta familia. Diez
+# minutos de revision frente a una sancion y una notificacion tardia no es una
+# comparacion dificil.
+
+contencion:
+  - accion: Fijar retencion extendida sobre los indices, el registro del proxy y el del correo que cubren la ventana
+    alcance: Metadatos de registro. No toca al usuario ni al equipo.
+    radio: objeto
+    reversible: "si"
+    requiere_aprobacion: "no"
+    justificacion: |
+        Es la accion mas util de esta familia y la que mas se olvida. Los
+        registros caducan antes que el plazo de notificacion: si el caso tarda
+        dos dias en revisarse y la retencion del proxy son siete, el informe de
+        alcance se escribe con la mitad de los datos. Cuesta disco y no rompe
+        nada.
+  - accion: Aislar el endpoint en la red, dejando solo la comunicacion con el manager
+    alcance: El equipo afectado. No toca cuentas ni otros equipos.
+    radio: equipo
+    reversible: "si"
+    requiere_aprobacion: "no"
+    justificacion: |
+        Llega tarde para lo ya subido, pero corta lo que queda en cola: una
+        subida de decenas de gigas no termina en el minuto en que salta la
+        alerta, y la diferencia entre lo subido y lo pendiente es la diferencia
+        entre dos informes de alcance distintos.
+    excepcion: |
+        Si el inventario marca el equipo como servidor de produccion, NO se
+        aisla: se prepara la accion y se pide aprobacion.
+  - accion: Deshabilitar la regla de reenvio automatico creada, guardando antes su definicion completa
+    alcance: Una regla de buzon. No toca el buzon, la cuenta ni el resto de reglas.
+    radio: objeto
+    reversible: "si"
+    requiere_aprobacion: "no"
+    justificacion: |
+        La definicion se exporta antes, asi que restaurarla es un comando. Y es
+        el unico canal de esta familia que sigue exfiltrando por si solo,
+        correo a correo, mientras nadie mira: dejarlo vivo durante el triaje
+        amplia el alcance que despues hay que declarar.
+    excepcion: |
+        Si el buzon es funcional o compartido, se prepara y se pide aprobacion:
+        un reenvio en soporte@ o en facturacion@ puede ser parte de un flujo de
+        negocio y desactivarlo pierde correo de clientes.
+  - accion: Bloquear el destino de la subida en el proxy corporativo
+    alcance: Toda la organizacion, para ese destino
+    radio: organizacion
+    reversible: "si"
+    requiere_aprobacion: "si"
+    justificacion: |
+        Se quita en un minuto, pero mientras esta puesto corta el servicio a
+        todo el mundo, y los destinos de esta familia - transferencia de
+        ficheros, almacenamiento personal, repositorios publicos - son los
+        mismos que usan a diario proveedores, clientes y desarrollo. El SOAR no
+        puede saber cuantos flujos legitimos pasan por ahi. Se deja preparada
+        con el destino resuelto y espera.
+
+requiere_persona:
+  - situacion: Calificar el hecho como brecha de datos personales
+    motivo: |
+        Es una decision juridica con plazo, y la toma el delegado de proteccion
+        de datos con negocio. El SOC aporta el alcance, no la calificacion.
+  - situacion: Notificar a la autoridad o a los interesados
+    motivo: Fuera del alcance tecnico y con consecuencias regulatorias propias.
+  - situacion: Entrevistar al usuario o implicar a recursos humanos
+    motivo: |
+        Una persona de dentro con motivo tiene derechos laborales. Contactarla
+        antes de tiempo tambien destruye evidencia.
+  - situacion: Avisar al cliente cuyos datos han salido
+    motivo: Decision contractual y reputacional, no tecnica.
+  - situacion: Deshabilitar la cuenta del usuario
+    motivo: Cortar el acceso a quien no debia tiene coste inmediato y visible.
+
+escalado:
+  a: L2
+  plazo_min: 15
+  a_L3_si: El activo de origen maneja datos personales o clasificados, o el volumen se desvia de la linea base
+  ademas_avisar_a: [dpd, asesoria_juridica]
+  nota_plazo: |
+    El plazo de escalado no es el plazo regulatorio. Las 24 h de NIS2 y las
+    72 h del RGPD empiezan a contar cuando la organizacion conoce el hecho, es
+    decir con esta alerta, no cuando el caso se asigna.

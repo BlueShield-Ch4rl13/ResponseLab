@@ -1,0 +1,201 @@
+{
+  "customFields": [],
+  "description": "Inyeccion SQL, XSS, salto de directorio, SSRF contra metadatos de nube, deserializacion, JNDI, contrabando de peticiones, SSTI, abuso de JWT, subida de fichero ejecutable, escaneo y shell tras explotacion. La particularidad de esta familia es que el activo sigue publicado en Internet mientras se tria: nadie lo desconecta y las peticiones siguen llegando, asi que el tiempo de triaje es tiempo de exposicion. Y la pregunta central no es que carga llego - de eso hay miles al dia y casi todas rebotan - sino si la aplicacion la ejecuto. La misma peticion de log4shell es ruido de fondo en un servidor parcheado y un compromiso completo en uno que no lo esta. Esa diferencia no se ve en la peticion: se ve en el codigo de respuesta, en el tamano y sobre todo en lo que el proceso del servidor hizo despues.\n\nGenerada por ResponseLab desde el playbook de DetectionLab (web).",
+  "displayName": "ResponseLab · Ataques contra aplicaciones web",
+  "flag": false,
+  "name": "ResponseLab - web",
+  "pap": 2,
+  "severity": 2,
+  "tags": [
+    "responselab",
+    "rl:familia=web"
+  ],
+  "tasks": [
+    {
+      "description": "Como: Registro del WAF y del servidor por request-id\nDonde: siem",
+      "flag": false,
+      "group": "1. Evidencia",
+      "mandatory": false,
+      "order": 0,
+      "title": "La peticion completa con cabeceras y cuerpo, no solo la URI"
+    },
+    {
+      "description": "Como: search c_ip=X | table _time c_uri sc_status sc_bytes\nDonde: siem",
+      "flag": false,
+      "group": "1. Evidencia",
+      "mandatory": false,
+      "order": 1,
+      "title": "Las veinte peticiones anteriores y posteriores de la misma c-ip con su codigo y su tamano"
+    },
+    {
+      "description": "Como: Sysmon EID 1 o auditd execve con ParentImage del servidor, ventana de 10 min\nDonde: siem",
+      "flag": false,
+      "group": "1. Evidencia",
+      "mandatory": false,
+      "order": 2,
+      "title": "Procesos hijo del proceso del servidor web en los 10 minutos siguientes"
+    },
+    {
+      "description": "Como: find /var/www -newermt '-15 min' -type f -ls\nDonde: agente",
+      "flag": false,
+      "group": "1. Evidencia",
+      "mandatory": false,
+      "order": 3,
+      "title": "Ficheros creados bajo la raiz publicada en la ventana del evento"
+    },
+    {
+      "description": "Como: ss -tunap y flujo del cortafuegos por IP del servidor\nDonde: agente",
+      "flag": false,
+      "group": "1. Evidencia",
+      "mandatory": false,
+      "order": 4,
+      "title": "Conexiones salientes del servidor tras la peticion, para ver la segunda etapa"
+    },
+    {
+      "description": "Como: Inventario del activo mas la cabecera Server y el manifiesto de dependencias\nDonde: api",
+      "flag": false,
+      "group": "1. Evidencia",
+      "mandatory": false,
+      "order": 5,
+      "title": "Version exacta del componente vulnerable en ejecucion"
+    },
+    {
+      "description": "Fuente: lookup. Si es afirmativa, baja la severidad (un escalon como mucho).\nResponseLab la contesta sola si hay datos; si queda pendiente, contestarla aqui.",
+      "flag": false,
+      "group": "2. Triaje",
+      "mandatory": false,
+      "order": 6,
+      "title": "La c-ip pertenece al rango del escaner autorizado y la hora cae dentro de su ventana publicada"
+    },
+    {
+      "description": "Fuente: waf. Si es afirmativa, baja la severidad (un escalon como mucho).\nResponseLab la contesta sola si hay datos; si queda pendiente, contestarla aqui.\nBloqueada no es lo mismo que inefectiva. Si la aplicacion tiene mas de un camino de entrada, el WAF solo cubre el que ve.",
+      "flag": false,
+      "group": "2. Triaje",
+      "mandatory": false,
+      "order": 7,
+      "title": "El WAF bloqueo la peticion y la respuesta es 403"
+    },
+    {
+      "description": "Fuente: evento. Si es afirmativa, sube la severidad.\nResponseLab la contesta sola si hay datos; si queda pendiente, contestarla aqui.\nAproximacion. Un 200 a un patron de explotacion ya es motivo para subir; la desviacion de tamano la comprueba el analista.",
+      "flag": false,
+      "group": "2. Triaje",
+      "mandatory": false,
+      "order": 8,
+      "title": "La respuesta es 200 y su tamano se desvia de la mediana de ese endpoint"
+    },
+    {
+      "description": "Fuente: correlacion. Si es afirmativa, sube la severidad.\nResponseLab la contesta sola si hay datos; si queda pendiente, contestarla aqui.\nEs la senal que convierte intento en exito, y la unica que cambia el plan de respuesta.",
+      "flag": false,
+      "group": "2. Triaje",
+      "mandatory": false,
+      "order": 9,
+      "title": "El proceso del servidor web engendro un hijo en los 10 minutos siguientes"
+    },
+    {
+      "description": "Fuente: correlacion. Si es afirmativa, sube la severidad.\nResponseLab la contesta sola si hay datos; si queda pendiente, contestarla aqui.",
+      "flag": false,
+      "group": "2. Triaje",
+      "mandatory": false,
+      "order": 10,
+      "title": "Aparecio un fichero nuevo bajo la raiz publicada en la misma ventana"
+    },
+    {
+      "description": "Fuente: cti_local. Si es afirmativa, sube la severidad.\nResponseLab la contesta sola si hay datos; si queda pendiente, contestarla aqui.",
+      "flag": false,
+      "group": "2. Triaje",
+      "mandatory": false,
+      "order": 11,
+      "title": "La version del componente figura en la lista KEV"
+    },
+    {
+      "description": "Alcance: Un fichero. No borra, mueve, y no toca el resto del sitio.\nRadio: objeto · Reversible: si\nAutomatica en clase auto_contener si la politica del cliente lo permite.\nAccion de ResponseLab: fichero.cuarentena · se deshace con fichero.restaurar\nExcepcion: Si hay un despliegue en curso registrado en el ITSM para ese activo, no\nse mueve nada: se anota y se pide aprobacion, porque retirar ficheros\nen mitad de un despliegue produce un error que nadie sabra atribuir.\n\nPor que: Una webshell colocada sigue siendo utilizable cada minuto que pasa, y\nmoverla es reversible con la ruta guardada. El peor caso es que un\ndespliegue legitimo pierda un fichero que se restaura en un comando.\n",
+      "flag": false,
+      "group": "3. Contencion",
+      "mandatory": false,
+      "order": 12,
+      "title": "Poner en cuarentena el fichero aparecido bajo la raiz publicada, sacandolo del arbol servido y conservando ruta y hash"
+    },
+    {
+      "description": "Alcance: Un unico proceso. No reinicia el servidor ni corta las peticiones en curso.\nRadio: proceso · Reversible: no\nAutomatica en clase auto_contener si la politica del cliente lo permite.\nAccion de ResponseLab: proceso.matar\nExcepcion: Si la linea de comandos coincide con el filtro de mantenimiento de la\nregla (sendmail, ffmpeg, tareas del framework), no se mata: se anota.\n\nPor que: Ese hijo es la sesion interactiva del atacante; mientras vive, el\ntriaje corre por detras. No se puede deshacer, pero el alcance es un\nproceso y el servidor sigue sirviendo.\n",
+      "flag": false,
+      "group": "3. Contencion",
+      "mandatory": false,
+      "order": 13,
+      "title": "Matar el proceso hijo lanzado por el servidor web, por PID y hora de arranque"
+    },
+    {
+      "description": "Alcance: Una sesion. No deshabilita la cuenta ni invalida el resto de sesiones del usuario.\nRadio: objeto · Reversible: si\nAutomatica en clase auto_contener si la politica del cliente lo permite.\nAccion de ResponseLab: aplicacion.invalidar_sesion\nPor que: El coste de equivocarse es que un usuario tenga que volver a entrar. El\nde no hacerlo es que un token manipulado siga sirviendo peticiones con\nprivilegios que no le corresponden.\n",
+      "flag": false,
+      "group": "3. Contencion",
+      "mandatory": false,
+      "order": 14,
+      "title": "Invalidar la sesion o el token JWT concreto abusado"
+    },
+    {
+      "description": "Alcance: Todo el trafico entrante desde ese origen, para todos los clientes\nRadio: organizacion · Reversible: si\nRequiere aprobacion.\nAccion de ResponseLab: waf.bloquear_origen · se deshace con waf.desbloquear_origen\nPor que: Se quita igual de rapido que se pone, pero mientras esta puesta corta a\ntodo el que salga por esa IP, y detras de una IP de origen puede haber\nla salida de una empresa cliente entera o un operador movil. Cortar\nservicio a clientes por un patron que aun se esta triando es cambiar un\nincidente por una incidencia comercial. Se deja escrita y espera.\n",
+      "flag": false,
+      "group": "3. Contencion",
+      "mandatory": false,
+      "order": 15,
+      "title": "Publicar en el WAF la regla de bloqueo para la c-ip o el patron de origen"
+    },
+    {
+      "description": "Escaneo automatizado (web_010) cuya c-ip pertenece al rango declarado del escaner de vulnerabilidades autorizado, con marca de tiempo dentro de su ventana programada, y sin ninguna respuesta 200 a rutas que no figuren en el inventario de la aplicacion.\n\nPor que es seguro: El escaner produce exactamente esta senal miles de veces por pasada y por diseno: si no se cierra, un solo analisis programado llena la cola de una jornada. Rango y ventana solos no bastarian, porque el propio equipo del escaner puede estar comprometido y seria el sitio ideal desde el que atacar; por eso se exige ademas que ninguna ruta fuera del inventario haya devuelto 200, que es la firma de que ha encontrado algo. Con las tres condiciones, el peor caso es perder la traza de un escaneo que ya esta indexado y documentado en su ticket.",
+      "flag": false,
+      "group": "4. Cierre",
+      "mandatory": false,
+      "order": 16,
+      "title": "Comprobar si se puede cerrar: Escaneo automatizado (web_010) cuya c-ip pertenece al rango declarado del escaner de vulnerabilidades autorizado, con marca de tiempo dentro de su ventana programada, y sin ninguna respuesta 200 a rut"
+    },
+    {
+      "description": "Peticion con patron conocido de inyeccion o de salto de directorio bloqueada por el WAF con respuesta 403, contra una ruta que no existe en el inventario de endpoints de la aplicacion, y sin ninguna peticion posterior de la misma c-ip que devuelva 200 en la hora siguiente.\n\nPor que es seguro: Una carga contra una ruta que no existe no puede haberse ejecutado, y el 403 del WAF confirma que ademas no llego a la aplicacion. La tercera condicion es la que hace segura a las otras dos: si esa IP consigue despues un 200 en cualquier ruta, la condicion no se cumple y el caso sigue vivo, que es justo el escenario de quien prueba veinte cargas hasta encontrar la que pasa. El coste de mantener estos casos abiertos seria enterrar la explotacion real bajo el fondo permanente de Internet.",
+      "flag": false,
+      "group": "4. Cierre",
+      "mandatory": false,
+      "order": 17,
+      "title": "Comprobar si se puede cerrar: Peticion con patron conocido de inyeccion o de salto de directorio bloqueada por el WAF con respuesta 403, contra una ruta que no existe en el inventario de endpoints de la aplicacion, y sin ninguna p"
+    },
+    {
+      "description": "Es capacidad de produccion. El SOAR no sabe cuantos nodos quedan ni si retirar este deja el servicio por debajo del minimo.",
+      "flag": false,
+      "group": "5. Requiere persona",
+      "mandatory": false,
+      "order": 18,
+      "title": "Sacar el servidor del balanceo o aislarlo"
+    },
+    {
+      "description": "Es un cambio en produccion y pasa por gestion de cambios.",
+      "flag": false,
+      "group": "5. Requiere persona",
+      "mandatory": false,
+      "order": 19,
+      "title": "Aplicar el parche o desplegar la version corregida"
+    },
+    {
+      "description": "Son credenciales de rol de la cuenta de nube. Rotarlas mal deja sin permisos a la propia aplicacion.",
+      "flag": false,
+      "group": "5. Requiere persona",
+      "mandatory": false,
+      "order": 20,
+      "title": "Rotar las credenciales que el SSRF pudo obtener del servicio de metadatos"
+    },
+    {
+      "description": "Decision de negocio con coste de indisponibilidad.",
+      "flag": false,
+      "group": "5. Requiere persona",
+      "mandatory": false,
+      "order": 21,
+      "title": "Decidir si la aplicacion se considera comprometida y se reconstruye"
+    },
+    {
+      "description": "Escalar a L2 en 15 minutos.\nA L3 si: Hay hijo del proceso del servidor web, fichero nuevo bajo la raiz publicada o respuesta 200 al patron de explotacion",
+      "flag": false,
+      "group": "6. Escalado",
+      "mandatory": false,
+      "order": 22,
+      "title": "Escalado: L2 en 15 min"
+    }
+  ],
+  "titlePrefix": "[RL Web]",
+  "tlp": 2
+}

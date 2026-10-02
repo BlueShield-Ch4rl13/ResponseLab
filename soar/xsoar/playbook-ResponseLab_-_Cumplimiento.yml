@@ -1,0 +1,666 @@
+id: ResponseLab - Cumplimiento
+version: -1
+name: ResponseLab - Cumplimiento
+description: Cumplimiento y obligaciones regulatorias. Generado por ResponseLab desde el playbook de DetectionLab (cumplimiento). Necesita que ResponseLabDecidir haya dejado el plan en ResponseLab.Plan.
+starttaskid: '0'
+tasks:
+  '0':
+    id: '0'
+    taskid: 021a9171-792a-5cb6-bd22-7ae640a5c0fe
+    type: start
+    task:
+      id: 021a9171-792a-5cb6-bd22-7ae640a5c0fe
+      version: -1
+      name: ''
+      description: ''
+      type: start
+      iscommand: false
+      brand: ''
+    separatecontext: false
+    continueonerrortype: ''
+    view: "{\n  \"position\": {\n    \"x\": 450,\n    \"y\": 50\n  }\n}"
+    note: false
+    timertriggers: []
+    ignoreworker: false
+    skipunavailable: false
+    quietmode: 0
+    isoversize: false
+    isautoswitchedtoquietmode: false
+    nexttasks:
+      '#none#':
+      - '1'
+  '1':
+    id: '1'
+    taskid: 1a507a61-cacd-57ac-bc5b-c01d5584a710
+    type: title
+    task:
+      id: 1a507a61-cacd-57ac-bc5b-c01d5584a710
+      version: -1
+      name: Contencion automatica
+      description: Pasos que ResponseLab marco como automaticos. No hay tareas manuales en esta fase.
+      type: title
+      iscommand: false
+      brand: ''
+    separatecontext: false
+    continueonerrortype: ''
+    view: "{\n  \"position\": {\n    \"x\": 450,\n    \"y\": 240\n  }\n}"
+    note: false
+    timertriggers: []
+    ignoreworker: false
+    skipunavailable: false
+    quietmode: 0
+    isoversize: false
+    isautoswitchedtoquietmode: false
+    nexttasks:
+      '#none#':
+      - '2'
+  '2':
+    id: '2'
+    taskid: c8c3864b-9876-56bf-b88d-ac57124fc6a0
+    type: title
+    task:
+      id: c8c3864b-9876-56bf-b88d-ac57124fc6a0
+      version: -1
+      name: Aprobaciones y acciones a mano
+      description: Lo que pide aprobacion se aprueba aqui; lo que no tiene traduccion en XSOAR es una tarea.
+      type: title
+      iscommand: false
+      brand: ''
+    separatecontext: false
+    continueonerrortype: ''
+    view: "{\n  \"position\": {\n    \"x\": 450,\n    \"y\": 430\n  }\n}"
+    note: false
+    timertriggers: []
+    ignoreworker: false
+    skipunavailable: false
+    quietmode: 0
+    isoversize: false
+    isautoswitchedtoquietmode: false
+    nexttasks:
+      '#none#':
+      - '3'
+  '3':
+    id: '3'
+    taskid: 4b789df0-187f-5d26-afda-f860a48d8ed4
+    type: condition
+    task:
+      id: 4b789df0-187f-5d26-afda-f860a48d8ed4
+      version: -1
+      name: 'c1: Fijar retencion extendida sobre los registros de la ventana del hecho - que modo?'
+      description: 'Motivo del modo en la War Room (salida de ResponseLabDecidir). Origen: Fijar retencion extendida sobre los registros del periodo afectado'
+      type: condition
+      iscommand: false
+      brand: ''
+    separatecontext: false
+    continueonerrortype: ''
+    view: "{\n  \"position\": {\n    \"x\": 450,\n    \"y\": 620\n  }\n}"
+    note: false
+    timertriggers: []
+    ignoreworker: false
+    skipunavailable: false
+    quietmode: 0
+    isoversize: false
+    isautoswitchedtoquietmode: false
+    conditions:
+    - label: aprobacion
+      condition:
+      - - operator: isEqualString
+          left:
+            value:
+              simple: ResponseLab.Plan.modos.c1
+            iscontext: true
+          right:
+            value:
+              simple: aprobacion
+    - label: manual
+      condition:
+      - - operator: isEqualString
+          left:
+            value:
+              simple: ResponseLab.Plan.modos.c1
+            iscontext: true
+          right:
+            value:
+              simple: manual
+    - label: automatica
+      condition:
+      - - operator: isEqualString
+          left:
+            value:
+              simple: ResponseLab.Plan.modos.c1
+            iscontext: true
+          right:
+            value:
+              simple: automatica
+    nexttasks:
+      '#default#':
+      - '4'
+      aprobacion:
+      - '5'
+      manual:
+      - '7'
+      automatica:
+      - '7'
+  '4':
+    id: '4'
+    taskid: 83569f29-3815-53c2-acfa-712dac5e09d8
+    type: title
+    task:
+      id: 83569f29-3815-53c2-acfa-712dac5e09d8
+      version: -1
+      name: c1 resuelto
+      description: ''
+      type: title
+      iscommand: false
+      brand: ''
+    separatecontext: false
+    continueonerrortype: ''
+    view: "{\n  \"position\": {\n    \"x\": 450,\n    \"y\": 1190\n  }\n}"
+    note: false
+    timertriggers: []
+    ignoreworker: false
+    skipunavailable: false
+    quietmode: 0
+    isoversize: false
+    isautoswitchedtoquietmode: false
+    nexttasks:
+      '#none#':
+      - '8'
+  '5':
+    id: '5'
+    taskid: b50ab5fb-30ef-5962-9408-a52c309ac680
+    type: condition
+    task:
+      id: b50ab5fb-30ef-5962-9408-a52c309ac680
+      version: -1
+      name: 'Aprobar: Fijar retencion extendida sobre los registros de la ventana del hecho'
+      description: 'Radio objeto, reversible si. Origen: Fijar retencion extendida sobre los registros del periodo afectado Por que: Ocupa disco y nada mas. Frente a eso, perder los registros que sostienen una notificacion regulatoria por rotacion normal es irreversible y se descubre justo cuando hacen falta.'
+      type: condition
+      iscommand: false
+      brand: ''
+    separatecontext: false
+    continueonerrortype: ''
+    view: "{\n  \"position\": {\n    \"x\": 30,\n    \"y\": 810\n  }\n}"
+    note: false
+    timertriggers: []
+    ignoreworker: false
+    skipunavailable: false
+    quietmode: 0
+    isoversize: false
+    isautoswitchedtoquietmode: false
+    nexttasks:
+      Si:
+      - '6'
+      'No':
+      - '4'
+  '6':
+    id: '6'
+    taskid: 3d12d616-eb47-59ae-a16f-9e9045efc9b8
+    type: regular
+    task:
+      id: 3d12d616-eb47-59ae-a16f-9e9045efc9b8
+      version: -1
+      name: 'Ejecutar a mano: Fijar retencion extendida sobre los registros de la ventana del hecho'
+      description: 'Aprobada. XSOAR no tiene traduccion nativa de evidencia.retener: hazla con la herramienta del cliente o con el motor de ResponseLab. Origen: Fijar retencion extendida sobre los registros del periodo afectado'
+      type: regular
+      iscommand: false
+      brand: ''
+    separatecontext: false
+    continueonerrortype: ''
+    view: "{\n  \"position\": {\n    \"x\": 30,\n    \"y\": 1000\n  }\n}"
+    note: false
+    timertriggers: []
+    ignoreworker: false
+    skipunavailable: false
+    quietmode: 0
+    isoversize: false
+    isautoswitchedtoquietmode: false
+    nexttasks:
+      '#none#':
+      - '4'
+  '7':
+    id: '7'
+    taskid: 8a615652-bf2a-5e84-92d4-8e1168d6c27b
+    type: regular
+    task:
+      id: 8a615652-bf2a-5e84-92d4-8e1168d6c27b
+      version: -1
+      name: 'A mano: Fijar retencion extendida sobre los registros de la ventana del hecho'
+      description: 'ResponseLab la deja al analista (motivo en la War Room). Origen: Fijar retencion extendida sobre los registros del periodo afectado Por que: Ocupa disco y nada mas. Frente a eso, perder los registros que sostienen una notificacion regulatoria por rotacion normal es irreversible y se descubre justo cuando hacen falta.'
+      type: regular
+      iscommand: false
+      brand: ''
+    separatecontext: false
+    continueonerrortype: ''
+    view: "{\n  \"position\": {\n    \"x\": 870,\n    \"y\": 810\n  }\n}"
+    note: false
+    timertriggers: []
+    ignoreworker: false
+    skipunavailable: false
+    quietmode: 0
+    isoversize: false
+    isautoswitchedtoquietmode: false
+    nexttasks:
+      '#none#':
+      - '4'
+  '8':
+    id: '8'
+    taskid: db24adff-ce2f-5dce-b184-9ccd79370d3f
+    type: condition
+    task:
+      id: db24adff-ce2f-5dce-b184-9ccd79370d3f
+      version: -1
+      name: 'c2: Abrir la tarea de obligacion regulatoria con su plazo y responsable - que modo?'
+      description: 'Motivo del modo en la War Room (salida de ResponseLabDecidir). Origen: Abrir o actualizar la tarea de obligacion con su plazo y responsable'
+      type: condition
+      iscommand: false
+      brand: ''
+    separatecontext: false
+    continueonerrortype: ''
+    view: "{\n  \"position\": {\n    \"x\": 450,\n    \"y\": 1380\n  }\n}"
+    note: false
+    timertriggers: []
+    ignoreworker: false
+    skipunavailable: false
+    quietmode: 0
+    isoversize: false
+    isautoswitchedtoquietmode: false
+    conditions:
+    - label: aprobacion
+      condition:
+      - - operator: isEqualString
+          left:
+            value:
+              simple: ResponseLab.Plan.modos.c2
+            iscontext: true
+          right:
+            value:
+              simple: aprobacion
+    - label: manual
+      condition:
+      - - operator: isEqualString
+          left:
+            value:
+              simple: ResponseLab.Plan.modos.c2
+            iscontext: true
+          right:
+            value:
+              simple: manual
+    - label: automatica
+      condition:
+      - - operator: isEqualString
+          left:
+            value:
+              simple: ResponseLab.Plan.modos.c2
+            iscontext: true
+          right:
+            value:
+              simple: automatica
+    nexttasks:
+      '#default#':
+      - '9'
+      aprobacion:
+      - '10'
+      manual:
+      - '12'
+      automatica:
+      - '12'
+  '9':
+    id: '9'
+    taskid: 5d5b0a55-fbb8-5942-9f73-9a86a50a7ee1
+    type: title
+    task:
+      id: 5d5b0a55-fbb8-5942-9f73-9a86a50a7ee1
+      version: -1
+      name: c2 resuelto
+      description: ''
+      type: title
+      iscommand: false
+      brand: ''
+    separatecontext: false
+    continueonerrortype: ''
+    view: "{\n  \"position\": {\n    \"x\": 450,\n    \"y\": 1950\n  }\n}"
+    note: false
+    timertriggers: []
+    ignoreworker: false
+    skipunavailable: false
+    quietmode: 0
+    isoversize: false
+    isautoswitchedtoquietmode: false
+    nexttasks:
+      '#none#':
+      - '13'
+  '10':
+    id: '10'
+    taskid: 161518d0-253e-5c7e-af3f-9a4635d1bab0
+    type: condition
+    task:
+      id: 161518d0-253e-5c7e-af3f-9a4635d1bab0
+      version: -1
+      name: 'Aprobar: Abrir la tarea de obligacion regulatoria con su plazo y responsable'
+      description: 'Radio objeto, reversible si. Origen: Abrir o actualizar la tarea de obligacion con su plazo y responsable Por que: Anotar no rompe nada, y el plazo empieza a correr lo anote alguien o no.'
+      type: condition
+      iscommand: false
+      brand: ''
+    separatecontext: false
+    continueonerrortype: ''
+    view: "{\n  \"position\": {\n    \"x\": 30,\n    \"y\": 1570\n  }\n}"
+    note: false
+    timertriggers: []
+    ignoreworker: false
+    skipunavailable: false
+    quietmode: 0
+    isoversize: false
+    isautoswitchedtoquietmode: false
+    nexttasks:
+      Si:
+      - '11'
+      'No':
+      - '9'
+  '11':
+    id: '11'
+    taskid: 05d34308-f03c-57f1-bfe3-c204b2351a61
+    type: regular
+    task:
+      id: 05d34308-f03c-57f1-bfe3-c204b2351a61
+      version: -1
+      name: 'Ejecutar a mano: Abrir la tarea de obligacion regulatoria con su plazo y responsable'
+      description: 'Aprobada. XSOAR no tiene traduccion nativa de caso.tarea_obligacion: hazla con la herramienta del cliente o con el motor de ResponseLab. Origen: Abrir o actualizar la tarea de obligacion con su plazo y responsable'
+      type: regular
+      iscommand: false
+      brand: ''
+    separatecontext: false
+    continueonerrortype: ''
+    view: "{\n  \"position\": {\n    \"x\": 30,\n    \"y\": 1760\n  }\n}"
+    note: false
+    timertriggers: []
+    ignoreworker: false
+    skipunavailable: false
+    quietmode: 0
+    isoversize: false
+    isautoswitchedtoquietmode: false
+    nexttasks:
+      '#none#':
+      - '9'
+  '12':
+    id: '12'
+    taskid: 716255c0-8e3c-5d43-9327-138c5be098ea
+    type: regular
+    task:
+      id: 716255c0-8e3c-5d43-9327-138c5be098ea
+      version: -1
+      name: 'A mano: Abrir la tarea de obligacion regulatoria con su plazo y responsable'
+      description: 'ResponseLab la deja al analista (motivo en la War Room). Origen: Abrir o actualizar la tarea de obligacion con su plazo y responsable Por que: Anotar no rompe nada, y el plazo empieza a correr lo anote alguien o no.'
+      type: regular
+      iscommand: false
+      brand: ''
+    separatecontext: false
+    continueonerrortype: ''
+    view: "{\n  \"position\": {\n    \"x\": 870,\n    \"y\": 1570\n  }\n}"
+    note: false
+    timertriggers: []
+    ignoreworker: false
+    skipunavailable: false
+    quietmode: 0
+    isoversize: false
+    isautoswitchedtoquietmode: false
+    nexttasks:
+      '#none#':
+      - '9'
+  '13':
+    id: '13'
+    taskid: 9e0a51e6-2dcc-5719-a80d-59658b26bbe0
+    type: title
+    task:
+      id: 9e0a51e6-2dcc-5719-a80d-59658b26bbe0
+      version: -1
+      name: Checklist del playbook
+      description: ''
+      type: title
+      iscommand: false
+      brand: ''
+    separatecontext: false
+    continueonerrortype: ''
+    view: "{\n  \"position\": {\n    \"x\": 450,\n    \"y\": 2140\n  }\n}"
+    note: false
+    timertriggers: []
+    ignoreworker: false
+    skipunavailable: false
+    quietmode: 0
+    isoversize: false
+    isautoswitchedtoquietmode: false
+    nexttasks:
+      '#none#':
+      - '14'
+  '14':
+    id: '14'
+    taskid: 4f23bd18-ef26-5c7f-b27a-9f177c5eb93a
+    type: regular
+    task:
+      id: 4f23bd18-ef26-5c7f-b27a-9f177c5eb93a
+      version: -1
+      name: Escalar segun el plan
+      description: 'Plazo del playbook: L2 en 60 min. El plan de este incidente: ${ResponseLab.Plan.escalado.a} en ${ResponseLab.Plan.escalado.plazo_min} min.
+
+        A L3 si: Quedan menos de 24 h de un plazo de NIS2, DORA o RGPD'
+      type: regular
+      iscommand: false
+      brand: ''
+    separatecontext: false
+    continueonerrortype: ''
+    view: "{\n  \"position\": {\n    \"x\": 450,\n    \"y\": 2330\n  }\n}"
+    note: false
+    timertriggers: []
+    ignoreworker: false
+    skipunavailable: false
+    quietmode: 0
+    isoversize: false
+    isautoswitchedtoquietmode: false
+    nexttasks:
+      '#none#':
+      - '15'
+  '15':
+    id: '15'
+    taskid: 44c1a201-18f6-5df4-9dcc-f778b269f716
+    type: regular
+    task:
+      id: 44c1a201-18f6-5df4-9dcc-f778b269f716
+      version: -1
+      name: 'Evidencia: Momento exacto en que empezo a correr el plazo'
+      description: 'Como: Primer evento del incidente asociado, no el de esta alerta
+
+        Donde: siem'
+      type: regular
+      iscommand: false
+      brand: ''
+    separatecontext: false
+    continueonerrortype: ''
+    view: "{\n  \"position\": {\n    \"x\": 450,\n    \"y\": 2520\n  }\n}"
+    note: false
+    timertriggers: []
+    ignoreworker: false
+    skipunavailable: false
+    quietmode: 0
+    isoversize: false
+    isautoswitchedtoquietmode: false
+    nexttasks:
+      '#none#':
+      - '16'
+  '16':
+    id: '16'
+    taskid: 263523d3-c684-5099-beb5-80b78ce33bdc
+    type: regular
+    task:
+      id: 263523d3-c684-5099-beb5-80b78ce33bdc
+      version: -1
+      name: 'Evidencia: Estado de la obligacion y quien es el responsable'
+      description: 'Como: Lookup contra marcos/marcos_obligaciones.csv por obligacion_id
+
+        Donde: manager'
+      type: regular
+      iscommand: false
+      brand: ''
+    separatecontext: false
+    continueonerrortype: ''
+    view: "{\n  \"position\": {\n    \"x\": 450,\n    \"y\": 2710\n  }\n}"
+    note: false
+    timertriggers: []
+    ignoreworker: false
+    skipunavailable: false
+    quietmode: 0
+    isoversize: false
+    isautoswitchedtoquietmode: false
+    nexttasks:
+      '#none#':
+      - '17'
+  '17':
+    id: '17'
+    taskid: 7c04cc47-cf56-5619-b229-96096b7bc1d1
+    type: regular
+    task:
+      id: 7c04cc47-cf56-5619-b229-96096b7bc1d1
+      version: -1
+      name: 'Evidencia: Registro de la ultima ejecucion correcta del control'
+      description: 'Como: Ultima alerta de exito de la misma serie de reglas
+
+        Donde: siem'
+      type: regular
+      iscommand: false
+      brand: ''
+    separatecontext: false
+    continueonerrortype: ''
+    view: "{\n  \"position\": {\n    \"x\": 450,\n    \"y\": 2900\n  }\n}"
+    note: false
+    timertriggers: []
+    ignoreworker: false
+    skipunavailable: false
+    quietmode: 0
+    isoversize: false
+    isautoswitchedtoquietmode: false
+    nexttasks:
+      '#none#':
+      - '18'
+  '18':
+    id: '18'
+    taskid: 73ec4b61-eb29-544a-95b2-6e4c115d0b5f
+    type: regular
+    task:
+      id: 73ec4b61-eb29-544a-95b2-6e4c115d0b5f
+      version: -1
+      name: Contestar el triaje pendiente
+      description: 'Pendientes en este incidente: ${ResponseLab.Plan.triaje_pendiente}
+
+
+        Preguntas del playbook:
+
+        - Existe una excepcion aprobada y en vigor para este activo
+
+        - El activo esta en el alcance de la certificacion
+
+        - Quedan menos de 24 h del plazo regulatorio'
+      type: regular
+      iscommand: false
+      brand: ''
+    separatecontext: false
+    continueonerrortype: ''
+    view: "{\n  \"position\": {\n    \"x\": 450,\n    \"y\": 3090\n  }\n}"
+    note: false
+    timertriggers: []
+    ignoreworker: false
+    skipunavailable: false
+    quietmode: 0
+    isoversize: false
+    isautoswitchedtoquietmode: false
+    nexttasks:
+      '#none#':
+      - '19'
+  '19':
+    id: '19'
+    taskid: cf82e608-64da-57a5-aead-66638acf6121
+    type: regular
+    task:
+      id: cf82e608-64da-57a5-aead-66638acf6121
+      version: -1
+      name: Comprobar las condiciones de cierre
+      description: 'Se puede cerrar como benigno si:
+
+        - Fallo de copia de seguridad seguido, en la misma ventana de RPO, de una ejecucion correcta del mismo trabajo sobre el mismo activo. El control se cumplio; el primer intento fallido es ruido operativo.
+
+        - Desviacion de reloj en una fuente que vuelve a sincronizar sola en menos de 15 minutos y no tiene eventos de seguridad en esa ventana.'
+      type: regular
+      iscommand: false
+      brand: ''
+    separatecontext: false
+    continueonerrortype: ''
+    view: "{\n  \"position\": {\n    \"x\": 450,\n    \"y\": 3280\n  }\n}"
+    note: false
+    timertriggers: []
+    ignoreworker: false
+    skipunavailable: false
+    quietmode: 0
+    isoversize: false
+    isautoswitchedtoquietmode: false
+    nexttasks:
+      '#none#':
+      - '20'
+  '20':
+    id: '20'
+    taskid: 22c1a804-0b29-5488-81d4-5ef7a8dfb766
+    type: regular
+    task:
+      id: 22c1a804-0b29-5488-81d4-5ef7a8dfb766
+      version: -1
+      name: Situaciones que requieren a una persona
+      description: 'Nunca automatico:
+
+        - Decidir si el incidente es notificable
+
+        - Redactar y enviar la notificacion a la autoridad
+
+        - Aceptar una desviacion como riesgo asumido
+
+        - Restaurar desde copia de seguridad'
+      type: regular
+      iscommand: false
+      brand: ''
+    separatecontext: false
+    continueonerrortype: ''
+    view: "{\n  \"position\": {\n    \"x\": 450,\n    \"y\": 3470\n  }\n}"
+    note: false
+    timertriggers: []
+    ignoreworker: false
+    skipunavailable: false
+    quietmode: 0
+    isoversize: false
+    isautoswitchedtoquietmode: false
+    nexttasks:
+      '#none#':
+      - '21'
+  '21':
+    id: '21'
+    taskid: 9f5ed9da-7c05-53f3-a66a-e517d15cee88
+    type: title
+    task:
+      id: 9f5ed9da-7c05-53f3-a66a-e517d15cee88
+      version: -1
+      name: Hecho
+      description: ''
+      type: title
+      iscommand: false
+      brand: ''
+    separatecontext: false
+    continueonerrortype: ''
+    view: "{\n  \"position\": {\n    \"x\": 450,\n    \"y\": 3660\n  }\n}"
+    note: false
+    timertriggers: []
+    ignoreworker: false
+    skipunavailable: false
+    quietmode: 0
+    isoversize: false
+    isautoswitchedtoquietmode: false
+view: "{\n  \"linkLabelsPosition\": {},\n  \"paper\": {\n    \"dimensions\": {\n      \"height\": 3810,\n      \"width\": 1240,\n      \"x\": -20,\n      \"y\": 0\n    }\n  }\n}"
+inputs: []
+outputs: []
+tests:
+- No tests
+fromversion: 6.10.0

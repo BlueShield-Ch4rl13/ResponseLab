@@ -1,0 +1,137 @@
+{
+  "customFields": [],
+  "description": "Detecciones derivadas de ENS, NIS2, DORA y RGPD. Se distinguen de todas las demas en una cosa: la mayoria no detecta un ataque, detecta que una obligacion se esta incumpliendo o que un plazo esta corriendo. El reloj no lo marca el atacante sino el regulador, y no se para porque el caso se cierre. Una copia de seguridad que no corrio, una notificacion de 72 horas pendiente o una retencion por debajo del minimo no se contienen: se escalan a quien puede firmar.\n\nGenerada por ResponseLab desde el playbook de DetectionLab (cumplimiento).",
+  "displayName": "ResponseLab · Cumplimiento y obligaciones regulatorias",
+  "flag": false,
+  "name": "ResponseLab - cumplimiento",
+  "pap": 2,
+  "severity": 2,
+  "tags": [
+    "responselab",
+    "rl:familia=cumplimiento"
+  ],
+  "tasks": [
+    {
+      "description": "Como: Primer evento del incidente asociado, no el de esta alerta\nDonde: siem",
+      "flag": false,
+      "group": "1. Evidencia",
+      "mandatory": false,
+      "order": 0,
+      "title": "Momento exacto en que empezo a correr el plazo"
+    },
+    {
+      "description": "Como: Lookup contra marcos/marcos_obligaciones.csv por obligacion_id\nDonde: manager",
+      "flag": false,
+      "group": "1. Evidencia",
+      "mandatory": false,
+      "order": 1,
+      "title": "Estado de la obligacion y quien es el responsable"
+    },
+    {
+      "description": "Como: Ultima alerta de exito de la misma serie de reglas\nDonde: siem",
+      "flag": false,
+      "group": "1. Evidencia",
+      "mandatory": false,
+      "order": 2,
+      "title": "Registro de la ultima ejecucion correcta del control"
+    },
+    {
+      "description": "Fuente: itsm. Si es afirmativa, baja la severidad (un escalon como mucho).\nResponseLab la contesta sola si hay datos; si queda pendiente, contestarla aqui.",
+      "flag": false,
+      "group": "2. Triaje",
+      "mandatory": false,
+      "order": 3,
+      "title": "Existe una excepcion aprobada y en vigor para este activo"
+    },
+    {
+      "description": "Fuente: inventario. Si es afirmativa, sube la severidad.\nResponseLab la contesta sola si hay datos; si queda pendiente, contestarla aqui.",
+      "flag": false,
+      "group": "2. Triaje",
+      "mandatory": false,
+      "order": 4,
+      "title": "El activo esta en el alcance de la certificacion"
+    },
+    {
+      "description": "Fuente: calendario_obligaciones. Si es afirmativa, sube la severidad.\nResponseLab la contesta sola si hay datos; si queda pendiente, contestarla aqui.",
+      "flag": false,
+      "group": "2. Triaje",
+      "mandatory": false,
+      "order": 5,
+      "title": "Quedan menos de 24 h del plazo regulatorio"
+    },
+    {
+      "description": "Alcance: Los indices implicados, durante el plazo legal\nRadio: objeto · Reversible: si\nAutomatica en clase auto_contener si la politica del cliente lo permite.\nAccion de ResponseLab: evidencia.retener\nPor que: Ocupa disco y nada mas. Frente a eso, perder los registros que sostienen\nuna notificacion regulatoria por rotacion normal es irreversible y se\ndescubre justo cuando hacen falta.\n",
+      "flag": false,
+      "group": "3. Contencion",
+      "mandatory": false,
+      "order": 6,
+      "title": "Fijar retencion extendida sobre los registros del periodo afectado"
+    },
+    {
+      "description": "Alcance: Una entrada en el ITSM\nRadio: objeto · Reversible: si\nAutomatica en clase auto_contener si la politica del cliente lo permite.\nAccion de ResponseLab: caso.tarea_obligacion\nPor que: Anotar no rompe nada, y el plazo empieza a correr lo anote alguien o no.\n",
+      "flag": false,
+      "group": "3. Contencion",
+      "mandatory": false,
+      "order": 7,
+      "title": "Abrir o actualizar la tarea de obligacion con su plazo y responsable"
+    },
+    {
+      "description": "Fallo de copia de seguridad seguido, en la misma ventana de RPO, de una ejecucion correcta del mismo trabajo sobre el mismo activo. El control se cumplio; el primer intento fallido es ruido operativo.\n\nPor que es seguro: El objetivo del control es que exista copia dentro del RPO, no que no falle nunca ningun intento. Si la copia existe y esta dentro de ventana, la obligacion esta cubierta y abrir caso solo entrena a ignorarlos.",
+      "flag": false,
+      "group": "4. Cierre",
+      "mandatory": false,
+      "order": 8,
+      "title": "Comprobar si se puede cerrar: Fallo de copia de seguridad seguido, en la misma ventana de RPO, de una ejecucion correcta del mismo trabajo sobre el mismo activo. El control se cumplio; el primer intento fallido es ruido operativo."
+    },
+    {
+      "description": "Desviacion de reloj en una fuente que vuelve a sincronizar sola en menos de 15 minutos y no tiene eventos de seguridad en esa ventana.\n\nPor que es seguro: La correlacion temporal solo se rompe si la desviacion persiste o si hay eventos que fechar mal. Sin ninguna de las dos cosas, no hay hallazgo.",
+      "flag": false,
+      "group": "4. Cierre",
+      "mandatory": false,
+      "order": 9,
+      "title": "Comprobar si se puede cerrar: Desviacion de reloj en una fuente que vuelve a sincronizar sola en menos de 15 minutos y no tiene eventos de seguridad en esa ventana."
+    },
+    {
+      "description": "La calificacion depende de impacto, alcance y criterio juridico, no de una regla. Equivocarse por exceso tiene coste reputacional y por defecto, sancion.",
+      "flag": false,
+      "group": "5. Requiere persona",
+      "mandatory": false,
+      "order": 10,
+      "title": "Decidir si el incidente es notificable"
+    },
+    {
+      "description": "Es una comunicacion oficial de la organizacion, con firma.",
+      "flag": false,
+      "group": "5. Requiere persona",
+      "mandatory": false,
+      "order": 11,
+      "title": "Redactar y enviar la notificacion a la autoridad"
+    },
+    {
+      "description": "Es una decision de negocio con responsable nominal.",
+      "flag": false,
+      "group": "5. Requiere persona",
+      "mandatory": false,
+      "order": 12,
+      "title": "Aceptar una desviacion como riesgo asumido"
+    },
+    {
+      "description": "Implica decidir hasta que punto se pierde trabajo.",
+      "flag": false,
+      "group": "5. Requiere persona",
+      "mandatory": false,
+      "order": 13,
+      "title": "Restaurar desde copia de seguridad"
+    },
+    {
+      "description": "Escalar a L2 en 60 minutos.\nA L3 si: Quedan menos de 24 h de un plazo de NIS2, DORA o RGPD",
+      "flag": false,
+      "group": "6. Escalado",
+      "mandatory": false,
+      "order": 14,
+      "title": "Escalado: L2 en 60 min"
+    }
+  ],
+  "titlePrefix": "[RL Cumplimiento]",
+  "tlp": 2
+}

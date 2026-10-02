@@ -1,0 +1,193 @@
+{
+  "customFields": [],
+  "description": "Beaconing, C2 sobre servicio legitimo, tunel DNS, interaccion con webshell y exfiltracion por volumen, mas las coincidencias con las listas de reputacion. Lo que distingue a esta familia conviene decirlo sin rodeos: la mayoria de lo que llega es ruido. Un indicador de reputacion coincide muchas veces por motivos aburridos - CDN compartidas, sinkholes de investigadores, dominios reciclados, rangos de proveedores de nube - y por eso en este repositorio las listas de IP y de dominio no alertan directas, se explotan como caza programada. Lo que si sostiene un caso aqui no es el destino sino el patron: un beacon se reconoce por la regularidad del intervalo, no por con quien habla, y un tunel DNS por la entropia y el volumen de las etiquetas, no por el dominio. La consecuencia practica es doble: esta es la familia donde el cierre automatico tiene mas sitio, y la senal buena casi nunca es una coincidencia aislada sino la repeticion.\n\nGenerada por ResponseLab desde el playbook de DetectionLab (red).",
+  "displayName": "ResponseLab · Trafico, mando y control",
+  "flag": false,
+  "name": "ResponseLab - red",
+  "pap": 2,
+  "severity": 2,
+  "tags": [
+    "responselab",
+    "rl:familia=red"
+  ],
+  "tasks": [
+    {
+      "description": "Como: streamstats por dest, calculo de delta entre eventos y stdev sobre la ventana\nDonde: siem",
+      "flag": false,
+      "group": "1. Evidencia",
+      "mandatory": false,
+      "order": 0,
+      "title": "Serie temporal de las conexiones al destino, con intervalos y desviacion tipica"
+    },
+    {
+      "description": "Como: stats sum(bytes_out) sum(bytes_in) by src dest\nDonde: siem",
+      "flag": false,
+      "group": "1. Evidencia",
+      "mandatory": false,
+      "order": 1,
+      "title": "Volumen enviado y recibido, por separado"
+    },
+    {
+      "description": "Como: Sysmon EID 3 o eventos de Falco por IP de destino y hora\nDonde: siem",
+      "flag": false,
+      "group": "1. Evidencia",
+      "mandatory": false,
+      "order": 2,
+      "title": "Proceso que abrio la conexion en el equipo"
+    },
+    {
+      "description": "Como: search en el registro DNS por rrname en los 5 min anteriores\nDonde: siem",
+      "flag": false,
+      "group": "1. Evidencia",
+      "mandatory": false,
+      "order": 3,
+      "title": "Resolucion DNS previa y quien la pidio"
+    },
+    {
+      "description": "Como: stats dc(query) avg(len(label)) by parent_domain\nDonde: siem",
+      "flag": false,
+      "group": "1. Evidencia",
+      "mandatory": false,
+      "order": 4,
+      "title": "Para tunel DNS, longitud y entropia de las etiquetas y numero de subdominios distintos en 1 h"
+    },
+    {
+      "description": "Como: Registro TLS del colector de red por sesion\nDonde: siem",
+      "flag": false,
+      "group": "1. Evidencia",
+      "mandatory": false,
+      "order": 5,
+      "title": "SNI y emisor del certificado presentado por el destino"
+    },
+    {
+      "description": "Fuente: resolucion_dns. Si es afirmativa, baja la severidad (un escalon como mucho).\nResponseLab la contesta sola si hay datos; si queda pendiente, contestarla aqui.",
+      "flag": false,
+      "group": "2. Triaje",
+      "mandatory": false,
+      "order": 6,
+      "title": "El destino resuelve por PTR a un proveedor de CDN o de nube y mas de diez equipos del parque hablan con el"
+    },
+    {
+      "description": "Fuente: cti_local. Si es afirmativa, baja la severidad (un escalon como mucho).\nResponseLab la contesta sola si hay datos; si queda pendiente, contestarla aqui.\nLos dominios reciclados envejecen mal en las listas: la coincidencia sobrevive al motivo que la creo.",
+      "flag": false,
+      "group": "2. Triaje",
+      "mandatory": false,
+      "order": 7,
+      "title": "El indicador aparece en una sola lista y su primera aparicion es de hace mas de 30 dias"
+    },
+    {
+      "description": "Fuente: historico_siem. Si es afirmativa, sube la severidad.\nResponseLab la contesta sola si hay datos; si queda pendiente, contestarla aqui.",
+      "flag": false,
+      "group": "2. Triaje",
+      "mandatory": false,
+      "order": 8,
+      "title": "El proceso que abre la conexion no esta firmado o es la primera vez que se ve en el parque"
+    },
+    {
+      "description": "Fuente: evidencia. Si es afirmativa, sube la severidad.\nPregunta para el analista: la maquina no tiene datos para contestarla.\nEs la regularidad, no el destino, lo que hace el caso.",
+      "flag": false,
+      "group": "2. Triaje",
+      "mandatory": false,
+      "order": 9,
+      "title": "La desviacion tipica del intervalo se mantiene por debajo del umbral durante mas de 6 h"
+    },
+    {
+      "description": "Fuente: historico_siem. Si es afirmativa, sube la severidad.\nResponseLab la contesta sola si hay datos; si queda pendiente, contestarla aqui.\nUna coincidencia de reputacion sola es ruido; la misma coincidencia en un equipo que ademas ejecuto algo raro es un caso.",
+      "flag": false,
+      "group": "2. Triaje",
+      "mandatory": false,
+      "order": 10,
+      "title": "El mismo equipo acumula alertas de otras familias en las ultimas 24 h"
+    },
+    {
+      "description": "Alcance: Un par equipo-destino. No toca al resto de usuarios ni al perimetro.\nRadio: equipo · Reversible: si\nAutomatica en clase auto_contener si la politica del cliente lo permite.\nAccion de ResponseLab: red.bloquear_destino_equipo · se deshace con red.desbloquear_destino_equipo\nPor que: Se deshace borrando una linea y no afecta a nadie mas que al equipo que\nya esta bajo sospecha. El peor caso es que ese equipo pierda acceso a un\nsitio durante el triaje; a cambio, corta el canal sin tener que decidir\ntodavia si el destino es malicioso para toda la organizacion.\n",
+      "flag": false,
+      "group": "3. Contencion",
+      "mandatory": false,
+      "order": 11,
+      "title": "Bloquear el destino en el proxy de salida solo para el equipo afectado"
+    },
+    {
+      "description": "Alcance: El equipo afectado. No toca cuentas ni otros equipos.\nRadio: equipo · Reversible: si\nAutomatica en clase auto_contener si la politica del cliente lo permite.\nAccion de ResponseLab: endpoint.aislar · se deshace con endpoint.liberar\nExcepcion: Si el inventario marca el equipo como servidor de produccion, NO se\naisla: se prepara la accion y se pide aprobacion. Esta excepcion es la\nnorma en la regla de webshell, que por definicion dispara en un\nservidor publicado.\n\nPor que: Reversible en un comando y el peor caso son veinte minutos de trabajo.\nFrente a eso, un canal de C2 establecido sigue recibiendo ordenes\nmientras el turno decide.\n",
+      "flag": false,
+      "group": "3. Contencion",
+      "mandatory": false,
+      "order": 12,
+      "title": "Aislar el endpoint en la red, dejando solo la comunicacion con el manager"
+    },
+    {
+      "description": "Alcance: Un unico proceso identificado por GUID, no por nombre de imagen\nRadio: proceso · Reversible: no\nAutomatica en clase auto_contener si la politica del cliente lo permite.\nAccion de ResponseLab: proceso.matar\nExcepcion: Si el binario esta firmado y en el catalogo de aplicaciones de negocio,\no el equipo es servidor de produccion, se prepara y espera.\n\nPor que: No se deshace, pero el alcance es un proceso y el error se paga con un\nservicio que hay que rearrancar. Y en beaconing sirve para algo mas que\ncontener: si el patron continua despues de matarlo, no era ese proceso.\n",
+      "flag": false,
+      "group": "3. Contencion",
+      "mandatory": false,
+      "order": 13,
+      "title": "Matar el proceso que sostiene la conexion por su ProcessGuid"
+    },
+    {
+      "description": "Alcance: Todo el trafico saliente hacia ese destino, desde cualquier equipo\nRadio: organizacion · Reversible: si\nRequiere aprobacion.\nAccion de ResponseLab: perimetro.bloquear_destino · se deshace con perimetro.desbloquear_destino\nPor que: Es la accion que mas se pide y la que mas dano hace mal aplicada. Si el\ndestino comparte direccion con una CDN - el caso mas frecuente de esta\nfamilia, como dice la propia descripcion - el bloqueo tira servicios que\nno tienen nada que ver, y el sintoma que ve negocio no se parece en\nnada a la causa. Ademas el bloqueo perimetral sobrevive al incidente y\nacaba en una lista que nadie revisa nunca. Se deja escrita la regla y\nespera a que alguien acepte el alcance.\n",
+      "flag": false,
+      "group": "3. Contencion",
+      "mandatory": false,
+      "order": 14,
+      "title": "Bloquear el destino en el cortafuegos perimetral para toda la organizacion"
+    },
+    {
+      "description": "Coincidencia unica de reputacion - un solo indicador, en una sola lista - contra una IP cuyo PTR y ASN corresponden a un proveedor de CDN o de nube publica reconocido, cuando mas de diez equipos del parque han hablado con ese mismo destino en las ultimas 24 h y ninguno de ellos tiene otra alerta abierta.\n\nPor que es seguro: Una IP de CDN sirve a la vez contenido legitimo y el alojamiento de cualquiera que pague: el indicador dice algo del contenido, no de la IP, y por eso la coincidencia sola no distingue nada. Lo que hace segura la condicion no es la CDN, es la compania: si medio parque habla con ese destino, o es infraestructura compartida o es un incidente que ya se esta viendo por otras diez reglas. Y el coste de equivocarse esta acotado por el propio diseno del repositorio, porque la coincidencia queda indexada igual en nivel bajo y la consulta de caza programada la recoge: no se pierde, se saca de la cola.",
+      "flag": false,
+      "group": "4. Cierre",
+      "mandatory": false,
+      "order": 15,
+      "title": "Comprobar si se puede cerrar: Coincidencia unica de reputacion - un solo indicador, en una sola lista - contra una IP cuyo PTR y ASN corresponden a un proveedor de CDN o de nube publica reconocido, cuando mas de diez equipos del p"
+    },
+    {
+      "description": "Beaconing (soc_net_001) hacia un destino que el proxy clasifica en la categoria de actualizacion de software, abierto por un proceso firmado que es el cliente de actualizacion de ese mismo fabricante, y con el mismo patron presente en el resto de equipos del grupo.\n\nPor que es seguro: La telemetria de producto es regular por diseno, que es exactamente el rasgo que la regla busca, asi que su falso positivo no es ocasional: es continuo, y una cola con beaconing de actualizadores dentro entrena al turno a descartar beaconing en general. Las tres condiciones hacen falta juntas porque un C2 alojado en un servicio legitimo satisface la primera sin esfuerzo; lo que no puede satisfacer es que el proceso sea el cliente firmado del fabricante y que el resto del grupo presente el mismo patron a la misma hora.",
+      "flag": false,
+      "group": "4. Cierre",
+      "mandatory": false,
+      "order": 16,
+      "title": "Comprobar si se puede cerrar: Beaconing (soc_net_001) hacia un destino que el proxy clasifica en la categoria de actualizacion de software, abierto por un proceso firmado que es el cliente de actualizacion de ese mismo fabricante,"
+    },
+    {
+      "description": "Corta un servicio a los clientes si el destino esta compartido, y eso no se ve hasta que llaman.",
+      "flag": false,
+      "group": "5. Requiere persona",
+      "mandatory": false,
+      "order": 17,
+      "title": "Bloquear el destino en el perimetro o en el DNS corporativo"
+    },
+    {
+      "description": "Es una decision de disponibilidad, no de seguridad.",
+      "flag": false,
+      "group": "5. Requiere persona",
+      "mandatory": false,
+      "order": 18,
+      "title": "Aislar un segmento de red completo"
+    },
+    {
+      "description": "Tramite externo, con plazos y con implicaciones legales.",
+      "flag": false,
+      "group": "5. Requiere persona",
+      "mandatory": false,
+      "order": 19,
+      "title": "Contactar con el proveedor de alojamiento o pedir la retirada del dominio"
+    },
+    {
+      "description": "Decision de negocio, no tecnica.",
+      "flag": false,
+      "group": "5. Requiere persona",
+      "mandatory": false,
+      "order": 20,
+      "title": "Decidir que un beacon confirmado obliga a reconstruir el equipo"
+    },
+    {
+      "description": "Escalar a L2 en 30 minutos.\nA L3 si: Hay interaccion con webshell, o beaconing sostenido cuyo proceso no esta firmado ni conocido en el parque\nEl plazo es mas largo que en otras familias a proposito: el volumen de coincidencias de reputacion no justifica acortar el turno de nadie. Lo que si acorta el plazo no es la gravedad del indicador, es la repeticion en el mismo equipo.",
+      "flag": false,
+      "group": "6. Escalado",
+      "mandatory": false,
+      "order": 21,
+      "title": "Escalado: L2 en 30 min"
+    }
+  ],
+  "titlePrefix": "[RL Red]",
+  "tlp": 2
+}

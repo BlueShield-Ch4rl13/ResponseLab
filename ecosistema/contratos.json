@@ -1,0 +1,208 @@
+{
+  "ftriagedfir": {
+    "informe": {
+      "assessment": {
+        "attack_techniques": [
+          {
+            "attack": "...",
+            "count": "...",
+            "label": "...",
+            "tactic": "..."
+          }
+        ],
+        "confidence": "int",
+        "confidence_tier": "str",
+        "reasons": [
+          {
+            "attack": "...",
+            "count": "...",
+            "label": "...",
+            "points": "...",
+            "tactic": "..."
+          }
+        ],
+        "risk_score": "int",
+        "signals_triggered": "int",
+        "verdict": "str",
+        "verdict_color": "str",
+        "verdict_key": "str",
+        "verdict_text": "str"
+      },
+      "case": {
+        "description": "str",
+        "examiner": "str",
+        "generated_utc": "str",
+        "name": "str",
+        "os": "str"
+      },
+      "findings": [
+        {
+          "level": "str",
+          "text": "str"
+        }
+      ],
+      "host": {
+        "architecture": "str",
+        "hostname": "str",
+        "os": "str",
+        "os_version": "str",
+        "python": "str"
+      },
+      "iocs": [
+        {
+          "count": "int",
+          "defanged": "str",
+          "private": "bool",
+          "sources": [],
+          "type": "str",
+          "value": "str"
+        }
+      ]
+    },
+    "opciones_triage": [
+      "--artifacts",
+      "--case",
+      "--collect-only",
+      "--desc",
+      "--examiner",
+      "--ez-tools",
+      "--no-iocs",
+      "--output",
+      "--parse-only",
+      "--root",
+      "--target-os",
+      "--verbose",
+      "--vss"
+    ]
+  },
+  "malpipe": {
+    "modelos": {
+      "AttackTechnique": [
+        "id",
+        "name",
+        "source",
+        "tactic"
+      ],
+      "DynamicResult": [
+        "analyzed",
+        "engine",
+        "error",
+        "family",
+        "sandbox_url",
+        "score",
+        "signatures"
+      ],
+      "Hashes": [
+        "imphash",
+        "md5",
+        "sha1",
+        "sha256",
+        "ssdeep"
+      ],
+      "Indicators": [
+        "domains",
+        "emails",
+        "ips",
+        "urls"
+      ],
+      "PeInfo": [
+        "compile_time",
+        "imphash",
+        "imported_dlls",
+        "is_dll",
+        "is_pe",
+        "machine",
+        "sections",
+        "subsystem",
+        "suspicious_imports"
+      ],
+      "PeSection": [
+        "entropy",
+        "name",
+        "raw_size",
+        "virtual_size"
+      ],
+      "Report": [
+        "attack",
+        "dynamic",
+        "generated_at",
+        "score",
+        "static",
+        "tool",
+        "verdict",
+        "version"
+      ],
+      "StaticResult": [
+        "filename",
+        "filetype",
+        "hashes",
+        "indicators",
+        "interesting_strings",
+        "pe",
+        "size",
+        "yara"
+      ],
+      "YaraMatch": [
+        "meta",
+        "rule",
+        "tags"
+      ]
+    }
+  },
+  "newscti": {
+    "claves": [
+      "cisa_kev_recent",
+      "generated_utc",
+      "ioc_count",
+      "iocs",
+      "kev_count",
+      "levels"
+    ],
+    "claves_ioc": [
+      "abuse_score",
+      "age_days",
+      "confidence",
+      "country",
+      "defanged",
+      "first_seen",
+      "first_seen_local",
+      "last_seen_local",
+      "level",
+      "reference",
+      "score",
+      "severity",
+      "source",
+      "sources",
+      "threat",
+      "type",
+      "value",
+      "vt_detections"
+    ],
+    "claves_kev": [
+      "cve",
+      "date_added",
+      "name",
+      "product",
+      "ransomware",
+      "vendor"
+    ],
+    "niveles": [
+      "alta",
+      "baja",
+      "media"
+    ],
+    "tipos_ioc": [
+      "cve",
+      "domain",
+      "filehash-md5",
+      "filehash-sha1",
+      "filehash-sha256",
+      "hostname",
+      "ip:port",
+      "ipv4",
+      "md5_hash",
+      "sha256_hash",
+      "url"
+    ]
+  }
+}

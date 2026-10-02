@@ -1,0 +1,103 @@
+# Cliente de ejemplo: fabricante industrial con Elastic, CrowdStrike y Fortinet
+#
+# Elastic Security como SIEM, CrowdStrike Falcon como EDR, FortiGate en el
+# perimetro y como NAC, TheHive del MSSP para los casos y avisos por Slack.
+# Operador esencial del sector de fabricacion: NIS2 y RGPD.
+#
+# Lo que ensena este perfil: la planta. Los equipos de la red OT (HMI, SCADA,
+# estaciones de ingenieria de los PLC) estan en "protegidos": sobre ellos nada
+# es automatico, ni aunque una secuencia de ataque lo pida. Aislar un HMI puede
+# parar una linea de produccion; esa decision la toma una persona que sabe que
+# hay detras. El puesto de oficina desde el que se llega a la planta, en
+# cambio, se aisla solo en cuanto la evidencia lo justifica.
+
+id: norte
+nombre: Industrias del Norte (ejemplo)
+activo: true
+modo: simulacion
+zona_horaria: Europe/Madrid
+marcos: [nis2, rgpd]
+
+autenticacion:
+  # Sustituye por la huella de tu token: python -m responselab token
+  token_sha256: "0000000000000000000000000000000000000000000000000000000000000000"
+  agentes: {token_sha256: "0000000000000000000000000000000000000000000000000000000000000000"}
+  edl: {token_sha256: "0000000000000000000000000000000000000000000000000000000000000000"}
+
+aprobadores:
+  - {nombre: Jefe de turno SOC, email: turno@norte.test, token_sha256: "0000000000000000000000000000000000000000000000000000000000000000"}
+  - {nombre: Responsable de planta, email: planta@norte.test, token_sha256: "0000000000000000000000000000000000000000000000000000000000000000"}
+
+capacidades:
+  edr: crowdstrike
+  perimetro: [fortinet, edl]
+  waf: [fortinet]
+  nac: fortinet
+  casos: thehive
+
+conectores:
+  crowdstrike:
+    url: https://api.eu-1.crowdstrike.com
+    client_id_env: RL_NORTE_FALCON_CLIENT_ID
+    client_secret_env: RL_NORTE_FALCON_CLIENT_SECRET
+  fortinet:
+    url: https://fw.norte.test
+    api_token_env: RL_NORTE_FORTIGATE_TOKEN
+    vdom: root
+    grupo_bloqueo: ResponseLab-Bloqueo
+    grupo_cuarentena: ResponseLab-Cuarentena
+  thehive:
+    url: https://thehive.mssp.test
+    api_key_env: RL_NORTE_THEHIVE_KEY
+    organizacion: NORTE
+  slack:
+    tipo: slack
+    webhook_env: RL_NORTE_SLACK_WEBHOOK
+
+avisos:
+  canales: [slack]
+
+politica:
+  contencion_automatica: true
+  acciones_prohibidas: []
+  acciones_siempre_aprobacion: []
+  excepcion_sin_datos: aprobacion
+  escalado_por_correlacion: true
+  caducidad_aprobacion_min: 180
+  bloqueo_perimetro_horas: 72
+
+inventario:
+  completo: false
+  protegidos: ["^HMI-", "^SCADA-", "^PLC-", "^ENG-OT-", "^DC\\d+"]
+  activos:
+    - {patron: "^(HMI|SCADA|PLC|ENG-OT)-", etiquetas: [ot, servidor_produccion]}
+    - {patron: "^DC\\d+", etiquetas: [controlador_dominio, servidor_produccion]}
+    - {patron: "^SRV-", etiquetas: [servidor_produccion]}
+    - {patron: "^PC-", etiquetas: [puesto]}
+    - {patron: "^ING-", etiquetas: [puesto, ingenieria]}
+    - {patron: "^RRHH-", etiquetas: [puesto, datos_personales]}
+
+listas:
+  administradores: [adm-]
+  cuentas_servicio: [svc_backup, svc_historian, svc_scada]
+  cuentas_emergencia: [breakglass@norte.test]
+  aplicaciones_negocio: []
+  software_aprobado: []
+  agentes_distribucion: [ccmexec.exe]
+  escaneres_autorizados: ["10.10.0.50/32"]
+  bastiones: ["10.10.0.10/32"]
+
+ventanas:
+  # Parada programada de planta: los domingos por la manana se cambia firmware
+  # y se reprograman PLC. Las preguntas de triaje que miran si hay una ventana
+  # de mantenimiento abierta la tienen en cuenta.
+  - {tipo: mantenimiento, dias: [do], desde: "06:00", hasta: "14:00", equipos: ["^HMI-", "^SCADA-", "^PLC-"]}
+
+excepciones: []
+
+contactos:
+  L2: {email: soc-l2@mssp.test}
+  L3: {email: soc-l3@mssp.test}
+  guardia: {telefono: "+34 600 000 002"}
+  dpd: {email: dpd@norte.test}
+  planta: {telefono: "+34 600 000 003"}

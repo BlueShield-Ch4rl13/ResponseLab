@@ -1,0 +1,32 @@
+# Cisco ISE: cuarentena de red de un equipo con ANC (capacidad nac)
+#
+# Aisla desde la red, sin depender del agente del equipo: es la opcion para
+# la familia xdr, cuando la telemetria del equipo no es fiable.
+nombre: cisco-ise
+descripcion: Aplica y retira una politica ANC de cuarentena por IP
+base_url_env: ISE_URL                 # https://ise.cliente.test:9060
+autenticacion:
+  tipo: basica
+  usuario_env: ISE_USUARIO
+  clave_env: ISE_CLAVE
+cabeceras: {Accept: application/json, Content-Type: application/json}
+acciones:
+  red.aislar_equipo:
+    metodo: PUT
+    ruta: /ers/config/ancendpoint/apply
+    cuerpo:
+      OperationAdditionalData:
+        additionalData:
+          - {name: ipAddress, value: "{{ objetivo.equipo.ip }}"}
+          - {name: policyName, value: "{{ parametros.politica|default:ResponseLab_Cuarentena }}"}
+    exito: [200, 204]
+    detalle: "politica ANC de cuarentena aplicada a {{ objetivo.equipo.ip }}"
+  red.liberar_equipo:
+    metodo: PUT
+    ruta: /ers/config/ancendpoint/clear
+    cuerpo:
+      OperationAdditionalData:
+        additionalData:
+          - {name: ipAddress, value: "{{ objetivo.equipo.ip }}"}
+    exito: [200, 204]
+    detalle: "cuarentena ANC retirada de {{ objetivo.equipo.ip }}"

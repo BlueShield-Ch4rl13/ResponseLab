@@ -1,0 +1,182 @@
+familia: endpoint
+nombre: Ejecucion y persistencia en el puesto Windows
+descripcion: |
+    Volcado de LSASS, borrado de copias sombra, cifrado masivo, inyeccion,
+    LOLBins, PowerShell ofuscado, tareas y claves de arranque, creacion de
+    servicios y cuentas, ejecucion desde rutas de usuario. Es la familia con
+    mas volumen del catalogo y la que peor se tria mirando solo el evento:
+    crear un servicio, lanzar una tarea programada o ejecutar PowerShell
+    codificado es tambien la forma normal de administrar un parque Windows. Lo
+    que decide el veredicto casi nunca esta en la linea de comandos sino en el
+    contexto - quien es el padre, si el binario esta firmado y ya se conoce en
+    el parque, si hay ventana de despliegue abierta y si la misma senal aparece
+    en cien equipos o en uno. Por eso es donde el triaje automatico mas rebaja
+    la cola, y tambien donde un cierre mal razonado tiene mas ocasiones de
+    pasar desapercibido entre el ruido.
+
+enriquecimiento:
+  - fuente: cti_local
+    sobre: [hash, ip, dominio]
+    detalle: Listas de intel/listas/ generadas desde News CTI
+  - fuente: inventario
+    sobre: [agente]
+    detalle: Criticidad, propietario, si es servidor o puesto, ventana de despliegue asignada
+  - fuente: directorio
+    sobre: [usuario]
+    detalle: Grupos del usuario y si tiene administracion local sobre ese equipo
+  - fuente: historico_siem
+    sobre: [hash, agente]
+    detalle: Primera aparicion del binario en el parque y cuantos equipos lo han ejecutado
+  - fuente: catalogo_software
+    sobre: [hash, firmante]
+    detalle: Si el firmante esta inventariado y si la ruta pertenece a un paquete desplegado
+
+evidencia:
+  - descripcion: Arbol de procesos completo, tres niveles hacia arriba
+    comando: "Sysmon EID 1 filtrado por ProcessGuid ascendente, 3 niveles"
+    donde: siem
+  - descripcion: Conexiones de red del proceso en los 10 minutos previos y posteriores
+    comando: "Sysmon EID 3 por ProcessGuid"
+    donde: siem
+  - descripcion: Ficheros escritos por el proceso, para separar descarga de ejecucion
+    comando: "Sysmon EID 11 por ProcessGuid"
+    donde: siem
+  - descripcion: Hash del binario y su primera aparicion y difusion en el parque
+    comando: "stats min(_time) dc(host) by Hashes"
+    donde: siem
+  - descripcion: Persistencia declarada en el equipo en el momento del evento
+    comando: "schtasks /query /fo LIST /v y reg query de las claves Run y RunOnce"
+    donde: agente
+  - descripcion: Sesiones abiertas y quien las abrio
+    comando: "query user"
+    donde: agente
+
+triaje:
+  - pregunta: El proceso padre es el agente de distribucion de software del parque y hay ventana de despliegue abierta
+    fuente: inventario
+    si_afirmativo: bajar_severidad
+  - pregunta: El binario esta firmado por un fabricante del catalogo y lleva mas de 30 dias en el parque
+    fuente: catalogo_software
+    si_afirmativo: bajar_severidad
+    nota: Reduce, no descarta. Los LOLBins que cubren varias de estas reglas estan firmados por Microsoft y llevan ahi desde la instalacion.
+  - pregunta: La misma senal aparece hoy en mas de veinte equipos en la misma hora
+    fuente: historico_siem
+    si_afirmativo: bajar_severidad
+    nota: La administracion es masiva y programada; la intrusion suele ser puntual.
+  - pregunta: Es la primera vez que ese hash se ejecuta en todo el parque
+    fuente: historico_siem
+    si_afirmativo: subir_severidad
+  - pregunta: El equipo acumula alertas de otras familias en las ultimas 24 h
+    fuente: historico_siem
+    si_afirmativo: subir_severidad
+    nota: En esta familia el caso rara vez lo hace una alerta; lo hace la secuencia.
+  - pregunta: El evento es borrado de copias sombra o cifrado masivo
+    fuente: evento
+    si_afirmativo: subir_severidad
+    nota: Ahi el plazo deja de contarse en minutos de triaje y pasa a contarse en ficheros cifrados.
+
+cierre_automatico:
+  - condicion: |
+        Ejecucion desde ruta de usuario o creacion de servicio (soc_edr_012,
+        proc_service_create_scexe) cuyo proceso padre es el agente de
+        distribucion de software del parque, con binario firmado por un
+        fabricante del catalogo, dentro de una ventana de despliegue publicada
+        en el ITSM y con la misma senal presente en al menos otros cinco
+        equipos del mismo grupo en esa ventana.
+    justificacion: |
+        Un ciclo de despliegue produce esta alerta cientos de veces y siempre
+        igual. Las cuatro condiciones son hechos independientes - parentesco,
+        firma, ventana declarada y caracter masivo - y un atacante tendria que
+        reunirlas todas a la vez; con solo el parentesco bastaria con lanzar el
+        binario desde un hijo del agente. El coste de no cerrarlas no es cero:
+        es una cola en la que el turno aprende a descartar de un vistazo esta
+        regla concreta, que es como se pierde la vez que si importa.
+  - condicion: |
+        Conexion saliente inusual de un proceso del sistema
+        (net_rare_process_external_conn) cuando el proceso esta firmado, reside
+        en System32, el destino figura en la lista de puntos de actualizacion
+        aprobados y el par proceso-destino coincide con el de la linea base del
+        grupo de equipos.
+    justificacion: |
+        La rareza que dispara esta regla es estadistica, no semantica: un
+        proceso del sistema hablando con el servicio de actualizacion de su
+        propio fabricante es raro para el equipo y normal para el parque. La
+        condicion decisiva no es la firma, que un atacante que vive de binarios
+        del sistema ya tiene, sino que el par proceso-destino sea el mismo que
+        el resto del grupo. Si el destino no esta en la lista aprobada la
+        condicion no se cumple y el caso sigue vivo.
+
+contencion:
+  - accion: Aislar el endpoint en la red, dejando solo la comunicacion con el manager
+    alcance: El equipo afectado. No toca cuentas ni otros equipos.
+    radio: equipo
+    reversible: "si"
+    requiere_aprobacion: "no"
+    justificacion: |
+        Reversible en un comando y el peor caso es veinte minutos sin trabajar.
+        Frente a eso, un cifrado en marcha o un canal de C2 abierto avanzan
+        durante todo el tiempo que dura el triaje.
+    excepcion: |
+        Si el inventario marca el equipo como servidor de produccion, NO se
+        aisla: se prepara la accion y se pide aprobacion. Aislar un servidor
+        automaticamente convierte un incidente de seguridad en una caida.
+  - accion: Matar el proceso por su ProcessGuid
+    alcance: Un unico proceso identificado por GUID, nunca por nombre de imagen
+    radio: proceso
+    reversible: "no"
+    requiere_aprobacion: "no"
+    justificacion: |
+        No se deshace, pero el alcance es un proceso concreto y el error se
+        paga con un servicio que hay que rearrancar. Matar por nombre de imagen
+        si seria peligroso, porque el mismo nombre puede corresponder a diez
+        procesos legitimos; por eso la accion solo acepta GUID.
+    excepcion: |
+        Si el binario esta firmado y en el catalogo de aplicaciones de negocio,
+        o el equipo es servidor de produccion, se prepara y espera.
+  - accion: Poner el fichero en cuarentena moviendolo a la ruta de custodia, conservando hash y ruta original
+    alcance: Un fichero. No borra, mueve.
+    radio: objeto
+    reversible: "si"
+    requiere_aprobacion: "no"
+    justificacion: |
+        Es un movimiento con registro, no un borrado: si resulta ser legitimo se
+        devuelve a su sitio con la ruta guardada. Dejarlo donde esta permite que
+        la tarea programada que lo invoca lo vuelva a lanzar cada cinco minutos.
+  - accion: Deshabilitar la tarea programada o el valor Run creado, exportando antes su definicion
+    alcance: El elemento de persistencia concreto, no la cuenta ni el equipo
+    radio: objeto
+    reversible: "si"
+    requiere_aprobacion: "no"
+    justificacion: |
+        Se exporta antes, asi que restaurarlo es un comando. Y es la accion que
+        evita el fallo mas comun de esta familia: contener el proceso y dejar
+        viva la persistencia que lo relanza en el siguiente arranque.
+  - accion: Bloquear la ejecucion del hash en todo el parque mediante politica de control de aplicaciones
+    alcance: Toda la flota Windows
+    radio: organizacion
+    reversible: "si"
+    requiere_aprobacion: "si"
+    justificacion: |
+        Se revierte quitando la regla, pero mientras esta puesta impide arrancar
+        ese binario en todos los equipos a la vez. Si el hash resulta ser el de
+        una utilidad de negocio poco conocida, el sintoma que ve la gente es una
+        aplicacion que deja de abrir sin explicacion, y nadie lo relaciona con
+        el incidente. Se deja preparada con el hash resuelto y espera.
+
+requiere_persona:
+  - situacion: Reinstalar el equipo
+    motivo: Decision de negocio, no tecnica.
+  - situacion: Restaurar desde copia tras un cifrado
+    motivo: |
+        Hay que decidir el punto de restauracion y asumir la perdida de datos
+        entre ese punto y ahora. Eso lo firma alguien.
+  - situacion: Activar el plan de continuidad
+    motivo: Afecta a mas equipos que el incidente y tiene coste propio.
+  - situacion: Deshabilitar la cuenta local creada o el usuario implicado
+    motivo: Cortar el acceso a quien no debia tiene coste inmediato y visible.
+
+escalado:
+  a: L2
+  plazo_min: 20
+  a_L3_si: Hay borrado de copias sombra, cifrado masivo o named pipe de framework de C2
+  a_guardia_si: El cifrado esta en marcha o el equipo afectado es un servidor de ficheros

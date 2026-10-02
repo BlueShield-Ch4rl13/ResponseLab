@@ -1,0 +1,22 @@
+# OPNsense: bloqueo perimetral anadiendo la IP a un alias (capacidad perimetro)
+#
+# Preparacion: alias de tipo Host(s) llamado ResponseLab_Bloqueo usado en una
+# regla de denegacion. La API de OPNsense usa clave y secreto como basica.
+nombre: opnsense
+descripcion: Anade o quita IPs del alias de bloqueo de OPNsense
+base_url_env: OPNSENSE_URL
+autenticacion:
+  tipo: basica
+  usuario_env: OPNSENSE_CLAVE_API
+  clave_env: OPNSENSE_SECRETO_API
+acciones:
+  perimetro.bloquear_destino:
+    - metodo: POST
+      ruta: /api/firewall/alias_util/add/ResponseLab_Bloqueo
+      cuerpo: {address: "{{ objetivo.red.ip_destino }}"}
+      detalle: "{{ objetivo.red.ip_destino }} en el alias ResponseLab_Bloqueo"
+  perimetro.desbloquear_destino:
+    - metodo: POST
+      ruta: /api/firewall/alias_util/delete/ResponseLab_Bloqueo
+      cuerpo: {address: "{{ objetivo.red.ip_destino }}"}
+      detalle: "{{ objetivo.red.ip_destino }} fuera del alias"

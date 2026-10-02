@@ -1,0 +1,175 @@
+familia: contenedores
+nombre: Kubernetes y runtime de contenedores
+descripcion: |
+    Pod privilegiado, capacidades peligrosas, montaje de hostPath sensible,
+    escalada por RoleBinding, lectura de secretos, exec interactivo, acceso al
+    socket del runtime y escape a los namespaces del host. Lo que distingue a
+    esta familia es que la unidad que dispara la alerta no es la unidad que se
+    puede contener. Un pod es desechable por diseno: se mata y el controlador
+    lo reprograma en segundos con la misma imagen, el mismo ServiceAccount y la
+    misma configuracion insegura, asi que cualquier contencion aplicada sobre
+    el pod es teatro. Tiene que subir un nivel - al workload, al RoleBinding,
+    al nodo - o no contiene nada. La segunda particularidad es que casi toda la
+    evidencia es efimera: cuando alguien abre el caso, el contenedor que la
+    guardaba puede llevar veinte minutos sin existir. Recogerla lo primero no
+    es una buena practica, es la unica oportunidad.
+
+enriquecimiento:
+  - fuente: k8s_api
+    sobre: [pod, namespace]
+    detalle: Workload propietario, ServiceAccount, imagen y digest en ejecucion
+  - fuente: inventario
+    sobre: [namespace, cluster]
+    detalle: Entorno productivo o no, equipo propietario y criticidad del servicio
+  - fuente: cti_local
+    sobre: [hash, dominio, ip]
+    detalle: Digest de la imagen y destinos de red contra las listas de intel/listas/
+  - fuente: registro_imagenes
+    sobre: [imagen]
+    detalle: Si procede del registro corporativo, si esta firmada y quien la publico
+  - fuente: directorio
+    sobre: [usuario]
+    detalle: Si el sujeto del registro de auditoria es una persona o un ServiceAccount, y de quien depende
+
+evidencia:
+  - descripcion: Manifiesto del pod y de su propietario, antes de que se reprograme
+    comando: "kubectl get pod <pod> -n <ns> -o yaml y kubectl get <owner> -n <ns> -o yaml"
+    donde: api
+  - descripcion: Registros del contenedor mientras el pod aun existe
+    comando: "kubectl logs <pod> -n <ns> --all-containers --timestamps"
+    donde: api
+    nota: Si el pod se reprograma antes de esto, la evidencia no se recupera de ningun otro sitio.
+  - descripcion: Todas las peticiones del mismo sujeto al API server en 1 h
+    comando: "search sourceIPs OR user.username=<sujeto> en el registro de auditoria de Kubernetes"
+    donde: siem
+  - descripcion: Procesos y llamadas al sistema vistos desde el nodo
+    comando: "Eventos de Falco o Tetragon filtrados por container.id"
+    donde: siem
+  - descripcion: Permisos efectivos del ServiceAccount implicado
+    comando: "kubectl get rolebindings,clusterrolebindings -A -o json | filtro por el ServiceAccount"
+    donde: api
+  - descripcion: Digest de la imagen en ejecucion, no su etiqueta
+    comando: "kubectl get pod <pod> -o jsonpath='{.status.containerStatuses[*].imageID}'"
+    donde: api
+
+triaje:
+  - pregunta: El sujeto es un ServiceAccount de la lista de controladores aprobados y la peticion llega desde la IP del pod de ese controlador
+    fuente: k8s_api
+    si_afirmativo: bajar_severidad
+  - pregunta: El namespace figura como no productivo en el inventario
+    fuente: inventario
+    si_afirmativo: bajar_severidad
+  - pregunta: El pod monta hostPath sobre /, /etc, /var/run o el socket del runtime
+    fuente: evento
+    si_afirmativo: subir_severidad
+    nota: Ahi la frontera del contenedor deja de existir y el alcance pasa a ser el nodo entero.
+  - pregunta: El sujeto es una identidad humana y actua fuera de la ventana de guardia
+    fuente: directorio
+    si_afirmativo: subir_severidad
+  - pregunta: La imagen no procede del registro corporativo o su digest no coincide con el firmado
+    fuente: registro_imagenes
+    si_afirmativo: subir_severidad
+  - pregunta: El mismo sujeto ha hecho otras peticiones al API server que la politica RBAC deberia haber denegado
+    fuente: k8s_api
+    si_afirmativo: subir_severidad
+    nota: Una peticion sola puede ser un error de configuracion; una serie es reconocimiento.
+
+cierre_automatico:
+  - condicion: |
+        Lectura de secretos (k8s_lectura_masiva_secretos) cuyo sujeto es un
+        ServiceAccount de la lista de operadores aprobados, con la peticion
+        llegando desde la IP del pod de ese operador, el user-agent del
+        controlador y los secretos leidos dentro del conjunto que ese operador
+        ya reconcilia habitualmente.
+    justificacion: |
+        Un operador lee sus secretos en cada bucle de reconciliacion, decenas
+        de veces por hora y por namespace: sin esta condicion la regla genera
+        la mayoria de los casos de la familia y el turno aprende a cerrarla de
+        un vistazo, que es exactamente como se pierde la lectura que si
+        importa. Se exigen las cuatro condiciones y no solo la identidad
+        precisamente porque un token de ServiceAccount robado satisface la
+        primera sin ningun esfuerzo; el origen de red, el cliente y el conjunto
+        de objetos son tres cosas mas que habria que falsificar a la vez, y
+        cualquiera que falle deja el caso vivo.
+  # El exec interactivo en pod (k8s_exec_en_pod) no entra aqui aunque sea la
+  # regla mas ruidosa de la familia. Es tambien el primer movimiento de quien
+  # ya tiene credenciales del cluster, y la condicion que pareceria segura
+  # - namespace no productivo, identidad de desarrollo, horario laboral - es la
+  # misma que reune el pivote hacia produccion. Se baja la severidad en el
+  # triaje y se encola.
+
+contencion:
+  - accion: Acordonar el nodo donde corre el pod
+    alcance: El nodo deja de recibir cargas nuevas. No desaloja nada de lo que ya corre.
+    radio: objeto
+    reversible: "si"
+    requiere_aprobacion: "no"
+    justificacion: |
+        Es la unica accion de esta familia cuyo peor caso es que el planificador
+        reparta trabajo con un nodo menos durante unos minutos: no corta ningun
+        servicio en marcha ni desaloja nada. Y cubre el riesgo especifico de un
+        escape, que es que el nodo comprometido siga recibiendo cargas de
+        trabajo nuevas con secretos nuevos.
+    excepcion: |
+        Si quedan menos de tres nodos con capacidad, no se acordona: se prepara
+        y se pide aprobacion. Acordonar el ultimo nodo con sitio equivale a
+        parar el cluster por la via lenta.
+  - accion: Aplicar una NetworkPolicy de denegacion de salida sobre las etiquetas del pod
+    alcance: Los pods que coincidan con esas etiquetas. No toca el namespace ni el resto del cluster.
+    radio: objeto
+    reversible: "si"
+    requiere_aprobacion: "no"
+    justificacion: |
+        Se deshace borrando el objeto y no destruye estado ni evidencia, a
+        diferencia de matar el pod. Corta el canal de salida sin impedir que el
+        contenedor siga existiendo para poder mirarlo.
+    excepcion: |
+        Si el namespace es productivo, se prepara y se pide aprobacion. Y si el
+        CNI del cluster no aplica NetworkPolicy, la accion NO se da por hecha:
+        se anota como no ejecutada, porque una contencion que se cree aplicada
+        y no lo esta es peor que no haberla intentado.
+  - accion: Retirar el RoleBinding o ClusterRoleBinding creado en la escalada, guardando su manifiesto
+    alcance: Un enlace de permisos concreto. No toca el rol, el ServiceAccount ni el workload.
+    radio: equipo
+    reversible: "si"
+    requiere_aprobacion: "no"
+    justificacion: |
+        Es el artefacto del ataque, no una pieza de la aplicacion, y se vuelve a
+        aplicar en un comando con el manifiesto guardado. Dejarlo puesto
+        significa que el atacante conserva los permisos aunque se contenga todo
+        lo demas, que es la forma tipica de que este caso vuelva la semana
+        siguiente.
+  - accion: Escalar el workload a cero replicas
+    alcance: El servicio que ese Deployment o StatefulSet presta, completo
+    radio: objeto
+    reversible: "si"
+    requiere_aprobacion: "si"
+    justificacion: |
+        Es la unica contencion que de verdad impide que el pod vuelva, y por eso
+        mismo es una caida de servicio: el controlador deja de reprogramar
+        porque ya no hay nada que reprogramar. El SOAR no sabe si ese workload
+        es el proceso de compra de la tienda o un cron de limpieza, y el
+        sintoma que ve negocio no se parece en nada a la causa. Se deja
+        preparada con el objeto resuelto y espera.
+
+requiere_persona:
+  - situacion: Rotar los secretos que se hayan leido
+    motivo: |
+        Rotar un secreto de Kubernetes tira todos los pods que lo montan hasta
+        que se reinician. Hay que saber cuales son antes de tocarlo.
+  - situacion: Reconstruir o retirar la imagen del registro
+    motivo: Afecta a todos los despliegues que la usan, no solo a este cluster.
+  - situacion: Declarar el nodo o el cluster comprometido
+    motivo: |
+        Un escape a los namespaces del host alcanza a todo lo que corre en ese
+        nodo. Decidir el alcance de la reconstruccion es una decision de
+        servicio.
+  - situacion: Revisar el resto de workloads con la misma configuracion insegura
+    motivo: |
+        Deja de ser un caso y pasa a ser un trabajo de plataforma, con
+        propietario y plazo propios.
+
+escalado:
+  a: L2
+  plazo_min: 15
+  a_L3_si: Hay escape a los namespaces del host, acceso al socket del runtime o montaje de hostPath sobre una ruta sensible

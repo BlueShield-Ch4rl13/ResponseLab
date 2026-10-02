@@ -1,0 +1,167 @@
+familia: zta
+nombre: Desviaciones del modelo de confianza cero
+descripcion: |
+    Autenticacion heredada, cuenta de servicio con sesion interactiva,
+    protocolo en claro, almacenamiento extraible, libreria desde ruta no
+    estandar, paquete de repositorio no aprobado, fichero de dependencias
+    modificado y borrado del registro de auditoria. Esta familia no detecta
+    ataques: detecta que la arquitectura no es la que se dijo que era. Y esa es
+    la clave del triaje, porque cambia cual es la respuesta correcta: casi
+    ninguna de estas alertas tiene un adversario detras, asi que contener no
+    arregla nada - lo que hay que arreglar no esta en el equipo, esta en una
+    decision de configuracion que tomo alguien con nombre. La respuesta util es
+    enriquecer, identificar al propietario del activo y encolar la desviacion
+    contra el plan de remediacion, no abrir un caso de incidente que se cierra
+    sin haber corregido nada. La excepcion es el borrado del registro de
+    auditoria: eso ya no es deriva, es alguien tapando algo.
+
+enriquecimiento:
+  - fuente: inventario
+    sobre: [agente, activo]
+    detalle: Propietario, equipo responsable y entorno del activo desviado
+  - fuente: registro_excepciones
+    sobre: [activo, desviacion]
+    detalle: Si existe excepcion aprobada, quien la firmo y cuando caduca
+  - fuente: directorio
+    sobre: [usuario]
+    detalle: Si la cuenta es de servicio, quien la mantiene y para que se creo
+  - fuente: itsm
+    sobre: [activo]
+    detalle: Si ya hay tarea de remediacion abierta, para no duplicar el trabajo
+  - fuente: historico_siem
+    sobre: [activo, desviacion]
+    detalle: Cuantas veces se ha visto la misma desviacion en el mismo activo en 30 dias
+
+evidencia:
+  - descripcion: El valor exacto de la desviacion, no su categoria
+    comando: "Campo concreto del evento: protocolo, puerto, tipo de autenticacion, numero de serie del soporte"
+    donde: siem
+  - descripcion: Desde cuando existe la desviacion
+    comando: "stats min(_time) by host, campo_desviacion en 90 dias"
+    donde: siem
+    nota: Una desviacion de ayer y una de hace ocho meses no son el mismo problema aunque disparen la misma regla.
+  - descripcion: Alcance real de la desviacion en el parque
+    comando: "stats dc(host) values(host) by campo_desviacion"
+    donde: siem
+    nota: Convierte un caso en un proyecto, que es lo que suele hacer falta aqui.
+  - descripcion: Para el borrado de auditoria, los eventos inmediatamente anteriores y si hubo arranque despues
+    comando: "search host=X earliest=-30m@m latest=<evento> y EID 6005/6013 posteriores"
+    donde: siem
+  - descripcion: Cambio concreto en el fichero de dependencias, con quien lo firmo
+    comando: "git log -p -1 <fichero> o diff contra la version del repositorio"
+    donde: agente
+
+triaje:
+  - pregunta: La desviacion esta cubierta por una excepcion aprobada y en vigor
+    fuente: registro_excepciones
+    si_afirmativo: bajar_severidad
+  - pregunta: La excepcion existe pero esta caducada
+    fuente: registro_excepciones
+    si_afirmativo: subir_severidad
+    nota: Una excepcion caducada es peor que ninguna, porque el riesgo sigue aceptado de hecho y ya no lo mira nadie.
+  - pregunta: Ya hay tarea de remediacion abierta para ese activo y esa desviacion
+    fuente: itsm
+    si_afirmativo: bajar_severidad
+    nota: Duplicar tareas de remediacion es la forma mas rapida de que el propietario deje de leerlas.
+  - pregunta: La desviacion aparece en un unico activo y no en el resto de su grupo
+    fuente: historico_siem
+    si_afirmativo: subir_severidad
+    nota: La deriva de arquitectura es colectiva. Un solo activo desviado se parece mas a una accion deliberada que a una herencia de configuracion.
+  - pregunta: La alerta es borrado del registro de auditoria sin apagado ordenado posterior
+    fuente: evento
+    si_afirmativo: subir_severidad
+    nota: Es la unica regla de la familia que se tria como incidente y no como desviacion.
+
+cierre_automatico:
+  # Esta es la familia con mas cierre automatico del catalogo, y es coherente
+  # con lo que detecta: una desviacion ya conocida, aceptada por escrito y con
+  # fecha de correccion no necesita a un analista cada vez que se manifiesta.
+  # Ninguna de estas condiciones aplica a zta_vis_001 (borrado del registro de
+  # auditoria), que queda fuera de todas ellas de forma explicita.
+  - condicion: |
+        Protocolo en claro (zta_net_001) hacia un activo que figura en el
+        inventario de sistemas heredados con excepcion aprobada, en vigor y con
+        fecha de remediacion futura, y con el origen dentro del segmento
+        declarado en esa misma excepcion.
+    justificacion: |
+        La excepcion es el mecanismo con el que la organizacion ya acepto ese
+        riesgo, y tiene dueno, alcance y fecha: volver a preguntar por ella
+        cada vez que la impresora habla en claro no anade seguridad, resta
+        atencion a lo que si es nuevo. El riesgo residual esta acotado por
+        construccion, porque cuando la excepcion caduca la condicion deja de
+        cumplirse sola y las alertas vuelven a la cola sin que nadie tenga que
+        acordarse. La condicion de segmento es la que impide que la excepcion
+        de un equipo tape el trafico en claro de otro.
+  - condicion: |
+        Montaje de almacenamiento extraible (zta_dev_001) cuyo numero de serie
+        figura en la lista de soportes cifrados aprobados y cuyo titular
+        registrado coincide con el usuario de la sesion.
+    justificacion: |
+        Son dos hechos verificables y objetivos: la serie del soporte y su
+        titular. El escenario que se escapa - alguien usa el soporte corporativo
+        de otro - es una incidencia de politica, no un incidente de seguridad, y
+        lo que si importaria, que se copien datos a ese soporte, lo detecta la
+        familia de exfiltracion, que no cierra sola. Cerrar aqui no crea un
+        punto ciego porque hay otra red por debajo.
+  - condicion: |
+        Instalacion de paquete desde repositorio no aprobado (zta_sup_002) en un
+        equipo de la unidad organizativa de desarrollo con permiso explicito
+        registrado, cuando el indice de origen es un espejo mantenido por la
+        organizacion.
+    justificacion: |
+        La regla busca al que instala desde cualquier sitio; el espejo interno
+        es precisamente la alternativa aprobada, y esta gestionado por la misma
+        casa. Sin la condicion del espejo, bastaria con el permiso de la unidad
+        organizativa y entonces cualquier equipo de desarrollo seria un punto
+        ciego para toda la cadena de suministro, que es lo contrario de lo que
+        la regla pretende.
+
+contencion:
+  - accion: Abrir o actualizar la tarea de desviacion contra el propietario del activo, con la evidencia y el plazo del plan
+    alcance: Una tarea en el ITSM. No toca ningun sistema.
+    radio: objeto
+    reversible: "si"
+    requiere_aprobacion: "no"
+    justificacion: |
+        En esta familia la accion util no toca el activo. El fallo tipico aqui
+        no es contener de menos sino cerrar la alerta y que la desviacion siga
+        exactamente igual el trimestre siguiente, disparando la misma regla.
+        Encolar es barato y es lo unico que corrige algo.
+  - accion: Aislar el endpoint en la red, unicamente para el borrado del registro de auditoria
+    alcance: El equipo afectado, y solo en el caso de zta_vis_001. No aplica al resto de reglas de la familia.
+    radio: objeto
+    reversible: "si"
+    requiere_aprobacion: "no"
+    justificacion: |
+        Es la unica regla de la familia con un adversario probable detras:
+        borrar el registro no es deriva de configuracion, y el apagado ordenado
+        que la explicaria se distingue porque va seguido del arranque. El resto
+        de la familia no llega a este nivel de automatizacion ni deberia, y por
+        eso la accion lleva la restriccion escrita en el alcance.
+    excepcion: |
+        Si el inventario marca el equipo como servidor de produccion, NO se
+        aisla: se prepara la accion y se pide aprobacion.
+
+requiere_persona:
+  - situacion: Aprobar, denegar o prorrogar una excepcion
+    motivo: |
+        Es una aceptacion de riesgo con dueno y fecha. La firma alguien que
+        responde por ella, no el SOAR.
+  - situacion: Fijar la fecha de remediacion
+    motivo: Depende de presupuesto y de dependencias de negocio, no del riesgo tecnico.
+  - situacion: Retirar o segmentar el equipamiento heredado
+    motivo: Es un cambio de arquitectura con impacto en servicio.
+  - situacion: Deshabilitar la autenticacion heredada en el inquilino
+    motivo: |
+        Corta de golpe a multifuncionales y aplicaciones que aun la usan. Hay
+        que inventariarlas antes, y eso no lo hace una alerta.
+
+escalado:
+  a: L2
+  plazo_min: 240
+  a_L3_si: La alerta es borrado del registro de auditoria sin apagado ordenado posterior
+  nota_plazo: |
+    El plazo es largo a proposito. Estas alertas son desviaciones de
+    arquitectura, no incidentes en curso: tratarlas con el reloj de un
+    incidente agota al turno y no acelera ninguna correccion, porque quien
+    corrige no esta de guardia. La unica excepcion es la que sube a L3.

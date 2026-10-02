@@ -1,0 +1,375 @@
+{
+  "avisos": [],
+  "reglas": [
+    {
+      "clase": "auto_analisis",
+      "clave": "splunklab:DET-CLD-001",
+      "familia": "contenedores",
+      "fichero": "splunk/apps/mi_indice/default/savedsearches.conf",
+      "logsource": "splunk",
+      "nivel": "medium",
+      "origen": "splunklab",
+      "sigma_id": "",
+      "splunk": "DET-CLD-001 Contenedor nuevo enviando logs",
+      "tacticas": [],
+      "tecnicas": [
+        "T1610"
+      ],
+      "tipo": "splunk",
+      "titulo": "DET-CLD-001 Contenedor nuevo enviando logs",
+      "wazuh_ids": []
+    },
+    {
+      "clase": "auto_analisis",
+      "clave": "splunklab:DET-CLD-002",
+      "familia": "contenedores",
+      "fichero": "splunk/apps/mi_indice/default/savedsearches.conf",
+      "logsource": "splunk",
+      "nivel": "high",
+      "origen": "splunklab",
+      "sigma_id": "",
+      "splunk": "DET-CLD-002 Shell interactiva dentro de un contenedor",
+      "tacticas": [],
+      "tecnicas": [
+        "T1609"
+      ],
+      "tipo": "splunk",
+      "titulo": "DET-CLD-002 Shell interactiva dentro de un contenedor",
+      "wazuh_ids": []
+    },
+    {
+      "clase": "auto_analisis",
+      "clave": "splunklab:DET-LNX-001",
+      "familia": "linux",
+      "fichero": "splunk/apps/mi_indice/default/savedsearches.conf",
+      "logsource": "splunk",
+      "nivel": "high",
+      "origen": "splunklab",
+      "sigma_id": "",
+      "splunk": "DET-LNX-001 Fuerza bruta SSH",
+      "tacticas": [],
+      "tecnicas": [
+        "T1110.001"
+      ],
+      "tipo": "splunk",
+      "titulo": "DET-LNX-001 Fuerza bruta SSH",
+      "wazuh_ids": []
+    },
+    {
+      "clase": "auto_analisis",
+      "clave": "splunklab:DET-LNX-002",
+      "familia": "linux",
+      "fichero": "splunk/apps/mi_indice/default/savedsearches.conf",
+      "logsource": "splunk",
+      "nivel": "medium",
+      "origen": "splunklab",
+      "sigma_id": "",
+      "splunk": "DET-LNX-002 Escalada de privilegios con sudo",
+      "tacticas": [],
+      "tecnicas": [
+        "T1548.003"
+      ],
+      "tipo": "splunk",
+      "titulo": "DET-LNX-002 Escalada de privilegios con sudo",
+      "wazuh_ids": []
+    },
+    {
+      "clase": "auto_analisis",
+      "clave": "splunklab:DET-LNX-003",
+      "familia": "linux",
+      "fichero": "splunk/apps/mi_indice/default/savedsearches.conf",
+      "logsource": "splunk",
+      "nivel": "high",
+      "origen": "splunklab",
+      "sigma_id": "",
+      "splunk": "DET-LNX-003 Cuenta o acceso nuevo creado en un servidor",
+      "tacticas": [],
+      "tecnicas": [
+        "T1136.001"
+      ],
+      "tipo": "splunk",
+      "titulo": "DET-LNX-003 Cuenta o acceso nuevo creado en un servidor",
+      "wazuh_ids": []
+    },
+    {
+      "clase": "auto_analisis",
+      "clave": "splunklab:DET-NET-001",
+      "familia": "red",
+      "fichero": "splunk/apps/mi_indice/default/savedsearches.conf",
+      "logsource": "splunk",
+      "nivel": "medium",
+      "origen": "splunklab",
+      "sigma_id": "",
+      "splunk": "DET-NET-001 Barrido de puertos",
+      "tacticas": [],
+      "tecnicas": [
+        "T1046"
+      ],
+      "tipo": "splunk",
+      "titulo": "DET-NET-001 Barrido de puertos",
+      "wazuh_ids": []
+    },
+    {
+      "clase": "auto_contener",
+      "clave": "splunklab:DET-NET-002",
+      "familia": "cloud",
+      "fichero": "splunk/apps/mi_indice/default/savedsearches.conf",
+      "logsource": "splunk",
+      "nivel": "critical",
+      "origen": "splunklab",
+      "sigma_id": "",
+      "splunk": "DET-NET-002 Viaje imposible en la VPN",
+      "tacticas": [],
+      "tecnicas": [
+        "T1078"
+      ],
+      "tipo": "splunk",
+      "titulo": "DET-NET-002 Viaje imposible en la VPN",
+      "wazuh_ids": []
+    },
+    {
+      "clase": "auto_analisis",
+      "clave": "splunklab:DET-SIEM-001",
+      "familia": "xdr",
+      "fichero": "splunk/apps/mi_indice/default/savedsearches.conf",
+      "logsource": "splunk",
+      "nivel": "medium",
+      "origen": "splunklab",
+      "sigma_id": "",
+      "splunk": "DET-SIEM-001 Una fuente ha dejado de enviar",
+      "tacticas": [],
+      "tecnicas": [
+        "T1562.008"
+      ],
+      "tipo": "splunk",
+      "titulo": "DET-SIEM-001 Una fuente ha dejado de enviar",
+      "wazuh_ids": []
+    },
+    {
+      "clase": "auto_enriq",
+      "clave": "splunklab:DET-SIEM-002",
+      "familia": "xdr",
+      "fichero": "splunk/apps/mi_indice/default/savedsearches.conf",
+      "logsource": "splunk",
+      "nivel": "low",
+      "origen": "splunklab",
+      "sigma_id": "",
+      "splunk": "DET-SIEM-002 Dispositivo nuevo enviando al SIEM",
+      "tacticas": [],
+      "tecnicas": [],
+      "tipo": "splunk",
+      "titulo": "DET-SIEM-002 Dispositivo nuevo enviando al SIEM",
+      "wazuh_ids": []
+    },
+    {
+      "clase": "auto_enriq",
+      "clave": "splunklab:DET-SIEM-003",
+      "familia": "xdr",
+      "fichero": "splunk/apps/mi_indice/default/savedsearches.conf",
+      "logsource": "splunk",
+      "nivel": "low",
+      "origen": "splunklab",
+      "sigma_id": "",
+      "splunk": "DET-SIEM-003 Errores de ingesta en el propio Splunk",
+      "tacticas": [],
+      "tecnicas": [],
+      "tipo": "splunk",
+      "titulo": "DET-SIEM-003 Errores de ingesta en el propio Splunk",
+      "wazuh_ids": []
+    },
+    {
+      "clase": "auto_analisis",
+      "clave": "splunklab:DET-SIEM-004",
+      "familia": "xdr",
+      "fichero": "splunk/apps/mi_indice/default/savedsearches.conf",
+      "logsource": "splunk",
+      "nivel": "medium",
+      "origen": "splunklab",
+      "sigma_id": "",
+      "splunk": "DET-SIEM-004 Una regla de deteccion se esta saltando",
+      "tacticas": [],
+      "tecnicas": [],
+      "tipo": "splunk",
+      "titulo": "DET-SIEM-004 Una regla de deteccion se esta saltando",
+      "wazuh_ids": []
+    },
+    {
+      "clase": "auto_analisis",
+      "clave": "splunklab:DET-WEB-001",
+      "familia": "web",
+      "fichero": "splunk/apps/mi_indice/default/savedsearches.conf",
+      "logsource": "splunk",
+      "nivel": "medium",
+      "origen": "splunklab",
+      "sigma_id": "",
+      "splunk": "DET-WEB-001 Escaneo de rutas",
+      "tacticas": [],
+      "tecnicas": [
+        "T1595.003"
+      ],
+      "tipo": "splunk",
+      "titulo": "DET-WEB-001 Escaneo de rutas",
+      "wazuh_ids": []
+    },
+    {
+      "clase": "auto_analisis",
+      "clave": "splunklab:DET-WEB-002",
+      "familia": "web",
+      "fichero": "splunk/apps/mi_indice/default/savedsearches.conf",
+      "logsource": "splunk",
+      "nivel": "high",
+      "origen": "splunklab",
+      "sigma_id": "",
+      "splunk": "DET-WEB-002 Fuerza bruta contra el login",
+      "tacticas": [],
+      "tecnicas": [
+        "T1110.001"
+      ],
+      "tipo": "splunk",
+      "titulo": "DET-WEB-002 Fuerza bruta contra el login",
+      "wazuh_ids": []
+    },
+    {
+      "clase": "auto_analisis",
+      "clave": "splunklab:DET-WEB-003",
+      "familia": "web",
+      "fichero": "splunk/apps/mi_indice/default/savedsearches.conf",
+      "logsource": "splunk",
+      "nivel": "medium",
+      "origen": "splunklab",
+      "sigma_id": "",
+      "splunk": "DET-WEB-003 Pico de errores de servidor",
+      "tacticas": [],
+      "tecnicas": [],
+      "tipo": "splunk",
+      "titulo": "DET-WEB-003 Pico de errores de servidor",
+      "wazuh_ids": []
+    },
+    {
+      "clase": "auto_analisis",
+      "clave": "splunklab:DET-WEB-004",
+      "familia": "web",
+      "fichero": "splunk/apps/mi_indice/default/savedsearches.conf",
+      "logsource": "splunk",
+      "nivel": "medium",
+      "origen": "splunklab",
+      "sigma_id": "",
+      "splunk": "DET-WEB-004 Herramienta de ataque en el User-Agent",
+      "tacticas": [],
+      "tecnicas": [
+        "T1595.002"
+      ],
+      "tipo": "splunk",
+      "titulo": "DET-WEB-004 Herramienta de ataque en el User-Agent",
+      "wazuh_ids": []
+    },
+    {
+      "clase": "auto_analisis",
+      "clave": "splunklab:DET-WEB-005",
+      "familia": "web",
+      "fichero": "splunk/apps/mi_indice/default/savedsearches.conf",
+      "logsource": "splunk",
+      "nivel": "high",
+      "origen": "splunklab",
+      "sigma_id": "",
+      "splunk": "DET-WEB-005 Inyeccion o salto de directorio en la URI",
+      "tacticas": [],
+      "tecnicas": [
+        "T1190"
+      ],
+      "tipo": "splunk",
+      "titulo": "DET-WEB-005 Inyeccion o salto de directorio en la URI",
+      "wazuh_ids": []
+    },
+    {
+      "clase": "auto_enriq",
+      "clave": "splunklab:DET-WEB-006",
+      "familia": "web",
+      "fichero": "splunk/apps/mi_indice/default/savedsearches.conf",
+      "logsource": "splunk",
+      "nivel": "low",
+      "origen": "splunklab",
+      "sigma_id": "",
+      "splunk": "DET-WEB-006 Metodo HTTP inusual",
+      "tacticas": [],
+      "tecnicas": [
+        "T1595"
+      ],
+      "tipo": "splunk",
+      "titulo": "DET-WEB-006 Metodo HTTP inusual",
+      "wazuh_ids": []
+    },
+    {
+      "clase": "auto_enriq",
+      "clave": "splunklab:DET-WEB-007",
+      "familia": "web",
+      "fichero": "splunk/apps/mi_indice/default/savedsearches.conf",
+      "logsource": "splunk",
+      "nivel": "low",
+      "origen": "splunklab",
+      "sigma_id": "",
+      "splunk": "DET-WEB-007 Rafaga de peticiones desde una IP",
+      "tacticas": [],
+      "tecnicas": [
+        "T1498"
+      ],
+      "tipo": "splunk",
+      "titulo": "DET-WEB-007 Rafaga de peticiones desde una IP",
+      "wazuh_ids": []
+    },
+    {
+      "clase": "auto_analisis",
+      "clave": "splunklab:DET-WIN-001",
+      "familia": "ad",
+      "fichero": "splunk/apps/mi_indice/default/savedsearches.conf",
+      "logsource": "splunk",
+      "nivel": "high",
+      "origen": "splunklab",
+      "sigma_id": "",
+      "splunk": "DET-WIN-001 Fuerza bruta o password spraying en Windows",
+      "tacticas": [],
+      "tecnicas": [
+        "T1110.003"
+      ],
+      "tipo": "splunk",
+      "titulo": "DET-WIN-001 Fuerza bruta o password spraying en Windows",
+      "wazuh_ids": []
+    },
+    {
+      "clase": "auto_contener",
+      "clave": "splunklab:DET-WIN-002",
+      "familia": "endpoint",
+      "fichero": "splunk/apps/mi_indice/default/savedsearches.conf",
+      "logsource": "splunk",
+      "nivel": "critical",
+      "origen": "splunklab",
+      "sigma_id": "",
+      "splunk": "DET-WIN-002 PowerShell codificado",
+      "tacticas": [],
+      "tecnicas": [
+        "T1059.001"
+      ],
+      "tipo": "splunk",
+      "titulo": "DET-WIN-002 PowerShell codificado",
+      "wazuh_ids": []
+    },
+    {
+      "clase": "auto_contener",
+      "clave": "splunklab:DET-WIN-003",
+      "familia": "zta",
+      "fichero": "splunk/apps/mi_indice/default/savedsearches.conf",
+      "logsource": "splunk",
+      "nivel": "critical",
+      "origen": "splunklab",
+      "sigma_id": "",
+      "splunk": "DET-WIN-003 Registro de seguridad borrado",
+      "tacticas": [],
+      "tecnicas": [
+        "T1070.001"
+      ],
+      "tipo": "splunk",
+      "titulo": "DET-WIN-003 Registro de seguridad borrado",
+      "wazuh_ids": []
+    }
+  ]
+}

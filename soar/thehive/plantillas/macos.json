@@ -1,0 +1,185 @@
+{
+  "customFields": [],
+  "description": "Volcado del llavero, persistencia por LaunchAgent y LaunchDaemon, manipulacion de TCC, Gatekeeper deshabilitado, osascript sospechoso, descarga y ejecucion directa, usuario oculto y borrado de registros. El parque de Mac es pequeno y homogeneo, y eso mueve el triaje en dos direcciones a la vez. A favor: cualquier desviacion destaca sobre una linea base corta y el propietario del equipo casi siempre se conoce por nombre. En contra: hay muy pocos ejemplos previos con los que comparar, asi que las reglas de cierre por poblacion que funcionan en Windows aqui no tienen poblacion sobre la que decidir. La consecuencia practica es que se enriquece mucho y se automatiza poco: casi todo termina en una persona, pero llega con la respuesta ya montada y sin que haya que tocar el equipo para averiguar nada.\n\nGenerada por ResponseLab desde el playbook de DetectionLab (macos).",
+  "displayName": "ResponseLab · Endpoint macOS",
+  "flag": false,
+  "name": "ResponseLab - macos",
+  "pap": 2,
+  "severity": 2,
+  "tags": [
+    "responselab",
+    "rl:familia=macos"
+  ],
+  "tasks": [
+    {
+      "description": "Como: codesign -dv --verbose=4 <ruta> y spctl -a -vv <ruta>\nDonde: agente",
+      "flag": false,
+      "group": "1. Evidencia",
+      "mandatory": false,
+      "order": 0,
+      "title": "Firma, notarizacion y Team ID del binario"
+    },
+    {
+      "description": "Como: xattr -p com.apple.quarantine <ruta>\nDonde: agente",
+      "flag": false,
+      "group": "1. Evidencia",
+      "mandatory": false,
+      "order": 1,
+      "title": "Procedencia del fichero segun el atributo de cuarentena"
+    },
+    {
+      "description": "Como: launchctl list y cat de los plist en ~/Library/LaunchAgents y /Library/LaunchDaemons\nDonde: agente",
+      "flag": false,
+      "group": "1. Evidencia",
+      "mandatory": false,
+      "order": 2,
+      "title": "Persistencia declarada y su contenido"
+    },
+    {
+      "description": "Como: cp de TCC.db al almacen de evidencia y sqlite3 sobre la copia\nDonde: agente",
+      "flag": false,
+      "group": "1. Evidencia",
+      "mandatory": false,
+      "order": 3,
+      "title": "Concesiones TCC vigentes, en copia y solo lectura"
+    },
+    {
+      "description": "Como: log show --predicate 'eventMessage CONTAINS \"<indicador>\"' --last 30m\nDonde: agente",
+      "flag": false,
+      "group": "1. Evidencia",
+      "mandatory": false,
+      "order": 4,
+      "title": "Arbol de procesos y actividad en la ventana, desde el registro unificado"
+    },
+    {
+      "description": "Como: dscl . -list /Users UniqueID\nDonde: agente",
+      "flag": false,
+      "group": "1. Evidencia",
+      "mandatory": false,
+      "order": 5,
+      "title": "Usuarios locales incluidos los ocultos por UniqueID bajo 500"
+    },
+    {
+      "description": "Fuente: catalogo_software. Si es afirmativa, baja la severidad (un escalon como mucho).\nPregunta para el analista: la maquina no tiene datos para contestarla.\nLa notarizacion dice que Apple no vio malware al firmarlo, no que el software sea de la organizacion ni que este haciendo lo que deberia.",
+      "flag": false,
+      "group": "2. Triaje",
+      "mandatory": false,
+      "order": 6,
+      "title": "El binario esta notarizado y su Team ID figura en el catalogo aprobado"
+    },
+    {
+      "description": "Fuente: mdm. Si es afirmativa, baja la severidad (un escalon como mucho).\nResponseLab la contesta sola si hay datos; si queda pendiente, contestarla aqui.",
+      "flag": false,
+      "group": "2. Triaje",
+      "mandatory": false,
+      "order": 7,
+      "title": "El proceso padre es el agente de gestion del parque y hay ventana de despliegue abierta"
+    },
+    {
+      "description": "Fuente: evento. Si es afirmativa, sube la severidad.\nResponseLab la contesta sola si hay datos; si queda pendiente, contestarla aqui.\nEn un parque gestionado eso no ocurre por accidente ni lo hace un instalador.",
+      "flag": false,
+      "group": "2. Triaje",
+      "mandatory": false,
+      "order": 8,
+      "title": "SIP esta deshabilitado o Gatekeeper se desactivo en la misma sesion"
+    },
+    {
+      "description": "Fuente: inventario. Si es afirmativa, sube la severidad.\nResponseLab la contesta sola si hay datos; si queda pendiente, contestarla aqui.",
+      "flag": false,
+      "group": "2. Triaje",
+      "mandatory": false,
+      "order": 9,
+      "title": "El equipo pertenece a direccion o guarda claves de firma de aplicaciones"
+    },
+    {
+      "description": "Fuente: historico_siem. Si es afirmativa, sube la severidad.\nResponseLab la contesta sola si hay datos; si queda pendiente, contestarla aqui.\nCon un parque corto, la primera aparicion pesa mas que en Windows: hay pocas novedades legitimas al mes.",
+      "flag": false,
+      "group": "2. Triaje",
+      "mandatory": false,
+      "order": 10,
+      "title": "Es la primera vez que ese binario se ejecuta en todo el parque"
+    },
+    {
+      "description": "Alcance: El equipo afectado. No toca cuentas ni otros equipos.\nRadio: equipo · Reversible: si\nAutomatica en clase auto_contener si la politica del cliente lo permite.\nAccion de ResponseLab: endpoint.aislar · se deshace con endpoint.liberar\nExcepcion: Si el inventario marca el equipo como nodo de compilacion o de firma de\naplicaciones, NO se aisla: se prepara y se pide aprobacion. Cortar un\nnodo de firma en mitad de una entrega detiene el proceso de publicacion\nentero.\n\nPor que: Reversible en un comando y el peor caso son veinte minutos de trabajo\nperdidos. Frente a eso, un volcado de llavero sin contener sigue\nsubiendo credenciales de navegador y certificados mientras el turno\ntria.\n",
+      "flag": false,
+      "group": "3. Contencion",
+      "mandatory": false,
+      "order": 11,
+      "title": "Aislar el equipo en la red, dejando solo la comunicacion con el manager"
+    },
+    {
+      "description": "Alcance: Un unico proceso, identificado tambien por su hora de arranque para no matar a un homonimo\nRadio: proceso · Reversible: no\nAutomatica en clase auto_contener si la politica del cliente lo permite.\nAccion de ResponseLab: proceso.matar\nExcepcion: Si el binario esta notarizado y su Team ID esta en el catalogo, no se\nmata: se anota y se prepara.\n\nPor que: No se deshace, pero el alcance es un proceso y el error se paga con una\naplicacion que hay que volver a abrir. Identificarlo por PID mas hora de\narranque evita el fallo clasico de matar el proceso equivocado despues\nde que el PID se reutilice.\n",
+      "flag": false,
+      "group": "3. Contencion",
+      "mandatory": false,
+      "order": 12,
+      "title": "Matar el proceso por PID y hora de arranque"
+    },
+    {
+      "description": "Alcance: Un fichero. No borra, mueve.\nRadio: objeto · Reversible: si\nAutomatica en clase auto_contener si la politica del cliente lo permite.\nAccion de ResponseLab: fichero.cuarentena · se deshace con fichero.restaurar\nPor que: Se conserva la ruta y los xattr, asi que devolverlo es un comando; y\nconservar el atributo de cuarentena importa porque es la evidencia de\npor donde entro.\n",
+      "flag": false,
+      "group": "3. Contencion",
+      "mandatory": false,
+      "order": 13,
+      "title": "Poner el binario en cuarentena moviendolo al almacen de custodia, conservando hash y atributos extendidos"
+    },
+    {
+      "description": "Alcance: Un LaunchAgent o LaunchDaemon concreto\nRadio: objeto · Reversible: si\nRequiere aprobacion.\nAccion de ResponseLab: persistencia.deshabilitar · se deshace con persistencia.restaurar\nPor que: El plist se guarda antes, asi que la accion se deshace, pero en un\nparque pequeno una parte de los LaunchDaemons son de herramientas\ninternas que nadie inventario nunca: retirar el equivocado deja un\nequipo sin VPN, sin copia de seguridad o sin el agente de gestion, y\nnadie lo relaciona con el incidente hasta dias despues. Preparar la\naccion cuesta lo mismo que ejecutarla y la valida quien conoce el\nparque.\n",
+      "flag": false,
+      "group": "3. Contencion",
+      "mandatory": false,
+      "order": 14,
+      "title": "Descargar y retirar el elemento de persistencia (launchctl bootout mas mover el plist)"
+    },
+    {
+      "description": "Descarga y ejecucion desde /tmp, /var/folders o la cache del gestor (mac_descarga_y_ejecucion) cuyo proceso padre es el agente de gestion del parque o el gestor de paquetes registrado del equipo, firmado con un Team ID del catalogo, dentro de la ventana de mantenimiento publicada en el ITSM.\n\nPor que es seguro: Descargar en un directorio temporal y ejecutar desde ahi es el funcionamiento normal de estas herramientas, y produce la alerta en cada ciclo de parcheo, en todos los equipos y siempre igual. Parentesco, Team ID y ventana son tres hechos independientes; con solo el parentesco no valdria, porque bastaria con que un atacante lanzara su binario desde un hijo del gestor. El coste de no cerrarlo es que la regla dispare en bloque cada martes y el turno la descarte de memoria, que es justo como se pierde la ejecucion que no venia del gestor.",
+      "flag": false,
+      "group": "4. Cierre",
+      "mandatory": false,
+      "order": 15,
+      "title": "Comprobar si se puede cerrar: Descarga y ejecucion desde /tmp, /var/folders o la cache del gestor (mac_descarga_y_ejecucion) cuyo proceso padre es el agente de gestion del parque o el gestor de paquetes registrado del equipo, firm"
+    },
+    {
+      "description": "Hay que saber primero que hay dentro. Rotar a ciegas certificados de firma o claves de despliegue rompe procesos que no tienen nada que ver.",
+      "flag": false,
+      "group": "5. Requiere persona",
+      "mandatory": false,
+      "order": 16,
+      "title": "Rotar las credenciales guardadas en el llavero afectado"
+    },
+    {
+      "description": "Devuelve todas las concesiones a cero y deja al usuario reautorizando camara, microfono y disco aplicacion por aplicacion.",
+      "flag": false,
+      "group": "5. Requiere persona",
+      "mandatory": false,
+      "order": 17,
+      "title": "Restablecer la base de datos TCC"
+    },
+    {
+      "description": "Decision de negocio, no tecnica.",
+      "flag": false,
+      "group": "5. Requiere persona",
+      "mandatory": false,
+      "order": 18,
+      "title": "Reinstalar el equipo"
+    },
+    {
+      "description": "Cortar el acceso a quien no debia tiene coste inmediato y visible.",
+      "flag": false,
+      "group": "5. Requiere persona",
+      "mandatory": false,
+      "order": 19,
+      "title": "Eliminar el usuario local oculto creado"
+    },
+    {
+      "description": "Escalar a L2 en 30 minutos.\nA L3 si: Se volco el llavero, se deshabilito SIP o el equipo guarda claves de firma",
+      "flag": false,
+      "group": "6. Escalado",
+      "mandatory": false,
+      "order": 20,
+      "title": "Escalado: L2 en 30 min"
+    }
+  ],
+  "titlePrefix": "[RL Macos]",
+  "tlp": 2
+}

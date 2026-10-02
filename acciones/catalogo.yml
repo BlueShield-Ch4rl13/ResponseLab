@@ -1,0 +1,598 @@
+# Catalogo de acciones ejecutables
+#
+# DetectionLab describe la contencion en prosa ("Aislar el endpoint en la red,
+# dejando solo la comunicacion con el manager"). Aqui cada accion tiene un
+# identificador, un radio y una reversibilidad DECLARADOS, el objetivo que
+# necesita para no caer sobre otra cosa, su accion inversa y como la ejecuta
+# cada herramienta y cada SOAR.
+#
+# Radio (de menor a mayor):
+#   proceso       un proceso concreto, identificado sin ambiguedad
+#   objeto        un fichero, una regla de buzon, un mensaje, un objeto de k8s
+#   sesion        las sesiones de UNA identidad: se cierra, no se corta el acceso
+#   equipo        un equipo o un nodo completo
+#   cuenta        una cuenta: cortar el acceso a una persona o un servicio
+#   organizacion  toda la flota, el perimetro o un servicio compartido
+#
+# Cuando el radio que declara DetectionLab y el de este catalogo no coinciden,
+# el motor aplica el MAS AMPLIO de los dos. Lo mismo con la reversibilidad: si
+# cualquiera de los dos dice "no", es "no". Ver docs/POLITICA.md.
+#
+# requiere: campos de la alerta que tienen que estar para que la accion tenga
+#   un objetivo. Cada elemento de la lista es obligatorio; dentro de un
+#   elemento, "|" separa alternativas y "+" une campos que van juntos.
+#   Si falta, la accion queda "no_aplicable": no se ejecuta contra lo que haya.
+#
+# capacidad: que tipo de herramienta la ejecuta. El perfil de cliente dice que
+#   conector hace cada capacidad (edr: defender, perimetro: [paloalto, edl]...).
+#
+# soar.*: como se expresa en cada SOAR al exportar. Lo que no tiene traduccion
+#   nativa se exporta como tarea manual, nunca se omite.
+#   xsoar: playbooks genericos del marketplace de XSOAR (CommonPlaybooks) o
+#   comandos de integracion. Los "Containment Plan - *" son de XSIAM y no se
+#   usan. En las entradas, "a|b" toma el primer campo que traiga la alerta.
+
+acciones:
+
+  # ── Equipo ───────────────────────────────────────────────────────────────
+  endpoint.aislar:
+    nombre: Aislar el equipo en la red
+    descripcion: Corta toda la red del equipo salvo la comunicacion con el manager o la consola del EDR.
+    radio: equipo
+    reversible: "si"
+    deshacer: endpoint.liberar
+    capacidad: edr
+    requiere: ["equipo.nombre|equipo.id_agente|equipo.id_edr"]
+    conectores: [wazuh, defender, crowdstrike, sentinelone]
+    soar:
+      xsoar: {playbook: "Isolate Endpoint - Generic V2", entradas: {Endpoint_hostname: equipo.nombre, Endpoint_id: equipo.id_edr, Endpoint_ip: equipo.ip}}
+      splunk_soar: {accion: "quarantine device", parametros: {device_id: equipo.id_edr, type: "Full", comment: "ResponseLab"}}
+      sentinel: {tipo: mde_aislar}
+
+  endpoint.liberar:
+    nombre: Levantar el aislamiento del equipo
+    radio: equipo
+    reversible: "si"
+    capacidad: edr
+    requiere: ["equipo.nombre|equipo.id_agente|equipo.id_edr"]
+    conectores: [wazuh, defender, crowdstrike, sentinelone]
+    inversa: true
+    soar:
+      xsoar: {playbook: "Unisolate Endpoint - Generic", entradas: {Hostname: equipo.nombre, Endpoint_ID: equipo.id_edr, IP: equipo.ip}}
+      splunk_soar: {accion: "unquarantine device", parametros: {device_id: equipo.id_edr, comment: "ResponseLab"}}
+
+  red.aislar_equipo:
+    nombre: Aislar el equipo desde la red, sin depender de su agente
+    descripcion: |
+      Para cuando la telemetria del equipo no es fiable (sensor desinstalado,
+      ETW manipulado): el aislamiento se aplica en el cortafuegos o el NAC, no
+      en un agente que el atacante puede controlar.
+    radio: equipo
+    reversible: "si"
+    deshacer: red.liberar_equipo
+    capacidad: nac
+    requiere: ["equipo.ip"]
+    conectores: [paloalto, fortinet, declarativo]
+    soar:
+      xsoar: {playbook: "Isolate Endpoint - Generic V2", entradas: {Endpoint_hostname: equipo.nombre, Endpoint_ip: equipo.ip}}
+
+  red.liberar_equipo:
+    nombre: Retirar el aislamiento de red del equipo
+    radio: equipo
+    reversible: "si"
+    capacidad: nac
+    requiere: ["equipo.ip"]
+    conectores: [paloalto, fortinet, declarativo]
+    inversa: true
+
+  red.bloquear_destino_equipo:
+    nombre: Bloquear un destino solo para el equipo afectado
+    descripcion: Regla de salida en el cortafuegos del propio equipo. No toca a nadie mas.
+    radio: equipo
+    reversible: "si"
+    deshacer: red.desbloquear_destino_equipo
+    capacidad: agente
+    requiere: ["equipo.nombre|equipo.id_agente", "red.ip_destino|red.dominio"]
+    conectores: [wazuh, declarativo]
+
+  red.desbloquear_destino_equipo:
+    nombre: Retirar el bloqueo de destino del equipo
+    radio: equipo
+    reversible: "si"
+    capacidad: agente
+    requiere: ["equipo.nombre|equipo.id_agente", "red.ip_destino|red.dominio"]
+    conectores: [wazuh, declarativo]
+    inversa: true
+
+  inventario.marcar_no_fiable:
+    registro: true
+    nombre: Marcar la telemetria del equipo como no fiable
+    radio: equipo
+    reversible: "si"
+    capacidad: interno
+    requiere: ["equipo.nombre|equipo.id_agente"]
+    conectores: [interno]
+
+  # ── Proceso ──────────────────────────────────────────────────────────────
+  proceso.matar:
+    nombre: Matar un proceso identificado sin ambiguedad
+    descripcion: |
+      Solo por ProcessGuid, o por PID mas hora de arranque comprobada en el
+      equipo antes de matar. Nunca por nombre de imagen: el mismo nombre puede
+      ser diez procesos legitimos.
+    radio: proceso
+    reversible: "no"
+    capacidad: edr
+    requiere: ["equipo.nombre|equipo.id_agente|equipo.id_edr", "proceso.pid+proceso.inicio|proceso.guid+proceso.pid"]
+    conectores: [wazuh, crowdstrike]
+    soar:
+      splunk_soar: {accion: "terminate process", parametros: {device_id: equipo.id_edr, pid: proceso.pid}}
+
+  # ── Fichero y persistencia ───────────────────────────────────────────────
+  fichero.cuarentena:
+    nombre: Poner un fichero en cuarentena
+    descripcion: Mueve el fichero a la ruta de custodia conservando hash, ruta original y permisos. No borra.
+    radio: objeto
+    reversible: "si"
+    deshacer: fichero.restaurar
+    capacidad: edr
+    requiere: ["equipo.nombre|equipo.id_agente|equipo.id_edr", "fichero.ruta|fichero.sha1|fichero.sha256"]
+    conectores: [wazuh, defender]
+    soar:
+      xsoar: {comando: "microsoft-atp-stop-and-quarantine-file", argumentos: {machine_id: equipo.id_edr, file_hash: fichero.sha1, comment: "ResponseLab"}}
+      splunk_soar: {accion: "quarantine file", parametros: {device_id: equipo.id_edr, file_hash: fichero.sha1, comment: "ResponseLab"}}
+      sentinel: {tipo: mde_cuarentena}
+
+  fichero.restaurar:
+    nombre: Devolver un fichero de la cuarentena a su ruta
+    radio: objeto
+    reversible: "si"
+    capacidad: edr
+    requiere: ["equipo.nombre|equipo.id_agente|equipo.id_edr", "fichero.ruta|fichero.sha256|fichero.sha1"]
+    conectores: [wazuh, defender]
+    inversa: true
+
+  persistencia.deshabilitar:
+    nombre: Deshabilitar un elemento de persistencia exportando antes su definicion
+    descripcion: Tarea programada, valor Run, entrada de cron, unidad systemd o LaunchAgent. Se exporta y luego se deshabilita.
+    radio: objeto
+    reversible: "si"
+    deshacer: persistencia.restaurar
+    capacidad: agente
+    requiere: ["equipo.nombre|equipo.id_agente", "persistencia.nombre|persistencia.ruta"]
+    conectores: [wazuh]
+
+  persistencia.restaurar:
+    nombre: Restaurar un elemento de persistencia desde su exportacion
+    radio: objeto
+    reversible: "si"
+    capacidad: agente
+    requiere: ["equipo.nombre|equipo.id_agente", "persistencia.nombre|persistencia.ruta"]
+    conectores: [wazuh]
+    inversa: true
+
+  # ── Evidencia (radio minimo: se ocupa disco, no se corta nada) ───────────
+  evidencia.triage_forense:
+    nombre: Recoger triage forense del equipo con FtriageDFIR
+    descripcion: |
+      Lanza ftriage en el equipo (logs, persistencia, prefetch, amcache,
+      historiales) con cadena de custodia MD5+SHA-256, y devuelve el informe
+      al motor, que extrae IOCs y tecnicas ATT&CK al caso.
+    radio: objeto
+    reversible: "si"
+    capacidad: agente
+    requiere: ["equipo.nombre|equipo.id_agente"]
+    conectores: [wazuh]
+
+  evidencia.paquete_investigacion:
+    nombre: Recoger el paquete de investigacion del EDR
+    radio: objeto
+    reversible: "si"
+    capacidad: edr
+    requiere: ["equipo.nombre|equipo.id_edr"]
+    conectores: [defender]
+    soar:
+      xsoar: {comando: "microsoft-atp-collect-investigation-package", argumentos: {machine_id: equipo.id_edr, comment: "ResponseLab"}}
+      splunk_soar: {accion: "collect investigation package", parametros: {device_id: equipo.id_edr, comment: "ResponseLab"}}
+      sentinel: {tipo: mde_paquete}
+
+  evidencia.conservar_fichero:
+    nombre: Copiar un fichero al almacen de evidencia y fijar retencion
+    radio: objeto
+    reversible: "si"
+    capacidad: agente
+    requiere: ["equipo.nombre|equipo.id_agente", "persistencia.ruta|fichero.ruta"]
+    conectores: [wazuh]
+
+  evidencia.instantanea_ad:
+    nombre: Congelar el estado del objeto de directorio antes de tocar nada
+    descripcion: Exporta el objeto con todos sus atributos y su descriptor de seguridad desde el controlador de dominio.
+    radio: objeto
+    reversible: "si"
+    capacidad: agente
+    requiere: ["equipo.nombre|equipo.id_agente", "objeto_ad"]
+    conectores: [wazuh]
+
+  evidencia.retener:
+    registro: true
+    nombre: Fijar retencion extendida sobre los registros de la ventana del hecho
+    radio: objeto
+    reversible: "si"
+    capacidad: siem
+    requiere: []
+    conectores: [splunk, interno]
+
+  # ── Identidad ────────────────────────────────────────────────────────────
+  identidad.revocar_sesiones:
+    nombre: Revocar las sesiones y los tokens de refresco de una identidad
+    descripcion: La persona vuelve a autenticarse (con MFA). No se le corta el acceso.
+    radio: sesion
+    reversible: "si"
+    capacidad: identidad
+    requiere: ["usuario.upn|usuario.id_nube"]
+    conectores: [entra]
+    soar:
+      xsoar: {comando: "msgraph-user-session-revoke", argumentos: {user: "usuario.upn|usuario.id_nube"}}
+      splunk_soar: {accion: "revoke session", parametros: {user_id: usuario.upn}}
+      sentinel: {tipo: graph_revocar}
+
+  identidad.marcar_riesgo:
+    nombre: Marcar la identidad como comprometida en la proteccion de identidad
+    descripcion: Fuerza reautenticacion con MFA y aplica las politicas de riesgo alto.
+    radio: sesion
+    reversible: "si"
+    deshacer: identidad.descartar_riesgo
+    capacidad: identidad
+    requiere: ["usuario.id_nube|usuario.upn"]
+    conectores: [entra]
+    soar:
+      sentinel: {tipo: graph_riesgo}
+
+  identidad.descartar_riesgo:
+    nombre: Descartar el riesgo marcado sobre la identidad
+    radio: sesion
+    reversible: "si"
+    capacidad: identidad
+    requiere: ["usuario.id_nube|usuario.upn"]
+    conectores: [entra]
+    inversa: true
+
+  identidad.retirar_consentimiento:
+    nombre: Retirar el consentimiento concedido a una aplicacion
+    descripcion: Guarda la concesion completa antes de borrarla, para poder recrearla.
+    radio: cuenta
+    reversible: "si"
+    deshacer: identidad.restaurar_consentimiento
+    capacidad: identidad
+    requiere: ["nube.consentimiento_id"]
+    conectores: [entra]
+
+  identidad.restaurar_consentimiento:
+    nombre: Recrear la concesion retirada desde su copia
+    radio: cuenta
+    reversible: "si"
+    capacidad: identidad
+    requiere: ["nube.consentimiento_id"]
+    conectores: [entra]
+    inversa: true
+
+  cuenta.deshabilitar:
+    nombre: Deshabilitar una cuenta
+    descripcion: Solo a demanda y con aprobacion. Ningun playbook lo automatiza.
+    radio: cuenta
+    reversible: "si"
+    deshacer: cuenta.habilitar
+    capacidad: identidad
+    requiere: ["usuario.upn|usuario.id_nube"]
+    conectores: [entra, declarativo]
+    soar:
+      xsoar: {playbook: "Block Account - Generic v2", entradas: {Username: "usuario.upn|usuario.nombre", UserVerification: "True"}}
+      splunk_soar: {accion: "disable user", parametros: {user_id: usuario.upn}}
+
+  cuenta.habilitar:
+    nombre: Volver a habilitar una cuenta
+    radio: cuenta
+    reversible: "si"
+    capacidad: identidad
+    requiere: ["usuario.upn|usuario.id_nube"]
+    conectores: [entra, declarativo]
+    inversa: true
+
+  cuenta.retirar_clave_ssh:
+    nombre: Retirar una clave publica de authorized_keys guardando antes el fichero
+    radio: cuenta
+    reversible: "si"
+    deshacer: cuenta.restaurar_clave_ssh
+    capacidad: agente
+    requiere: ["equipo.nombre|equipo.id_agente", "usuario.nombre", "fichero.ruta|clave_ssh"]
+    conectores: [wazuh]
+
+  cuenta.restaurar_clave_ssh:
+    nombre: Restaurar authorized_keys desde la copia guardada
+    radio: cuenta
+    reversible: "si"
+    capacidad: agente
+    requiere: ["equipo.nombre|equipo.id_agente", "usuario.nombre"]
+    conectores: [wazuh]
+    inversa: true
+
+  credenciales.marcar_rotacion:
+    registro: true
+    nombre: Marcar las credenciales del usuario y del equipo para rotacion
+    descripcion: Abre la tarea de rotacion con su plazo. No rota nada por si sola.
+    radio: objeto
+    reversible: "si"
+    capacidad: interno
+    requiere: ["usuario.nombre|equipo.nombre"]
+    conectores: [interno, declarativo]
+
+  # ── Correo ───────────────────────────────────────────────────────────────
+  correo.retirar_mensaje:
+    nombre: Retirar un mensaje de los buzones que lo recibieron
+    descripcion: Borrado reversible (a elementos recuperables). Se puede devolver al buzon.
+    radio: objeto
+    reversible: "si"
+    deshacer: correo.restaurar_mensaje
+    capacidad: correo
+    requiere: ["correo.message_id", "correo.buzon"]
+    conectores: [exchange]
+    soar:
+      splunk_soar: {accion: "delete email", parametros: {id: correo.message_id, email_address: correo.buzon}}
+
+  correo.restaurar_mensaje:
+    nombre: Devolver un mensaje retirado a la bandeja de entrada
+    radio: objeto
+    reversible: "si"
+    capacidad: correo
+    requiere: ["correo.message_id", "correo.buzon"]
+    conectores: [exchange]
+    inversa: true
+
+  correo.deshabilitar_regla:
+    nombre: Deshabilitar una regla de buzon guardando antes su definicion
+    radio: objeto
+    reversible: "si"
+    deshacer: correo.habilitar_regla
+    capacidad: correo
+    requiere: ["correo.buzon|usuario.upn", "correo.regla_buzon"]
+    conectores: [exchange]
+
+  correo.habilitar_regla:
+    nombre: Volver a habilitar la regla de buzon
+    radio: objeto
+    reversible: "si"
+    capacidad: correo
+    requiere: ["correo.buzon|usuario.upn", "correo.regla_buzon"]
+    conectores: [exchange]
+    inversa: true
+
+  correo.bloquear_url:
+    nombre: Bloquear una URL concreta para toda la organizacion
+    descripcion: |
+      Efecto real: nadie de la organizacion puede abrir esa URL. Por eso el
+      radio es organizacion aunque la URL sea una sola. Ver docs/POLITICA.md.
+    radio: organizacion
+    reversible: "si"
+    deshacer: correo.desbloquear_url
+    capacidad: perimetro
+    requiere: ["red.url"]
+    conectores: [defender, edl, declarativo]
+    soar:
+      xsoar: {playbook: "Block URL - Generic v2", entradas: {URL: red.url, UserVerification: "True"}}
+      splunk_soar: {accion: "block url", parametros: {url: red.url}}
+
+  correo.desbloquear_url:
+    nombre: Retirar el bloqueo de la URL
+    radio: organizacion
+    reversible: "si"
+    capacidad: perimetro
+    requiere: ["red.url"]
+    conectores: [defender, edl, declarativo]
+    inversa: true
+
+  correo.bloquear_remitente:
+    nombre: Bloquear el dominio o la IP remitente en la pasarela de correo
+    radio: organizacion
+    reversible: "si"
+    deshacer: correo.desbloquear_remitente
+    capacidad: pasarela_correo
+    requiere: ["correo.remitente|red.ip_origen"]
+    conectores: [declarativo]
+    soar:
+      xsoar: {playbook: "Block Email - Generic v2", entradas: {EmailToBlock: correo.remitente}}
+
+  correo.desbloquear_remitente:
+    nombre: Retirar el bloqueo del remitente en la pasarela
+    radio: organizacion
+    reversible: "si"
+    capacidad: pasarela_correo
+    requiere: ["correo.remitente|red.ip_origen"]
+    conectores: [declarativo]
+    inversa: true
+
+  # ── Perimetro, WAF y flota ───────────────────────────────────────────────
+  perimetro.bloquear_destino:
+    nombre: Bloquear un destino en el perimetro para toda la organizacion
+    radio: organizacion
+    reversible: "si"
+    deshacer: perimetro.desbloquear_destino
+    capacidad: perimetro
+    requiere: ["red.ip_destino|red.dominio|red.url"]
+    conectores: [paloalto, fortinet, defender, edl, declarativo]
+    soar:
+      xsoar: {playbook: "Block Indicators - Generic v3", entradas: {IP: red.ip_destino, DomainToBlock: red.dominio, URL: red.url, AutoBlockIndicators: "False", UserVerification: "True"}}
+      splunk_soar: {accion: "block ip", parametros: {ip: red.ip_destino}}
+
+  perimetro.desbloquear_destino:
+    nombre: Retirar el bloqueo perimetral del destino
+    radio: organizacion
+    reversible: "si"
+    capacidad: perimetro
+    requiere: ["red.ip_destino|red.dominio|red.url"]
+    conectores: [paloalto, fortinet, defender, edl, declarativo]
+    inversa: true
+
+  waf.bloquear_origen:
+    nombre: Publicar en el WAF una regla de bloqueo para el origen
+    radio: organizacion
+    reversible: "si"
+    deshacer: waf.desbloquear_origen
+    capacidad: waf
+    requiere: ["red.ip_origen"]
+    conectores: [cloudflare, edl, declarativo]
+    soar:
+      xsoar: {playbook: "Block IP - Generic v3", entradas: {IP: red.ip_origen, UserVerification: "True"}}
+      splunk_soar: {accion: "block ip", parametros: {ip: red.ip_origen}}
+
+  waf.desbloquear_origen:
+    nombre: Retirar la regla de bloqueo del WAF
+    radio: organizacion
+    reversible: "si"
+    capacidad: waf
+    requiere: ["red.ip_origen"]
+    conectores: [cloudflare, edl, declarativo]
+    inversa: true
+
+  flota.bloquear_hash:
+    nombre: Bloquear la ejecucion de un hash en toda la flota
+    descripcion: Indicador de bloqueo en el EDR o politica de control de aplicaciones. Tambien para drivers vulnerables.
+    radio: organizacion
+    reversible: "si"
+    deshacer: flota.desbloquear_hash
+    capacidad: edr
+    requiere: ["fichero.sha256|fichero.sha1"]
+    conectores: [defender, crowdstrike, sentinelone]
+    soar:
+      xsoar: {playbook: "Block File - Generic v2", entradas: {SHA256: fichero.sha256, MD5: fichero.md5}}
+      splunk_soar: {accion: "block hash", parametros: {hash: fichero.sha256, comment: "ResponseLab"}}
+
+  flota.desbloquear_hash:
+    nombre: Retirar el bloqueo del hash en la flota
+    radio: organizacion
+    reversible: "si"
+    capacidad: edr
+    requiere: ["fichero.sha256|fichero.sha1"]
+    conectores: [defender, crowdstrike, sentinelone]
+    inversa: true
+
+  # ── Kubernetes ───────────────────────────────────────────────────────────
+  k8s.acordonar_nodo:
+    nombre: Acordonar el nodo donde corre el pod
+    descripcion: No se programan pods nuevos en el nodo. Los que corren siguen.
+    radio: equipo
+    reversible: "si"
+    deshacer: k8s.desacordonar_nodo
+    capacidad: kubernetes
+    requiere: ["k8s.nodo"]
+    conectores: [kubernetes]
+
+  k8s.desacordonar_nodo:
+    nombre: Volver a permitir pods en el nodo
+    radio: equipo
+    reversible: "si"
+    capacidad: kubernetes
+    requiere: ["k8s.nodo"]
+    conectores: [kubernetes]
+    inversa: true
+
+  k8s.aislar_pod:
+    nombre: Aplicar una NetworkPolicy que deniega la salida del pod
+    radio: objeto
+    reversible: "si"
+    deshacer: k8s.liberar_pod
+    capacidad: kubernetes
+    requiere: ["k8s.namespace", "k8s.pod"]
+    conectores: [kubernetes]
+
+  k8s.liberar_pod:
+    nombre: Retirar la NetworkPolicy de aislamiento
+    radio: objeto
+    reversible: "si"
+    capacidad: kubernetes
+    requiere: ["k8s.namespace", "k8s.pod"]
+    conectores: [kubernetes]
+    inversa: true
+
+  k8s.retirar_rolebinding:
+    nombre: Retirar un RoleBinding o ClusterRoleBinding guardando su manifiesto
+    radio: objeto
+    reversible: "si"
+    deshacer: k8s.restaurar_rolebinding
+    capacidad: kubernetes
+    requiere: ["k8s.rolebinding"]
+    conectores: [kubernetes]
+
+  k8s.restaurar_rolebinding:
+    nombre: Volver a crear el binding desde el manifiesto guardado
+    radio: objeto
+    reversible: "si"
+    capacidad: kubernetes
+    requiere: ["k8s.rolebinding"]
+    conectores: [kubernetes]
+    inversa: true
+
+  k8s.escalar_cero:
+    nombre: Escalar el workload a cero replicas
+    descripcion: Para el servicio. Guarda el numero de replicas para devolverlo.
+    radio: equipo
+    reversible: "si"
+    deshacer: k8s.restaurar_replicas
+    capacidad: kubernetes
+    requiere: ["k8s.namespace", "k8s.workload"]
+    conectores: [kubernetes]
+
+  k8s.restaurar_replicas:
+    nombre: Devolver el workload a sus replicas anteriores
+    radio: equipo
+    reversible: "si"
+    capacidad: kubernetes
+    requiere: ["k8s.namespace", "k8s.workload"]
+    conectores: [kubernetes]
+    inversa: true
+
+  # ── Aplicacion, caso, ITSM ───────────────────────────────────────────────
+  aplicacion.invalidar_sesion:
+    nombre: Invalidar una sesion o un token de la aplicacion
+    descripcion: Depende de la aplicacion del cliente; se implementa con un conector declarativo.
+    radio: objeto
+    reversible: "si"
+    capacidad: aplicacion
+    requiere: ["sesion.id|usuario.nombre"]
+    conectores: [declarativo]
+
+  caso.nota:
+    registro: true
+    nombre: Anotar en el caso
+    radio: objeto
+    reversible: "si"
+    capacidad: casos
+    requiere: []
+    conectores: [interno, thehive]
+
+  caso.tarea_obligacion:
+    registro: true
+    nombre: Abrir la tarea de obligacion regulatoria con su plazo y responsable
+    descripcion: Calcula los plazos de NIS2, DORA y RGPD que apliquen al cliente.
+    radio: objeto
+    reversible: "si"
+    capacidad: interno
+    requiere: []
+    conectores: [interno]
+
+  caso.tarea_desviacion:
+    registro: true
+    nombre: Abrir la tarea de desviacion contra el propietario del activo
+    radio: objeto
+    reversible: "si"
+    capacidad: itsm
+    requiere: []
+    conectores: [interno, declarativo]
+
+  itsm.ticket:
+    registro: true
+    nombre: Abrir un ticket en el ITSM del cliente
+    radio: objeto
+    reversible: "si"
+    capacidad: itsm
+    requiere: []
+    conectores: [declarativo, interno]

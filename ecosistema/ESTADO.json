@@ -1,0 +1,50 @@
+{
+  "detectionlab": {
+    "commit": "d59b9cc52158e84a4be12f0ce753dabfaddb7613",
+    "contenido_sha256": "a1f4ac2c77ad7116a0a02cedc0c3d03d821623765f58d4abcff5e49ac10a5a71",
+    "fecha_commit": "2026-10-01T12:10:21+00:00",
+    "rama": "main",
+    "repo": "https://github.com/BlueShield-Ch4rl13/DetectionLab.git",
+    "sincronizado": "2026-10-01T18:36:52Z"
+  },
+  "ftriagedfir": {
+    "commit": "8c282e162f99320cb567650c0998eb80bd4b5e54",
+    "contenido_sha256": "6bfbeb96f462f25e8eda194db0a164a5261ff26c1ea3ae395d0c0c8023e4eba2",
+    "fecha_commit": "2026-08-10T10:37:36+02:00",
+    "rama": "main",
+    "repo": "https://github.com/BlueShield-Ch4rl13/FtriageDFIR.git",
+    "sincronizado": "2026-10-01T18:36:22Z"
+  },
+  "infra-socanalyst": {
+    "commit": "e4c0e499ee0650944ebd12e85c629e85515829e1",
+    "contenido_sha256": "c1e509d6606b36b129a3caf6c89b9e2ecfb8d0b30052e1a97ed8243d73679488",
+    "fecha_commit": "2026-07-20T09:49:49+02:00",
+    "rama": "main",
+    "repo": "https://github.com/BlueShield-Ch4rl13/Infra-SocAnalyst.git",
+    "sincronizado": "2026-10-01T18:36:22Z"
+  },
+  "malpipe": {
+    "commit": "7546aa8a7c74da08567acdeed1ef6d7e576ca7da",
+    "contenido_sha256": "355ecde5de36979b5078a96a77778443c0025a1852fc6ee703bbe5dfc7641ab6",
+    "fecha_commit": "2026-09-01T10:16:22+02:00",
+    "rama": "main",
+    "repo": "https://github.com/BlueShield-Ch4rl13/Malpipe.git",
+    "sincronizado": "2026-10-01T18:36:22Z"
+  },
+  "newscti": {
+    "commit": "2d692ded1cff859d379c3bf63dfc1f8df8add09d",
+    "contenido_sha256": "88e77c14a886632e4b16071070e215d603ddea98b486a93893a2d1dfb45575ec",
+    "fecha_commit": "2026-10-01T13:01:29+00:00",
+    "rama": "main",
+    "repo": "https://github.com/BlueShield-Ch4rl13/ScriptNewsCTI.git",
+    "sincronizado": "2026-10-01T18:36:22Z"
+  },
+  "splunklab": {
+    "commit": "5e3c1b6fc80a062e39129d2583772fa9ab9284e4",
+    "contenido_sha256": "9093f0a41de9bab9564212e772f361426d7868dc73fe51996745adbf394c5c79",
+    "fecha_commit": "2026-09-17T00:11:05+02:00",
+    "rama": "main",
+    "repo": "https://github.com/BlueShield-Ch4rl13/SplunkLab.git",
+    "sincronizado": "2026-10-01T18:36:22Z"
+  }
+}

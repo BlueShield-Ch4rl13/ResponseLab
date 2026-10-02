@@ -1,0 +1,168 @@
+familia: xdr
+nombre: Manipulacion de la telemetria y de las defensas
+descripcion: |
+    Desinstalacion o parada del sensor EDR, exclusiones de antivirus, reglas
+    ASR desactivadas, ETW manipulado, driver vulnerable cargado y arranque
+    forzado en modo seguro. La senal de esta familia no es un ataque: es la
+    perdida de la capacidad de verlo. Y eso cambia el triaje de raiz, porque
+    invalida la fuente con la que normalmente se tria: si el sensor de un
+    equipo esta manipulado, toda la telemetria de ese equipo deja de ser
+    fiable, incluida - y sobre todo - la que dice que no esta pasando nada mas.
+    El silencio posterior a la alerta no es tranquilidad, es el resultado
+    esperado del ataque. Por eso el triaje se apoya en fuentes que no dependen
+    del equipo: la consola de gestion, el inventario, el calendario de cambios
+    y lo que el vecindario de red ve de ese equipo desde fuera.
+
+enriquecimiento:
+  - fuente: consola_edr
+    sobre: [agente]
+    detalle: Ultimo latido, version del sensor, politica aplicada y si la accion salio de la consola
+  - fuente: inventario
+    sobre: [agente]
+    detalle: Criticidad, propietario, si es servidor o puesto
+  - fuente: calendario_cambios
+    sobre: [agente, politica]
+    detalle: Si hay migracion de EDR o despliegue de politica en curso y a cuantos equipos alcanza
+  - fuente: directorio
+    sobre: [usuario]
+    detalle: Si quien ejecuto la accion es administrador local y como obtuvo ese privilegio
+  - fuente: cti_local
+    sobre: [hash]
+    detalle: El driver cargado contra la lista de drivers vulnerables conocidos
+  - fuente: historico_siem
+    sobre: [agente]
+    detalle: Alertas de otras familias en ese equipo antes del hueco de telemetria
+
+evidencia:
+  - descripcion: Ultimo latido del sensor y los limites exactos del hueco de telemetria
+    comando: "stats max(_time) by host alrededor de la ventana del evento"
+    donde: siem
+  - descripcion: Todo lo que el equipo envio en las 6 h anteriores al hueco
+    comando: "search host=X earliest=-6h@h latest=<inicio_hueco>"
+    donde: siem
+    nota: Es la ultima telemetria fiable que va a existir de ese equipo. Se recoge antes que nada.
+  - descripcion: La ruta o el proceso excluidos y que ficheros hay hoy en esa ruta
+    comando: "Sysmon EID 13 sobre las claves de exclusiones, mas listado de la ruta desde el manager"
+    donde: siem
+  - descripcion: Instalacion de servicio y carga de driver en la ventana
+    comando: "EID 7045 y 4697 del registro del sistema, mas Sysmon EID 6"
+    donde: siem
+  - descripcion: Actividad de red del equipo vista desde el cortafuegos y el proxy
+    comando: "search src_ip=<ip_agente> por el colector de red, no por el agente"
+    donde: siem
+    nota: Es la unica visibilidad del equipo que el atacante no ha tocado.
+  - descripcion: Configuracion de arranque del equipo, marcada como no fiable
+    comando: "bcdedit /enum"
+    donde: agente
+
+triaje:
+  - pregunta: La accion salio de la consola de gestion y alcanza a mas de veinte equipos en la misma ventana
+    fuente: consola_edr
+    si_afirmativo: bajar_severidad
+    nota: Un despliegue toca muchos equipos a la vez; un atacante toca uno.
+  - pregunta: Hay ventana de cambio o migracion de EDR abierta en el ITSM que cubra este equipo
+    fuente: calendario_cambios
+    si_afirmativo: bajar_severidad
+  - pregunta: El equipo volvio a reportar por si solo en menos de 15 minutos
+    fuente: consola_edr
+    si_afirmativo: bajar_severidad
+    nota: Reduce, no descarta. Devolver el sensor una vez hecho el trabajo es parte del procedimiento de quien sabe lo que hace.
+  - pregunta: La ruta excluida contiene ficheros escritos en las ultimas 24 h
+    fuente: manager
+    si_afirmativo: subir_severidad
+    nota: Una exclusion de producto documentada cubre rutas que llevan anos sin cambiar.
+  - pregunta: El equipo acumulaba alertas de otras familias antes del hueco
+    fuente: historico_siem
+    si_afirmativo: subir_severidad
+  - pregunta: El driver cargado figura en la lista de drivers vulnerables conocidos
+    fuente: cti_local
+    si_afirmativo: subir_severidad
+
+cierre_automatico: []
+# Vacio, y por una razon distinta a la del resto de familias. En las demas se
+# discute si la evidencia disponible basta para cerrar; aqui lo que esta bajo
+# ataque es la produccion de evidencia. Toda comprobacion barata que
+# justificaria un cierre pasa por el equipo cuyo sensor esta manipulado, y
+# preguntarle a un equipo si le ocurre algo despues de que le hayan quitado el
+# sensor devuelve siempre que no. La unica confirmacion que valdria - que la
+# accion salio de la consola de gestion y no del propio equipo - es tambien
+# la que imita un despliegue mal coordinado, y ese es precisamente el hueco por
+# el que se cuela quien desinstala un sensor durante una migracion. El coste de
+# equivocarse tampoco es un incidente perdido: es un punto ciego permanente que
+# nadie vuelve a mirar, porque la regla ya dejo de disparar.
+
+contencion:
+  - accion: Aislar el endpoint en la red, aplicando y verificando el aislamiento fuera del agente
+    alcance: El equipo afectado. No toca cuentas ni otros equipos.
+    radio: equipo
+    reversible: "si"
+    requiere_aprobacion: "no"
+    justificacion: |
+        Reversible en un comando y el peor caso son veinte minutos sin
+        trabajar. La particularidad de esta familia es que el aislamiento tiene
+        que aplicarse y confirmarse en la red - conmutador, NAC o cortafuegos -
+        y no darse por bueno con la confirmacion del agente: el agente es
+        justamente lo que no se puede creer. Un aislamiento que solo el sensor
+        manipulado dice que esta aplicado es peor que ninguno, porque cierra el
+        caso.
+    excepcion: |
+        Si el inventario marca el equipo como servidor de produccion, NO se
+        aisla: se prepara la accion y se pide aprobacion.
+  - accion: Marcar el equipo como telemetria no fiable en el inventario, con la fecha de inicio del hueco
+    alcance: Una anotacion en el inventario. No toca el equipo.
+    radio: equipo
+    reversible: "si"
+    requiere_aprobacion: "no"
+    justificacion: |
+        No rompe nada y evita el error mas caro de esta familia: que otra regla,
+        otro analista o el propio informe lean la ausencia de eventos de este
+        equipo como ausencia de actividad. Sin esta marca, un equipo sin sensor
+        parece un equipo tranquilo en todos los paneles.
+  - accion: Fijar retencion extendida sobre la telemetria anterior al hueco
+    alcance: Metadatos de registro de un equipo
+    radio: equipo
+    reversible: "si"
+    requiere_aprobacion: "no"
+    justificacion: |
+        Esas 6 h son la unica base sobre la que se va a poder reconstruir que
+        paso, y caducan con la retencion normal mientras el caso espera turno.
+        Cuesta disco.
+  - accion: Desplegar la regla de bloqueo del driver vulnerable en la politica de la flota
+    alcance: Todos los equipos con esa politica, en el arranque
+    radio: organizacion
+    reversible: "si"
+    requiere_aprobacion: "si"
+    justificacion: |
+        La lista de bloqueo de drivers actua antes de que el sistema termine de
+        arrancar. Si el driver bloqueado resulta ser el de una controladora de
+        disco, una tarjeta de red o una utilidad del fabricante del portatil,
+        los equipos afectados dejan de arrancar bien y el remedio pasa por
+        tocarlos de uno en uno, fisicamente. Ninguna urgencia de esta familia
+        justifica ese riesgo sin que alguien contraste la lista con el
+        inventario de hardware. Se deja preparada con el hash y espera.
+
+requiere_persona:
+  - situacion: Reinstalar o rearrancar el sensor
+    motivo: |
+        Devolver el sensor a un equipo que puede seguir comprometido borra el
+        hueco de telemetria sin resolver lo que lo causo, y hace que el caso
+        parezca cerrado.
+  - situacion: Retirar la exclusion de antivirus
+    motivo: |
+        Si la exclusion es de producto y esta documentada, quitarla puede tirar
+        un servidor de base de datos o de correo por rendimiento.
+  - situacion: Reconstruir el equipo
+    motivo: Decision de negocio, no tecnica.
+  - situacion: Revisar si la misma exclusion o la misma politica estan en mas equipos
+    motivo: |
+        Deja de ser un caso y pasa a ser una revision de configuracion del
+        parque, con su propio plan y su propio responsable.
+
+escalado:
+  a: L2
+  plazo_min: 10
+  a_L3_si: El sensor se desinstalo, se cargo un driver vulnerable conocido o se forzo el arranque en modo seguro
+  nota_plazo: |
+    El plazo se cuenta desde el inicio del hueco de telemetria, no desde la
+    alerta: entre uno y otra puede haber horas, y son precisamente las horas de
+    las que no hay datos.

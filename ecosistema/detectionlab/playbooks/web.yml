@@ -1,0 +1,171 @@
+familia: web
+nombre: Ataques contra aplicaciones web
+descripcion: |
+    Inyeccion SQL, XSS, salto de directorio, SSRF contra metadatos de nube,
+    deserializacion, JNDI, contrabando de peticiones, SSTI, abuso de JWT,
+    subida de fichero ejecutable, escaneo y shell tras explotacion. La
+    particularidad de esta familia es que el activo sigue publicado en Internet
+    mientras se tria: nadie lo desconecta y las peticiones siguen llegando, asi
+    que el tiempo de triaje es tiempo de exposicion. Y la pregunta central no
+    es que carga llego - de eso hay miles al dia y casi todas rebotan - sino si
+    la aplicacion la ejecuto. La misma peticion de log4shell es ruido de fondo
+    en un servidor parcheado y un compromiso completo en uno que no lo esta.
+    Esa diferencia no se ve en la peticion: se ve en el codigo de respuesta, en
+    el tamano y sobre todo en lo que el proceso del servidor hizo despues.
+
+enriquecimiento:
+  - fuente: cti_local
+    sobre: [ip, url, dominio]
+    detalle: Listas de intel/listas/ generadas desde News CTI
+  - fuente: inventario
+    sobre: [activo]
+    detalle: Aplicacion, propietario, exposicion a Internet, version del componente
+  - fuente: cti_local
+    sobre: [cve]
+    detalle: Lista KEV, para saber si la vulnerabilidad que se intenta esta siendo explotada de verdad
+  - fuente: lookup
+    sobre: [ip]
+    detalle: Rangos de escaneres de vulnerabilidades autorizados y sus ventanas programadas
+  - fuente: waf
+    sobre: [peticion]
+    detalle: Si la peticion se bloqueo, se registro o paso limpia
+  - fuente: historico_siem
+    sobre: [ip, activo]
+    detalle: Cuantas peticiones anomalas viene haciendo esa IP y desde cuando
+
+evidencia:
+  - descripcion: La peticion completa con cabeceras y cuerpo, no solo la URI
+    comando: "Registro del WAF y del servidor por request-id"
+    donde: siem
+  - descripcion: Las veinte peticiones anteriores y posteriores de la misma c-ip con su codigo y su tamano
+    comando: "search c_ip=X | table _time c_uri sc_status sc_bytes"
+    donde: siem
+  - descripcion: Procesos hijo del proceso del servidor web en los 10 minutos siguientes
+    comando: "Sysmon EID 1 o auditd execve con ParentImage del servidor, ventana de 10 min"
+    donde: siem
+  - descripcion: Ficheros creados bajo la raiz publicada en la ventana del evento
+    comando: "find /var/www -newermt '-15 min' -type f -ls"
+    donde: agente
+  - descripcion: Conexiones salientes del servidor tras la peticion, para ver la segunda etapa
+    comando: "ss -tunap y flujo del cortafuegos por IP del servidor"
+    donde: agente
+  - descripcion: Version exacta del componente vulnerable en ejecucion
+    comando: "Inventario del activo mas la cabecera Server y el manifiesto de dependencias"
+    donde: api
+
+triaje:
+  - pregunta: La c-ip pertenece al rango del escaner autorizado y la hora cae dentro de su ventana publicada
+    fuente: lookup
+    si_afirmativo: bajar_severidad
+  - pregunta: El WAF bloqueo la peticion y la respuesta es 403
+    fuente: waf
+    si_afirmativo: bajar_severidad
+    nota: Bloqueada no es lo mismo que inefectiva. Si la aplicacion tiene mas de un camino de entrada, el WAF solo cubre el que ve.
+  - pregunta: La respuesta es 200 y su tamano se desvia de la mediana de ese endpoint
+    fuente: evento
+    si_afirmativo: subir_severidad
+  - pregunta: El proceso del servidor web engendro un hijo en los 10 minutos siguientes
+    fuente: correlacion
+    si_afirmativo: subir_severidad
+    nota: Es la senal que convierte intento en exito, y la unica que cambia el plan de respuesta.
+  - pregunta: Aparecio un fichero nuevo bajo la raiz publicada en la misma ventana
+    fuente: correlacion
+    si_afirmativo: subir_severidad
+  - pregunta: La version del componente figura en la lista KEV
+    fuente: cti_local
+    si_afirmativo: subir_severidad
+
+cierre_automatico:
+  - condicion: |
+        Escaneo automatizado (web_010) cuya c-ip pertenece al rango declarado
+        del escaner de vulnerabilidades autorizado, con marca de tiempo dentro
+        de su ventana programada, y sin ninguna respuesta 200 a rutas que no
+        figuren en el inventario de la aplicacion.
+    justificacion: |
+        El escaner produce exactamente esta senal miles de veces por pasada y
+        por diseno: si no se cierra, un solo analisis programado llena la cola
+        de una jornada. Rango y ventana solos no bastarian, porque el propio
+        equipo del escaner puede estar comprometido y seria el sitio ideal
+        desde el que atacar; por eso se exige ademas que ninguna ruta fuera del
+        inventario haya devuelto 200, que es la firma de que ha encontrado
+        algo. Con las tres condiciones, el peor caso es perder la traza de un
+        escaneo que ya esta indexado y documentado en su ticket.
+  - condicion: |
+        Peticion con patron conocido de inyeccion o de salto de directorio
+        bloqueada por el WAF con respuesta 403, contra una ruta que no existe
+        en el inventario de endpoints de la aplicacion, y sin ninguna peticion
+        posterior de la misma c-ip que devuelva 200 en la hora siguiente.
+    justificacion: |
+        Una carga contra una ruta que no existe no puede haberse ejecutado, y
+        el 403 del WAF confirma que ademas no llego a la aplicacion. La tercera
+        condicion es la que hace segura a las otras dos: si esa IP consigue
+        despues un 200 en cualquier ruta, la condicion no se cumple y el caso
+        sigue vivo, que es justo el escenario de quien prueba veinte cargas
+        hasta encontrar la que pasa. El coste de mantener estos casos abiertos
+        seria enterrar la explotacion real bajo el fondo permanente de Internet.
+
+contencion:
+  - accion: Poner en cuarentena el fichero aparecido bajo la raiz publicada, sacandolo del arbol servido y conservando ruta y hash
+    alcance: Un fichero. No borra, mueve, y no toca el resto del sitio.
+    radio: objeto
+    reversible: "si"
+    requiere_aprobacion: "no"
+    justificacion: |
+        Una webshell colocada sigue siendo utilizable cada minuto que pasa, y
+        moverla es reversible con la ruta guardada. El peor caso es que un
+        despliegue legitimo pierda un fichero que se restaura en un comando.
+    excepcion: |
+        Si hay un despliegue en curso registrado en el ITSM para ese activo, no
+        se mueve nada: se anota y se pide aprobacion, porque retirar ficheros
+        en mitad de un despliegue produce un error que nadie sabra atribuir.
+  - accion: Matar el proceso hijo lanzado por el servidor web, por PID y hora de arranque
+    alcance: Un unico proceso. No reinicia el servidor ni corta las peticiones en curso.
+    radio: proceso
+    reversible: "no"
+    requiere_aprobacion: "no"
+    justificacion: |
+        Ese hijo es la sesion interactiva del atacante; mientras vive, el
+        triaje corre por detras. No se puede deshacer, pero el alcance es un
+        proceso y el servidor sigue sirviendo.
+    excepcion: |
+        Si la linea de comandos coincide con el filtro de mantenimiento de la
+        regla (sendmail, ffmpeg, tareas del framework), no se mata: se anota.
+  - accion: Invalidar la sesion o el token JWT concreto abusado
+    alcance: Una sesion. No deshabilita la cuenta ni invalida el resto de sesiones del usuario.
+    radio: objeto
+    reversible: "si"
+    requiere_aprobacion: "no"
+    justificacion: |
+        El coste de equivocarse es que un usuario tenga que volver a entrar. El
+        de no hacerlo es que un token manipulado siga sirviendo peticiones con
+        privilegios que no le corresponden.
+  - accion: Publicar en el WAF la regla de bloqueo para la c-ip o el patron de origen
+    alcance: Todo el trafico entrante desde ese origen, para todos los clientes
+    radio: organizacion
+    reversible: "si"
+    requiere_aprobacion: "si"
+    justificacion: |
+        Se quita igual de rapido que se pone, pero mientras esta puesta corta a
+        todo el que salga por esa IP, y detras de una IP de origen puede haber
+        la salida de una empresa cliente entera o un operador movil. Cortar
+        servicio a clientes por un patron que aun se esta triando es cambiar un
+        incidente por una incidencia comercial. Se deja escrita y espera.
+
+requiere_persona:
+  - situacion: Sacar el servidor del balanceo o aislarlo
+    motivo: |
+        Es capacidad de produccion. El SOAR no sabe cuantos nodos quedan ni si
+        retirar este deja el servicio por debajo del minimo.
+  - situacion: Aplicar el parche o desplegar la version corregida
+    motivo: Es un cambio en produccion y pasa por gestion de cambios.
+  - situacion: Rotar las credenciales que el SSRF pudo obtener del servicio de metadatos
+    motivo: |
+        Son credenciales de rol de la cuenta de nube. Rotarlas mal deja sin
+        permisos a la propia aplicacion.
+  - situacion: Decidir si la aplicacion se considera comprometida y se reconstruye
+    motivo: Decision de negocio con coste de indisponibilidad.
+
+escalado:
+  a: L2
+  plazo_min: 15
+  a_L3_si: Hay hijo del proceso del servidor web, fichero nuevo bajo la raiz publicada o respuesta 200 al patron de explotacion

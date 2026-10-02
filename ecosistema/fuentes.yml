@@ -1,0 +1,89 @@
+# Fuentes del ecosistema que alimentan ResponseLab
+#
+# tools/sincronizar.py lee este fichero, trae cada repositorio y deja en
+# ecosistema/ solo lo que ResponseLab necesita, normalizado y ordenado para que
+# el diff de cada sincronizacion diga exactamente que ha cambiado aguas arriba.
+#
+# Nada de lo que hay en ecosistema/<fuente>/ se edita a mano: lo sobrescribe la
+# siguiente sincronizacion. Lo que se edita a mano son los mapeos de este
+# fichero y la capa ejecutable de playbooks/.
+
+propietario: BlueShield-Ch4rl13
+
+fuentes:
+
+  detectionlab:
+    repo: https://github.com/BlueShield-Ch4rl13/DetectionLab.git
+    rama: main
+    # Que se trae: los 15 playbooks de respuesta (la razon de cada decision),
+    # las reglas Sigma (titulo, nivel, ATT&CK) y las reglas de Wazuh, que son
+    # las que llevan el campo playbook= que decide la familia.
+    playbooks: respuesta/playbooks
+    reglas_sigma: rules
+    reglas_wazuh: deploy/wazuh/reglas
+    splunk: deploy/splunk/reglas/savedsearches.conf
+
+  infra-socanalyst:
+    repo: https://github.com/BlueShield-Ch4rl13/Infra-SocAnalyst.git
+    rama: main
+    reglas_wazuh: wazuh/soc_rules.xml
+    # Las reglas 110xxx no llevan playbook=: la familia sale de sus grupos.
+    # Se aplica el primer grupo de la regla que aparezca en esta tabla.
+    familias_por_grupo:
+      tetragon: linux
+      falco: linux
+      suricata: red
+      ids: linux            # 110060: fuerza bruta SSH contra la victima Linux
+    # Nivel de Wazuh -> nivel equivalente de Sigma (mismos cortes que usa
+    # el conversor de DetectionLab: low 5, medium 8, high 12, critical 14)
+    niveles:
+      - {desde: 14, nivel: critical}
+      - {desde: 12, nivel: high}
+      - {desde: 8, nivel: medium}
+      - {desde: 5, nivel: low}
+      - {desde: 0, nivel: informational}
+
+  splunklab:
+    repo: https://github.com/BlueShield-Ch4rl13/SplunkLab.git
+    rama: main
+    savedsearches: splunk/apps/mi_indice/default/savedsearches.conf
+    # action.summary_index.familia de cada regla -> familia de ResponseLab
+    familias:
+      web: web
+      linux: linux
+      windows: endpoint
+      red: red
+      cloud: contenedores     # DET-CLD son de contenedores, no de identidad en la nube
+      siem: xdr               # una fuente que deja de enviar es un hueco de telemetria
+    # Excepciones por regla, cuando la carpeta no basta
+    reglas_familia:
+      DET-WIN-001: ad         # fuerza bruta/password spraying contra el dominio
+      DET-WIN-003: zta        # borrado del registro de seguridad
+      DET-NET-002: cloud      # viaje imposible: identidad, no trafico
+    # alert.severity de Splunk (1-6) -> nivel de Sigma
+    niveles:
+      6: critical
+      5: high
+      4: medium
+      3: low
+      2: informational
+      1: informational
+
+  newscti:
+    repo: https://github.com/BlueShield-Ch4rl13/ScriptNewsCTI.git
+    rama: main
+    # El motor descarga el feed en caliente (cada hora por defecto); aqui solo
+    # se comprueba que su formato sigue siendo el que el motor sabe leer.
+    feed: data/iocs_latest.json
+    feed_url: https://raw.githubusercontent.com/BlueShield-Ch4rl13/ScriptNewsCTI/main/data/iocs_latest.json
+
+  malpipe:
+    repo: https://github.com/BlueShield-Ch4rl13/Malpipe.git
+    rama: main
+    modelos: malpipe/models.py
+
+  ftriagedfir:
+    repo: https://github.com/BlueShield-Ch4rl13/FtriageDFIR.git
+    rama: main
+    cli: triage.py
+    ejemplo: casos/ejemplo-windows.json

@@ -1,0 +1,209 @@
+{
+  "customFields": [],
+  "description": "Consentimiento OAuth a aplicacion no verificada, registro de MFA tras sesion de riesgo, password spraying, indicios de token robado, alta en rol privilegiado, acceso condicional modificado, credencial anadida a un service principal, origen anonimizado y SaaS no aprobado. Aqui no hay endpoint que aislar. Lo que hay es una identidad, unas sesiones vivas y unos tokens ya emitidos, y ninguna de esas cosas se apaga desconectando un cable. Eso mueve la contencion a otro sitio: revocar sesiones y tokens de refresco es reversible - el usuario vuelve a autenticarse - mientras que deshabilitar la cuenta no lo es en terminos practicos. Y hay una segunda distincion que el triaje tiene que hacer siempre, porque decide el orden de las acciones: una sesion se corta, pero un permiso queda escrito en el inquilino y sigue surtiendo efecto aunque el atacante pierda la sesion. Que sesion hay que cortar y que permiso hay que retirar son dos preguntas distintas.\n\nGenerada por ResponseLab desde el playbook de DetectionLab (cloud).",
+  "displayName": "ResponseLab · Identidad y plano de control en la nube",
+  "flag": false,
+  "name": "ResponseLab - cloud",
+  "pap": 2,
+  "severity": 2,
+  "tags": [
+    "responselab",
+    "rl:familia=cloud"
+  ],
+  "tasks": [
+    {
+      "description": "Como: Consulta de sesiones de la identidad en el proveedor, antes de revocar nada\nDonde: api",
+      "flag": false,
+      "group": "1. Evidencia",
+      "mandatory": false,
+      "order": 0,
+      "title": "Sesiones vivas y tokens de refresco de la identidad, con hora de emision"
+    },
+    {
+      "description": "Como: Lectura de los oauth2PermissionGrants y appRoleAssignments del service principal\nDonde: api",
+      "flag": false,
+      "group": "1. Evidencia",
+      "mandatory": false,
+      "order": 1,
+      "title": "Permisos concretos concedidos en el consentimiento, no el nombre de la aplicacion"
+    },
+    {
+      "description": "Como: search en auditlogs por initiatedBy, ordenado por tiempo\nDonde: siem",
+      "flag": false,
+      "group": "1. Evidencia",
+      "mandatory": false,
+      "order": 2,
+      "title": "Cambios en el inquilino hechos por esa identidad en las 24 h siguientes"
+    },
+    {
+      "description": "Como: search en signinlogs por correlationId: IP, ASN, dispositivo, resultado de acceso condicional y claim de MFA\nDonde: siem",
+      "flag": false,
+      "group": "1. Evidencia",
+      "mandatory": false,
+      "order": 3,
+      "title": "Cadena completa del inicio de sesion"
+    },
+    {
+      "description": "Como: Registro de acceso a datos por appId, agrupado por recurso\nDonde: siem",
+      "flag": false,
+      "group": "1. Evidencia",
+      "mandatory": false,
+      "order": 4,
+      "title": "Que ha leido la aplicacion o el service principal desde la concesion"
+    },
+    {
+      "description": "Como: Auditoria de New-InboxRule y Set-Mailbox por UserId\nDonde: api",
+      "flag": false,
+      "group": "1. Evidencia",
+      "mandatory": false,
+      "order": 5,
+      "title": "Reglas de buzon y reenvios creados por esa identidad"
+    },
+    {
+      "description": "Fuente: historico_siem. Si es afirmativa, baja la severidad (un escalon como mucho).\nPregunta para el analista: la maquina no tiene datos para contestarla.",
+      "flag": false,
+      "group": "2. Triaje",
+      "mandatory": false,
+      "order": 6,
+      "title": "La IP y el ASN estan en la linea base de esa cuenta en 30 dias"
+    },
+    {
+      "description": "Fuente: identidad_nube. Si es afirmativa, baja la severidad (un escalon como mucho).\nPregunta para el analista: la maquina no tiene datos para contestarla.\nReduce poco. El robo de token de sesion reproduce el claim de MFA que ya venia dentro, sin volver a pedir nada.",
+      "flag": false,
+      "group": "2. Triaje",
+      "mandatory": false,
+      "order": 7,
+      "title": "El inicio de sesion presenta claim de MFA reciente y dispositivo conforme"
+    },
+    {
+      "description": "Fuente: identidad_nube. Si es afirmativa, sube la severidad.\nResponseLab la contesta sola si hay datos; si queda pendiente, contestarla aqui.\nBusca el nombre del rol en el evento. Si el SIEM no lo trae, contesta que no y la pregunta no sube nada.",
+      "flag": false,
+      "group": "2. Triaje",
+      "mandatory": false,
+      "order": 8,
+      "title": "El rol asignado es de administracion global, de aplicaciones o de seguridad"
+    },
+    {
+      "description": "Fuente: evento. Si es afirmativa, sube la severidad.\nResponseLab la contesta sola si hay datos; si queda pendiente, contestarla aqui.\nLos permisos de aplicacion siguen vivos aunque el usuario que consintio se vaya de la organizacion.",
+      "flag": false,
+      "group": "2. Triaje",
+      "mandatory": false,
+      "order": 9,
+      "title": "La aplicacion que recibe consentimiento pide permisos de aplicacion y no delegados"
+    },
+    {
+      "description": "Fuente: itsm. Si es afirmativa, sube la severidad.\nPregunta para el analista: la maquina no tiene datos para contestarla.\nEs la accion que desactiva el resto de controles, asi que se tria antes que lo que venga despues de ella.",
+      "flag": false,
+      "group": "2. Triaje",
+      "mandatory": false,
+      "order": 10,
+      "title": "Se modifico o deshabilito una politica de acceso condicional sin ticket de cambio"
+    },
+    {
+      "description": "Fuente: identidad_nube. Si es afirmativa, sube la severidad.\nResponseLab la contesta sola si hay datos; si queda pendiente, contestarla aqui.",
+      "flag": false,
+      "group": "2. Triaje",
+      "mandatory": false,
+      "order": 11,
+      "title": "La identidad es un service principal o una cuenta de emergencia"
+    },
+    {
+      "description": "Alcance: Las sesiones de una identidad. No toca la contrasena, el estado de la cuenta ni sus permisos.\nRadio: equipo · Reversible: si\nAutomatica en clase auto_contener si la politica del cliente lo permite.\nAccion de ResponseLab: identidad.revocar_sesiones\nExcepcion: Si la identidad es un service principal, una cuenta de servicio o una\ncuenta de emergencia, NO se revoca: se prepara y se pide aprobacion.\nRevocar los tokens de un service principal tira todas las integraciones\nque dependen de el, y revocar los de la cuenta de emergencia deja al\nequipo sin la via de entrada que existe precisamente para los\nincidentes.\n\nPor que: El peor caso es que un usuario legitimo tenga que volver a autenticarse\nen sus dispositivos: un minuto de molestia y ninguna perdida de datos.\nFrente a eso, una sesion robada sigue leyendo correo y descargando\nficheros mientras el caso espera turno, y a diferencia de un endpoint no\nhay nada fisico que la detenga ni nadie que note que esta pasando.\n",
+      "flag": false,
+      "group": "3. Contencion",
+      "mandatory": false,
+      "order": 12,
+      "title": "Revocar las sesiones y los tokens de refresco de la identidad"
+    },
+    {
+      "description": "Alcance: Una identidad. Condiciona el acceso, no lo corta.\nRadio: equipo · Reversible: si\nAutomatica en clase auto_contener si la politica del cliente lo permite.\nAccion de ResponseLab: identidad.marcar_riesgo · se deshace con identidad.descartar_riesgo\nPor que: No cierra ninguna puerta, la condiciona: el falso positivo cuesta una\npeticion de MFA a alguien que la puede responder, y el verdadero\npositivo cuesta al atacante un factor que no tiene.\n",
+      "flag": false,
+      "group": "3. Contencion",
+      "mandatory": false,
+      "order": 13,
+      "title": "Marcar la identidad como en riesgo para forzar reautenticacion con MFA en el siguiente acceso"
+    },
+    {
+      "description": "Alcance: Se escribe en el caso, no se ejecuta ninguna retirada\nRadio: objeto · Reversible: si\nAutomatica en clase auto_contener si la politica del cliente lo permite.\nAccion de ResponseLab: caso.nota\nPor que: Resolver el identificador de aplicacion, los permisos exactos y el\ncomando de retirada no rompe nada y es justo lo que se pierde cuando el\ncaso cambia de turno. Sin esto, la conversacion de la manana empieza\npreguntando que aplicacion era.\n",
+      "flag": false,
+      "group": "3. Contencion",
+      "mandatory": false,
+      "order": 14,
+      "title": "Anotar en el caso los permisos concedidos y dejar preparada su retirada"
+    },
+    {
+      "description": "Alcance: El permiso escrito en el inquilino, con todo lo que dependa de el\nRadio: cuenta · Reversible: si\nRequiere aprobacion.\nAccion de ResponseLab: identidad.retirar_consentimiento · se deshace con identidad.restaurar_consentimiento\nPor que: Esto no corta una sesion, corta un permiso, y por eso si detiene al\natacante aunque vuelva a entrar. Pero si la aplicacion resulta ser una\nintegracion de negocio, el corte no se nota en el SOC: se nota en un\nproceso que deja de ejecutarse esa noche y que nadie relaciona con el\nincidente. Ademas la rotacion planificada de secretos produce\nexactamente esta alerta. Se prepara con el identificador de aplicacion\ny el de la credencial ya resueltos, y se ejecuta en cuanto alguien\nconfirma que la aplicacion no es de negocio.\n",
+      "flag": false,
+      "group": "3. Contencion",
+      "mandatory": false,
+      "order": 15,
+      "title": "Retirar el consentimiento de la aplicacion o anular la credencial anadida al service principal"
+    },
+    {
+      "description": "Password spraying (soc_cld_003) cuyos fallos se concentran en una sola cuenta y proceden de una unica IP que el inventario resuelve a un dispositivo corporativo gestionado, con codigo de error de credencial cacheada o expirada.\n\nPor que es seguro: El spraying se define por muchas cuentas y pocas contrasenas; una sola cuenta fallando en bucle desde un equipo del parque es el patron contrario - un cliente de correo o un servicio con la credencial antigua guardada - y es la causa de la mayoria de los disparos de esta regla. Lo que hace segura la condicion es exactamente la parte que parece trivial: en cuanto aparece una segunda cuenta desde el mismo origen deja de cumplirse y el caso sigue vivo, asi que la condicion no puede tapar un spraying real ni por acumulacion ni por casualidad.",
+      "flag": false,
+      "group": "4. Cierre",
+      "mandatory": false,
+      "order": 16,
+      "title": "Comprobar si se puede cerrar: Password spraying (soc_cld_003) cuyos fallos se concentran en una sola cuenta y proceden de una unica IP que el inventario resuelve a un dispositivo corporativo gestionado, con codigo de error de cred"
+    },
+    {
+      "description": "Subida a SaaS no aprobado (soc_cld_010) cuando el servicio de destino figura en el catalogo de aplicaciones con aprobacion vigente y contrato de tratamiento, y el volumen queda por debajo del umbral de la regla de exfiltracion.\n\nPor que es seguro: La aprobacion es un hecho registrado, con dueno y fecha, y lo que esta regla persigue es el servicio que nadie aprobo. El limite de volumen esta ahi porque una aplicacion aprobada tambien sirve para sacar datos: ese caso no se cierra aqui, lo tiene que ver la familia de exfiltracion, que no cierra sola. Sin ese limite la condicion seria una via de salida legitimada; con el, el peor caso es que un uso aprobado no genere caso, que es lo que se pretendia al aprobarlo.",
+      "flag": false,
+      "group": "4. Cierre",
+      "mandatory": false,
+      "order": 17,
+      "title": "Comprobar si se puede cerrar: Subida a SaaS no aprobado (soc_cld_010) cuando el servicio de destino figura en el catalogo de aplicaciones con aprobacion vigente y contrato de tratamiento, y el volumen queda por debajo del umbral d"
+    },
+    {
+      "description": "Cortar el acceso a quien no debia tiene coste inmediato y visible.",
+      "flag": false,
+      "group": "5. Requiere persona",
+      "mandatory": false,
+      "order": 18,
+      "title": "Deshabilitar la cuenta"
+    },
+    {
+      "description": "Si la cuenta la usan servicios o dispositivos con la credencial guardada, restablecerla los tira todos a la vez.",
+      "flag": false,
+      "group": "5. Requiere persona",
+      "mandatory": false,
+      "order": 19,
+      "title": "Restablecer la contrasena"
+    },
+    {
+      "description": "Volver a la version anterior puede dejar fuera a quien la nueva politica dejaba entrar. Hay que leer el cambio, no solo deshacerlo.",
+      "flag": false,
+      "group": "5. Requiere persona",
+      "mandatory": false,
+      "order": 20,
+      "title": "Revertir la politica de acceso condicional modificada"
+    },
+    {
+      "description": "Si la asignacion era legitima, quitarla en mitad de una tarea de administracion la interrumpe sin dejar rastro para quien la sufre.",
+      "flag": false,
+      "group": "5. Requiere persona",
+      "mandatory": false,
+      "order": 21,
+      "title": "Retirar el rol privilegiado asignado"
+    },
+    {
+      "description": "Decision de negocio, con revision de todas las aplicaciones y todos los roles.",
+      "flag": false,
+      "group": "5. Requiere persona",
+      "mandatory": false,
+      "order": 22,
+      "title": "Declarar el inquilino comprometido"
+    },
+    {
+      "description": "Escalar a L2 en 15 minutos.\nA L3 si: Hay alta en un rol de administracion global, modificacion de acceso condicional o consentimiento con permisos de aplicacion",
+      "flag": false,
+      "group": "6. Escalado",
+      "mandatory": false,
+      "order": 23,
+      "title": "Escalado: L2 en 15 min"
+    }
+  ],
+  "titlePrefix": "[RL Cloud]",
+  "tlp": 2
+}

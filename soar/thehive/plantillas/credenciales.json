@@ -1,0 +1,137 @@
+{
+  "customFields": [],
+  "description": "Volcado de LSASS, colmenas del registro, DPAPI, credenciales de navegador, ficheros de nube y SSH, gestores de contrasenas. Lo que las une no es la tecnica sino la consecuencia: si la deteccion es real, el atacante ya tiene material de autenticacion y el reloj corre contra la rotacion, no contra la contencion del equipo. Aislar la maquina no devuelve la credencial.\n\nGenerada por ResponseLab desde el playbook de DetectionLab (credenciales).",
+  "displayName": "ResponseLab · Volcado y robo de credenciales",
+  "flag": false,
+  "name": "ResponseLab - credenciales",
+  "pap": 2,
+  "severity": 2,
+  "tags": [
+    "responselab",
+    "rl:familia=credenciales"
+  ],
+  "tasks": [
+    {
+      "description": "Como: Sysmon EID 1 filtrado por ProcessGuid ascendente, 3 niveles\nDonde: siem",
+      "flag": false,
+      "group": "1. Evidencia",
+      "mandatory": false,
+      "order": 0,
+      "title": "Arbol de procesos completo del proceso que accedio"
+    },
+    {
+      "description": "Como: Sysmon EID 3 por ProcessGuid\nDonde: siem",
+      "flag": false,
+      "group": "1. Evidencia",
+      "mandatory": false,
+      "order": 1,
+      "title": "Conexiones de red del proceso en los 10 minutos previos y posteriores"
+    },
+    {
+      "description": "Como: stats min(_time) dc(host) by Hashes\nDonde: siem",
+      "flag": false,
+      "group": "1. Evidencia",
+      "mandatory": false,
+      "order": 2,
+      "title": "Hash del binario y su primera aparicion en el parque"
+    },
+    {
+      "description": "Como: query user\nDonde: agente",
+      "flag": false,
+      "group": "1. Evidencia",
+      "mandatory": false,
+      "order": 3,
+      "title": "Sesiones abiertas en el equipo en el momento del evento"
+    },
+    {
+      "description": "Fuente: evento. Si es afirmativa, baja la severidad (un escalon como mucho).\nPregunta para el analista: la maquina no tiene datos para contestarla.\nReduce, no descarta. El sideloading de DLL usa binarios firmados.",
+      "flag": false,
+      "group": "2. Triaje",
+      "mandatory": false,
+      "order": 4,
+      "title": "El proceso que accede esta firmado por Microsoft y en System32"
+    },
+    {
+      "description": "Fuente: itsm. Si es afirmativa, baja la severidad (un escalon como mucho).\nResponseLab la contesta sola si hay datos; si queda pendiente, contestarla aqui.\nEl ticket de mantenimiento se declara en el perfil del cliente como ventana (lo exporta su ITSM).",
+      "flag": false,
+      "group": "2. Triaje",
+      "mandatory": false,
+      "order": 5,
+      "title": "Hay un ticket de mantenimiento abierto para ese equipo"
+    },
+    {
+      "description": "Fuente: directorio. Si es afirmativa, sube la severidad.\nResponseLab la contesta sola si hay datos; si queda pendiente, contestarla aqui.",
+      "flag": false,
+      "group": "2. Triaje",
+      "mandatory": false,
+      "order": 6,
+      "title": "El usuario afectado pertenece a un grupo administrativo"
+    },
+    {
+      "description": "Fuente: inventario. Si es afirmativa, sube la severidad.\nResponseLab la contesta sola si hay datos; si queda pendiente, contestarla aqui.",
+      "flag": false,
+      "group": "2. Triaje",
+      "mandatory": false,
+      "order": 7,
+      "title": "El equipo es un controlador de dominio o un servidor de aplicacion"
+    },
+    {
+      "description": "Alcance: El equipo afectado. No toca cuentas ni otros equipos.\nRadio: equipo · Reversible: si\nAutomatica en clase auto_contener si la politica del cliente lo permite.\nAccion de ResponseLab: endpoint.aislar · se deshace con endpoint.liberar\nExcepcion: Si el inventario marca el equipo como servidor de produccion, NO se\naisla: se prepara la accion y se pide aprobacion. Aislar un servidor\nautomaticamente convierte un incidente de seguridad en una caida.\n\nPor que: Reversible en un comando y el peor caso es que alguien pierda veinte\nminutos de trabajo. Frente a eso, un volcado de LSASS sin contener sigue\nexfiltrando mientras el turno lo tria.\n",
+      "flag": false,
+      "group": "3. Contencion",
+      "mandatory": false,
+      "order": 8,
+      "title": "Aislar el endpoint en la red, dejando solo la comunicacion con el manager"
+    },
+    {
+      "description": "Alcance: Se escribe en el caso, no se ejecuta la rotacion\nRadio: objeto · Reversible: si\nAutomatica en clase auto_contener si la politica del cliente lo permite.\nAccion de ResponseLab: credenciales.marcar_rotacion\nPor que: Anotar no rompe nada, y es lo que se olvida cuando hay prisa.",
+      "flag": false,
+      "group": "3. Contencion",
+      "mandatory": false,
+      "order": 9,
+      "title": "Marcar las credenciales del usuario y del equipo para rotacion"
+    },
+    {
+      "description": "Si la cuenta es de servicio, rotarla tira las aplicaciones que la usan. Hay que saber primero que depende de ella.",
+      "flag": false,
+      "group": "5. Requiere persona",
+      "mandatory": false,
+      "order": 10,
+      "title": "Rotar la contrasena de la cuenta afectada"
+    },
+    {
+      "description": "Se hace dos veces con horas de separacion. Hacerlo mal invalida todos los tickets del dominio a la vez.",
+      "flag": false,
+      "group": "5. Requiere persona",
+      "mandatory": false,
+      "order": 11,
+      "title": "Rotar krbtgt"
+    },
+    {
+      "description": "Cortar el acceso a quien no debia tiene coste inmediato y visible.",
+      "flag": false,
+      "group": "5. Requiere persona",
+      "mandatory": false,
+      "order": 12,
+      "title": "Deshabilitar la cuenta"
+    },
+    {
+      "description": "Decision de negocio, no tecnica.",
+      "flag": false,
+      "group": "5. Requiere persona",
+      "mandatory": false,
+      "order": 13,
+      "title": "Reinstalar el equipo"
+    },
+    {
+      "description": "Escalar a L2 en 15 minutos.\nA L3 si: El equipo es un controlador de dominio o la cuenta es administrativa",
+      "flag": false,
+      "group": "6. Escalado",
+      "mandatory": false,
+      "order": 14,
+      "title": "Escalado: L2 en 15 min"
+    }
+  ],
+  "titlePrefix": "[RL Credenciales]",
+  "tlp": 2
+}

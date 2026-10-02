@@ -1,0 +1,117 @@
+# Plantilla de perfil de cliente
+#
+# Copia a clientes/<id>.yml y rellena. Los ficheros que empiezan por "_" no se
+# cargan. Ningun secreto va aqui: cada credencial es el NOMBRE de una variable
+# de entorno (clave_env: RL_ACME_...) y cada token de acceso es su huella
+# SHA-256 (python -m responselab token).
+#
+# El perfil se recarga solo al guardarlo. Si tiene errores, el motor sigue con
+# la version anterior y lo dice en /salud.
+
+id: cliente                       # identificador en las URL: /v1/cliente/...
+nombre: Nombre del cliente
+activo: true
+# simulacion: decide, registra y ensena las peticiones exactas que haria, sin
+# tocar nada. produccion: ejecuta. Empieza SIEMPRE en simulacion y pasa a
+# produccion cuando el informe de simulacion de una semana sea el esperado.
+modo: simulacion
+zona_horaria: Europe/Madrid
+
+# Marcos con plazos de notificacion que el motor vigila: nis2, dora, rgpd
+marcos: [rgpd]
+
+autenticacion:
+  token_sha256: ""                # token de ingesta (SIEM -> motor)
+  agentes:
+    token_sha256: ""              # token de los agentes (acuses, informes de triage)
+  edl:
+    token_sha256: ""              # token de lectura de las listas EDL (cortafuegos)
+
+# Personas que pueden aprobar, rechazar, deshacer y ordenar acciones
+aprobadores:
+  - {nombre: Analista L2, email: l2@cliente.test, token_sha256: ""}
+
+# Que herramienta hace cada capacidad. Una lista ejecuta en todas.
+#   edr: wazuh | defender | crowdstrike | sentinelone
+#   agente: wazuh                       (acciones en el propio equipo)
+#   identidad: entra                    correo: exchange
+#   perimetro: [paloalto | fortinet | defender | edl | <declarativo>]
+#   waf: [cloudflare | edl | <declarativo>]
+#   nac: paloalto | fortinet | <declarativo>
+#   kubernetes: kubernetes              siem: splunk
+#   casos: thehive                      itsm: <declarativo, p.ej. servicenow>
+#   pasarela_correo: <declarativo>      aplicacion: <declarativo>
+capacidades:
+  edr: wazuh
+  agente: wazuh
+  casos: thehive
+  perimetro: [edl]
+
+# Configuracion de cada conector (sin secretos: solo nombres de variables)
+conectores:
+  wazuh:
+    url: https://wazuh-manager:55000
+    usuario_env: RL_CLIENTE_WAZUH_USUARIO
+    clave_env: RL_CLIENTE_WAZUH_CLAVE
+    verificar_tls: true           # o ca: /ruta/a/la/ca.pem
+    managers: ["10.0.30.10"]      # IPs que el aislamiento deja hablar con el equipo
+  thehive:
+    url: https://thehive.cliente.test
+    api_key_env: RL_CLIENTE_THEHIVE_KEY
+    organizacion: cliente         # organizacion de TheHive de este cliente
+    tlp: 2
+    pap: 2
+  teams:
+    tipo: teams
+    webhook_env: RL_CLIENTE_TEAMS_WEBHOOK
+
+avisos:
+  canales: [teams]
+  # por_tipo: {incidente: [teams], vencimiento: [teams, correo], error: [correo]}
+
+politica:
+  contencion_automatica: true     # false: todo lo que contiene espera aprobacion
+  acciones_prohibidas: []         # nunca, ni con aprobacion
+  acciones_siempre_aprobacion: [] # automatizables en general, pero no en este cliente
+  # Si una excepcion no se puede comprobar por falta de datos (p.ej. no hay
+  # inventario), "aprobacion" prepara la accion y espera; "ignorar" la ejecuta.
+  excepcion_sin_datos: aprobacion
+  escalado_por_correlacion: true  # una secuencia de ataque puede subir a auto_contener
+  caducidad_aprobacion_min: 240
+  bloqueo_perimetro_horas: 72     # caducidad de los bloqueos perimetrales
+
+inventario:
+  # true si TODO activo del cliente esta en la lista: entonces "no aparece"
+  # significa "no tiene esa etiqueta". Con false, no aparecer es "no se sabe".
+  completo: false
+  protegidos: []                  # patrones de nombre sobre los que nada es automatico
+  activos:
+    - {nombre: DC01, etiquetas: [controlador_dominio, servidor_produccion]}
+    - {patron: "^SRV-PRD-", etiquetas: [servidor_produccion]}
+    - {ip: 10.0.20.0/24, etiquetas: [dmz, expuesto_internet]}
+
+# Listas con las que se contestan las preguntas de triaje. Una lista que no
+# esta declarada es "no se sabe"; una lista vacia es "no hay ninguno".
+listas:
+  administradores: []
+  cuentas_servicio: []
+  cuentas_emergencia: []
+  aplicaciones_negocio: []
+  software_aprobado: []
+  agentes_distribucion: [ccmexec.exe]
+  gestores_linux: [apt, apt-get, dpkg, yum, dnf, rpm]
+  escaneres_autorizados: []
+  bastiones: []
+
+ventanas:
+  - {tipo: mantenimiento, dias: [ma], desde: "02:00", hasta: "04:00", equipos: ["^SRV-"]}
+  # - {tipo: cambio, inicio: 2026-10-10T20:00:00Z, fin: 2026-10-10T23:00:00Z}
+
+excepciones: []
+  # - {activo: LEGACY-FTP, ip: 10.0.20.30, segmento: 10.0.20.0/24, vence: 2027-03-31, reglas: [zta_net_001_protocolo_en_claro]}
+
+contactos:
+  L2: {email: l2@cliente.test}
+  L3: {email: l3@cliente.test}
+  guardia: {telefono: "+34 600 000 000"}
+  dpd: {email: dpd@cliente.test}

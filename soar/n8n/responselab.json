@@ -1,0 +1,294 @@
+{
+  "active": false,
+  "connections": {
+    "Aviso": {
+      "main": [
+        [
+          {
+            "index": 0,
+            "node": "Enviar aviso",
+            "type": "main"
+          }
+        ]
+      ]
+    },
+    "Caso": {
+      "main": [
+        [
+          {
+            "index": 0,
+            "node": "TheHive alerta",
+            "type": "main"
+          }
+        ]
+      ]
+    },
+    "Configuracion": {
+      "main": [
+        [
+          {
+            "index": 0,
+            "node": "Decidir",
+            "type": "main"
+          }
+        ]
+      ]
+    },
+    "Contencion": {
+      "main": [
+        [
+          {
+            "index": 0,
+            "node": "Ejecutar en el motor",
+            "type": "main"
+          }
+        ]
+      ]
+    },
+    "Decidir": {
+      "main": [
+        [
+          {
+            "index": 0,
+            "node": "Contencion",
+            "type": "main"
+          },
+          {
+            "index": 0,
+            "node": "Caso",
+            "type": "main"
+          },
+          {
+            "index": 0,
+            "node": "Aviso",
+            "type": "main"
+          }
+        ]
+      ]
+    },
+    "TheHive alerta": {
+      "main": [
+        [
+          {
+            "index": 0,
+            "node": "TheHive caso",
+            "type": "main"
+          }
+        ]
+      ]
+    },
+    "Webhook": {
+      "main": [
+        [
+          {
+            "index": 0,
+            "node": "Configuracion",
+            "type": "main"
+          }
+        ]
+      ]
+    }
+  },
+  "meta": {
+    "templateCredsSetupCompleted": false
+  },
+  "name": "ResponseLab - respuesta a incidentes",
+  "nodes": [
+    {
+      "id": "3d1d3a61-2ed9-5481-bb79-d9df54e136e9",
+      "name": "Webhook",
+      "parameters": {
+        "httpMethod": "POST",
+        "options": {},
+        "path": "responselab",
+        "responseMode": "onReceived"
+      },
+      "position": [
+        0,
+        300
+      ],
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2,
+      "webhookId": "96719bb6-5ea7-5891-a0f6-97c7ef5c4191"
+    },
+    {
+      "id": "da870761-b45a-5e09-b5b3-31ba87818337",
+      "name": "Configuracion",
+      "parameters": {
+        "jsCode": "// Configuracion del workflow (edita estos valores)\nconst motor = \"https://HOST_SOC:8443\";        // URL del motor de ResponseLab\nconst cliente = \"lab\";                        // id del cliente en el motor\nconst siem = \"wazuh\";                         // wazuh | splunk | sentinel | elastic | generico\nconst thehive = \"http://HOST_SOC:9000\";       // vacio si no usas TheHive\nconst aviso = \"\";                             // webhook de Teams, Slack o Discord; vacio = sin aviso\nconst formatoAviso = \"teams\";                 // teams | slack | discord\n\nconst entrada = $input.first().json;\nreturn [{ json: { motor, cliente, siem, thehive, aviso, formatoAviso, alerta: entrada.body ?? entrada } }];\n"
+      },
+      "position": [
+        220,
+        300
+      ],
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2
+    },
+    {
+      "credentials": {
+        "httpHeaderAuth": {
+          "id": "",
+          "name": "ResponseLab motor"
+        }
+      },
+      "id": "621ac36f-f194-50fc-84dd-ea749e23e46a",
+      "name": "Decidir",
+      "parameters": {
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "jsonBody": "={{ JSON.stringify($json.alerta) }}",
+        "method": "POST",
+        "options": {},
+        "sendBody": true,
+        "specifyBody": "json",
+        "url": "={{ $json.motor }}/v1/{{ $json.cliente }}/decidir/{{ $json.siem }}"
+      },
+      "position": [
+        440,
+        300
+      ],
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2
+    },
+    {
+      "id": "12e44e5f-5d3b-5a85-9309-17ca4772bc76",
+      "name": "Contencion",
+      "parameters": {
+        "jsCode": "// Sigue solo si hay contencion automatica o que espere aprobacion\nconst plan = $input.first().json;\nconst cfg = $('Configuracion').first().json;\nconst hay = (plan.acciones || []).some(a => a.modo === 'automatica' || a.modo === 'aprobacion');\nreturn hay ? [{ json: { ...cfg, familia: plan.familia, clase: plan.clase } }] : [];\n"
+      },
+      "position": [
+        680,
+        120
+      ],
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2
+    },
+    {
+      "credentials": {
+        "httpHeaderAuth": {
+          "id": "",
+          "name": "ResponseLab motor"
+        }
+      },
+      "id": "e1e99863-3d2a-5d73-9dde-55457fbf7c0f",
+      "name": "Ejecutar en el motor",
+      "parameters": {
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "jsonBody": "={{ JSON.stringify($('Configuracion').first().json.alerta) }}",
+        "method": "POST",
+        "options": {},
+        "sendBody": true,
+        "specifyBody": "json",
+        "url": "={{ $json.motor }}/v1/{{ $json.cliente }}/alertas/{{ $json.siem }}"
+      },
+      "position": [
+        900,
+        120
+      ],
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2
+    },
+    {
+      "id": "65cae058-1906-5b1a-a582-64f87a210e77",
+      "name": "Caso",
+      "parameters": {
+        "jsCode": "// Sigue solo si el plan pide caso y hay TheHive configurado\nconst plan = $input.first().json;\nconst cfg = $('Configuracion').first().json;\nif (!plan.crear_caso || !cfg.thehive) return [];\nconst lineas = (plan.acciones || []).map(a => `- [${a.modo}] ${a.nombre}: ${a.motivo}`);\nconst triaje = (plan.triaje || []).map(t => `- [${t.resultado}] ${t.pregunta}`);\nconst cuerpo = {\n  type: 'responselab',\n  source: `responselab-${cfg.siem}`,\n  sourceRef: `${cfg.cliente}-${plan.alerta_id}`.slice(0, 128),\n  title: `[${plan.familia}] ${(plan.regla && plan.regla.titulo) || plan.titulo}`.slice(0, 512),\n  description: [`**${plan.playbook}** | clase \\`${plan.clase}\\` | severidad ${plan.severidad}`, '',\n                '### Acciones', ...lineas, '', '### Triaje', ...triaje, '',\n                `Escalar a **${plan.escalado.a}** en ${plan.escalado.plazo_min} min`].join('\\n'),\n  severity: plan.severidad,\n  tlp: 2, pap: 2,\n  tags: ['responselab', `rl:familia=${plan.familia}`, `rl:clase=${plan.clase}`],\n  caseTemplate: plan.plantilla_caso,\n};\nreturn [{ json: { thehive: cfg.thehive, cuerpo } }];\n"
+      },
+      "position": [
+        680,
+        300
+      ],
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2
+    },
+    {
+      "credentials": {
+        "httpHeaderAuth": {
+          "id": "",
+          "name": "TheHive"
+        }
+      },
+      "id": "30ef5cce-675f-54d2-b884-b7c861f0cec5",
+      "name": "TheHive alerta",
+      "parameters": {
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "jsonBody": "={{ JSON.stringify($json.cuerpo) }}",
+        "method": "POST",
+        "options": {},
+        "sendBody": true,
+        "specifyBody": "json",
+        "url": "={{ $json.thehive }}/api/v1/alert"
+      },
+      "position": [
+        900,
+        300
+      ],
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2
+    },
+    {
+      "credentials": {
+        "httpHeaderAuth": {
+          "id": "",
+          "name": "TheHive"
+        }
+      },
+      "id": "61b45d31-ad86-5563-ae47-5a2124e30b33",
+      "name": "TheHive caso",
+      "parameters": {
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "jsonBody": "={}",
+        "method": "POST",
+        "options": {},
+        "sendBody": true,
+        "specifyBody": "json",
+        "url": "={{ $('Caso').first().json.thehive }}/api/v1/alert/{{ $json._id }}/case"
+      },
+      "position": [
+        1120,
+        300
+      ],
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2
+    },
+    {
+      "id": "48179a14-366e-5aa8-81fe-986e0dba75f7",
+      "name": "Aviso",
+      "parameters": {
+        "jsCode": "// Sigue solo si el plan pide aviso y hay webhook configurado\nconst plan = $input.first().json;\nconst cfg = $('Configuracion').first().json;\nif (!plan.notificar || !cfg.aviso) return [];\nconst titulo = `${(plan.regla && plan.regla.titulo) || plan.titulo}`;\nconst auto = (plan.acciones || []).filter(a => a.modo === 'automatica').map(a => a.nombre).join('; ') || 'ninguna';\nconst espera = (plan.acciones || []).filter(a => a.modo === 'aprobacion').map(a => a.nombre).join('; ') || 'ninguna';\nconst texto = `${plan.familia} | ${plan.clase} | severidad ${plan.severidad} | escalar a ${plan.escalado.a} en ${plan.escalado.plazo_min} min`;\nlet cuerpo;\nif (cfg.formatoAviso === 'slack') {\n  cuerpo = { text: `*${titulo}*\\n${texto}\\nAutomatico: ${auto}\\nEspera aprobacion: ${espera}` };\n} else if (cfg.formatoAviso === 'discord') {\n  cuerpo = { username: 'ResponseLab', embeds: [{ title: titulo.slice(0, 256), description: texto,\n             fields: [{ name: 'Automatico', value: auto.slice(0, 1000) }, { name: 'Espera aprobacion', value: espera.slice(0, 1000) }] }] };\n} else {\n  cuerpo = { type: 'message', attachments: [{ contentType: 'application/vnd.microsoft.card.adaptive', content: {\n    type: 'AdaptiveCard', $schema: 'http://adaptivecards.io/schemas/adaptive-card.json', version: '1.4',\n    body: [{ type: 'TextBlock', text: titulo, weight: 'Bolder', wrap: true }, { type: 'TextBlock', text: texto, wrap: true },\n           { type: 'FactSet', facts: [{ title: 'Automatico', value: auto }, { title: 'Espera aprobacion', value: espera }] }] } }] };\n}\nreturn [{ json: { aviso: cfg.aviso, cuerpo } }];\n"
+      },
+      "position": [
+        680,
+        480
+      ],
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2
+    },
+    {
+      "id": "b2d9afd1-a30c-5aad-93ac-bd2cbb9a00b5",
+      "name": "Enviar aviso",
+      "parameters": {
+        "jsonBody": "={{ JSON.stringify($json.cuerpo) }}",
+        "method": "POST",
+        "options": {},
+        "sendBody": true,
+        "specifyBody": "json",
+        "url": "={{ $json.aviso }}"
+      },
+      "position": [
+        900,
+        480
+      ],
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2
+    }
+  ],
+  "pinData": {},
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "tags": []
+}

@@ -1,0 +1,177 @@
+{
+  "customFields": [],
+  "description": "Autenticacion heredada, cuenta de servicio con sesion interactiva, protocolo en claro, almacenamiento extraible, libreria desde ruta no estandar, paquete de repositorio no aprobado, fichero de dependencias modificado y borrado del registro de auditoria. Esta familia no detecta ataques: detecta que la arquitectura no es la que se dijo que era. Y esa es la clave del triaje, porque cambia cual es la respuesta correcta: casi ninguna de estas alertas tiene un adversario detras, asi que contener no arregla nada - lo que hay que arreglar no esta en el equipo, esta en una decision de configuracion que tomo alguien con nombre. La respuesta util es enriquecer, identificar al propietario del activo y encolar la desviacion contra el plan de remediacion, no abrir un caso de incidente que se cierra sin haber corregido nada. La excepcion es el borrado del registro de auditoria: eso ya no es deriva, es alguien tapando algo.\n\nGenerada por ResponseLab desde el playbook de DetectionLab (zta).",
+  "displayName": "ResponseLab · Desviaciones del modelo de confianza cero",
+  "flag": false,
+  "name": "ResponseLab - zta",
+  "pap": 2,
+  "severity": 2,
+  "tags": [
+    "responselab",
+    "rl:familia=zta"
+  ],
+  "tasks": [
+    {
+      "description": "Como: Campo concreto del evento: protocolo, puerto, tipo de autenticacion, numero de serie del soporte\nDonde: siem",
+      "flag": false,
+      "group": "1. Evidencia",
+      "mandatory": false,
+      "order": 0,
+      "title": "El valor exacto de la desviacion, no su categoria"
+    },
+    {
+      "description": "Como: stats min(_time) by host, campo_desviacion en 90 dias\nDonde: siem",
+      "flag": false,
+      "group": "1. Evidencia",
+      "mandatory": false,
+      "order": 1,
+      "title": "Desde cuando existe la desviacion"
+    },
+    {
+      "description": "Como: stats dc(host) values(host) by campo_desviacion\nDonde: siem",
+      "flag": false,
+      "group": "1. Evidencia",
+      "mandatory": false,
+      "order": 2,
+      "title": "Alcance real de la desviacion en el parque"
+    },
+    {
+      "description": "Como: search host=X earliest=-30m@m latest=<evento> y EID 6005/6013 posteriores\nDonde: siem",
+      "flag": false,
+      "group": "1. Evidencia",
+      "mandatory": false,
+      "order": 3,
+      "title": "Para el borrado de auditoria, los eventos inmediatamente anteriores y si hubo arranque despues"
+    },
+    {
+      "description": "Como: git log -p -1 <fichero> o diff contra la version del repositorio\nDonde: agente",
+      "flag": false,
+      "group": "1. Evidencia",
+      "mandatory": false,
+      "order": 4,
+      "title": "Cambio concreto en el fichero de dependencias, con quien lo firmo"
+    },
+    {
+      "description": "Fuente: registro_excepciones. Si es afirmativa, baja la severidad (un escalon como mucho).\nResponseLab la contesta sola si hay datos; si queda pendiente, contestarla aqui.",
+      "flag": false,
+      "group": "2. Triaje",
+      "mandatory": false,
+      "order": 5,
+      "title": "La desviacion esta cubierta por una excepcion aprobada y en vigor"
+    },
+    {
+      "description": "Fuente: registro_excepciones. Si es afirmativa, sube la severidad.\nResponseLab la contesta sola si hay datos; si queda pendiente, contestarla aqui.\nUna excepcion caducada es peor que ninguna, porque el riesgo sigue aceptado de hecho y ya no lo mira nadie.",
+      "flag": false,
+      "group": "2. Triaje",
+      "mandatory": false,
+      "order": 6,
+      "title": "La excepcion existe pero esta caducada"
+    },
+    {
+      "description": "Fuente: itsm. Si es afirmativa, baja la severidad (un escalon como mucho).\nPregunta para el analista: la maquina no tiene datos para contestarla.\nDuplicar tareas de remediacion es la forma mas rapida de que el propietario deje de leerlas.",
+      "flag": false,
+      "group": "2. Triaje",
+      "mandatory": false,
+      "order": 7,
+      "title": "Ya hay tarea de remediacion abierta para ese activo y esa desviacion"
+    },
+    {
+      "description": "Fuente: historico_siem. Si es afirmativa, sube la severidad.\nResponseLab la contesta sola si hay datos; si queda pendiente, contestarla aqui.\nLa deriva de arquitectura es colectiva. Un solo activo desviado se parece mas a una accion deliberada que a una herencia de configuracion.",
+      "flag": false,
+      "group": "2. Triaje",
+      "mandatory": false,
+      "order": 8,
+      "title": "La desviacion aparece en un unico activo y no en el resto de su grupo"
+    },
+    {
+      "description": "Fuente: evento. Si es afirmativa, sube la severidad.\nResponseLab la contesta sola si hay datos; si queda pendiente, contestarla aqui.\nEs la unica regla de la familia que se tria como incidente y no como desviacion. El apagado ordenado posterior lo comprueba el analista.",
+      "flag": false,
+      "group": "2. Triaje",
+      "mandatory": false,
+      "order": 9,
+      "title": "La alerta es borrado del registro de auditoria sin apagado ordenado posterior"
+    },
+    {
+      "description": "Alcance: Una tarea en el ITSM. No toca ningun sistema.\nRadio: objeto · Reversible: si\nAutomatica en clase auto_contener si la politica del cliente lo permite.\nAccion de ResponseLab: caso.tarea_desviacion\nPor que: En esta familia la accion util no toca el activo. El fallo tipico aqui\nno es contener de menos sino cerrar la alerta y que la desviacion siga\nexactamente igual el trimestre siguiente, disparando la misma regla.\nEncolar es barato y es lo unico que corrige algo.\n",
+      "flag": false,
+      "group": "3. Contencion",
+      "mandatory": false,
+      "order": 10,
+      "title": "Abrir o actualizar la tarea de desviacion contra el propietario del activo, con la evidencia y el plazo del plan"
+    },
+    {
+      "description": "Alcance: El equipo afectado, y solo en el caso de zta_vis_001. No aplica al resto de reglas de la familia.\nRadio: objeto · Reversible: si\nAutomatica en clase auto_contener si la politica del cliente lo permite.\nAccion de ResponseLab: endpoint.aislar · se deshace con endpoint.liberar\nExcepcion: Si el inventario marca el equipo como servidor de produccion, NO se\naisla: se prepara la accion y se pide aprobacion.\n\nPor que: Es la unica regla de la familia con un adversario probable detras:\nborrar el registro no es deriva de configuracion, y el apagado ordenado\nque la explicaria se distingue porque va seguido del arranque. El resto\nde la familia no llega a este nivel de automatizacion ni deberia, y por\neso la accion lleva la restriccion escrita en el alcance.\n",
+      "flag": false,
+      "group": "3. Contencion",
+      "mandatory": false,
+      "order": 11,
+      "title": "Aislar el endpoint en la red, unicamente para el borrado del registro de auditoria"
+    },
+    {
+      "description": "Protocolo en claro (zta_net_001) hacia un activo que figura en el inventario de sistemas heredados con excepcion aprobada, en vigor y con fecha de remediacion futura, y con el origen dentro del segmento declarado en esa misma excepcion.\n\nPor que es seguro: La excepcion es el mecanismo con el que la organizacion ya acepto ese riesgo, y tiene dueno, alcance y fecha: volver a preguntar por ella cada vez que la impresora habla en claro no anade seguridad, resta atencion a lo que si es nuevo. El riesgo residual esta acotado por construccion, porque cuando la excepcion caduca la condicion deja de cumplirse sola y las alertas vuelven a la cola sin que nadie tenga que acordarse. La condicion de segmento es la que impide que la excepcion de un equipo tape el trafico en claro de otro.",
+      "flag": false,
+      "group": "4. Cierre",
+      "mandatory": false,
+      "order": 12,
+      "title": "Comprobar si se puede cerrar: Protocolo en claro (zta_net_001) hacia un activo que figura en el inventario de sistemas heredados con excepcion aprobada, en vigor y con fecha de remediacion futura, y con el origen dentro del segmen"
+    },
+    {
+      "description": "Montaje de almacenamiento extraible (zta_dev_001) cuyo numero de serie figura en la lista de soportes cifrados aprobados y cuyo titular registrado coincide con el usuario de la sesion.\n\nPor que es seguro: Son dos hechos verificables y objetivos: la serie del soporte y su titular. El escenario que se escapa - alguien usa el soporte corporativo de otro - es una incidencia de politica, no un incidente de seguridad, y lo que si importaria, que se copien datos a ese soporte, lo detecta la familia de exfiltracion, que no cierra sola. Cerrar aqui no crea un punto ciego porque hay otra red por debajo.",
+      "flag": false,
+      "group": "4. Cierre",
+      "mandatory": false,
+      "order": 13,
+      "title": "Comprobar si se puede cerrar: Montaje de almacenamiento extraible (zta_dev_001) cuyo numero de serie figura en la lista de soportes cifrados aprobados y cuyo titular registrado coincide con el usuario de la sesion."
+    },
+    {
+      "description": "Instalacion de paquete desde repositorio no aprobado (zta_sup_002) en un equipo de la unidad organizativa de desarrollo con permiso explicito registrado, cuando el indice de origen es un espejo mantenido por la organizacion.\n\nPor que es seguro: La regla busca al que instala desde cualquier sitio; el espejo interno es precisamente la alternativa aprobada, y esta gestionado por la misma casa. Sin la condicion del espejo, bastaria con el permiso de la unidad organizativa y entonces cualquier equipo de desarrollo seria un punto ciego para toda la cadena de suministro, que es lo contrario de lo que la regla pretende.",
+      "flag": false,
+      "group": "4. Cierre",
+      "mandatory": false,
+      "order": 14,
+      "title": "Comprobar si se puede cerrar: Instalacion de paquete desde repositorio no aprobado (zta_sup_002) en un equipo de la unidad organizativa de desarrollo con permiso explicito registrado, cuando el indice de origen es un espejo manten"
+    },
+    {
+      "description": "Es una aceptacion de riesgo con dueno y fecha. La firma alguien que responde por ella, no el SOAR.",
+      "flag": false,
+      "group": "5. Requiere persona",
+      "mandatory": false,
+      "order": 15,
+      "title": "Aprobar, denegar o prorrogar una excepcion"
+    },
+    {
+      "description": "Depende de presupuesto y de dependencias de negocio, no del riesgo tecnico.",
+      "flag": false,
+      "group": "5. Requiere persona",
+      "mandatory": false,
+      "order": 16,
+      "title": "Fijar la fecha de remediacion"
+    },
+    {
+      "description": "Es un cambio de arquitectura con impacto en servicio.",
+      "flag": false,
+      "group": "5. Requiere persona",
+      "mandatory": false,
+      "order": 17,
+      "title": "Retirar o segmentar el equipamiento heredado"
+    },
+    {
+      "description": "Corta de golpe a multifuncionales y aplicaciones que aun la usan. Hay que inventariarlas antes, y eso no lo hace una alerta.",
+      "flag": false,
+      "group": "5. Requiere persona",
+      "mandatory": false,
+      "order": 18,
+      "title": "Deshabilitar la autenticacion heredada en el inquilino"
+    },
+    {
+      "description": "Escalar a L2 en 240 minutos.\nA L3 si: La alerta es borrado del registro de auditoria sin apagado ordenado posterior\nEl plazo es largo a proposito. Estas alertas son desviaciones de arquitectura, no incidentes en curso: tratarlas con el reloj de un incidente agota al turno y no acelera ninguna correccion, porque quien corrige no esta de guardia. La unica excepcion es la que sube a L3.",
+      "flag": false,
+      "group": "6. Escalado",
+      "mandatory": false,
+      "order": 19,
+      "title": "Escalado: L2 en 240 min"
+    }
+  ],
+  "titlePrefix": "[RL ZTA]",
+  "tlp": 2
+}

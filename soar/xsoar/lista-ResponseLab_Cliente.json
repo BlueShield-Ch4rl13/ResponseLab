@@ -1,0 +1,26 @@
+{
+  "id": "nombre-del-cliente",
+  "inventario": {
+    "activos": [
+      {
+        "etiquetas": [
+          "servidor_produccion"
+        ],
+        "nombre": "DC01"
+      }
+    ],
+    "completo": false,
+    "protegidos": [
+      "^DC\\d+$"
+    ]
+  },
+  "listas": {
+    "aplicaciones_negocio": []
+  },
+  "politica": {
+    "contencion_automatica": true,
+    "escalado_por_correlacion": true,
+    "excepcion_sin_datos": "aprobacion"
+  },
+  "zona_horaria": "Europe/Madrid"
+}

@@ -1,0 +1,185 @@
+{
+  "customFields": [],
+  "description": "Desinstalacion o parada del sensor EDR, exclusiones de antivirus, reglas ASR desactivadas, ETW manipulado, driver vulnerable cargado y arranque forzado en modo seguro. La senal de esta familia no es un ataque: es la perdida de la capacidad de verlo. Y eso cambia el triaje de raiz, porque invalida la fuente con la que normalmente se tria: si el sensor de un equipo esta manipulado, toda la telemetria de ese equipo deja de ser fiable, incluida - y sobre todo - la que dice que no esta pasando nada mas. El silencio posterior a la alerta no es tranquilidad, es el resultado esperado del ataque. Por eso el triaje se apoya en fuentes que no dependen del equipo: la consola de gestion, el inventario, el calendario de cambios y lo que el vecindario de red ve de ese equipo desde fuera.\n\nGenerada por ResponseLab desde el playbook de DetectionLab (xdr).",
+  "displayName": "ResponseLab · Manipulacion de la telemetria y de las defensas",
+  "flag": false,
+  "name": "ResponseLab - xdr",
+  "pap": 2,
+  "severity": 2,
+  "tags": [
+    "responselab",
+    "rl:familia=xdr"
+  ],
+  "tasks": [
+    {
+      "description": "Como: stats max(_time) by host alrededor de la ventana del evento\nDonde: siem",
+      "flag": false,
+      "group": "1. Evidencia",
+      "mandatory": false,
+      "order": 0,
+      "title": "Ultimo latido del sensor y los limites exactos del hueco de telemetria"
+    },
+    {
+      "description": "Como: search host=X earliest=-6h@h latest=<inicio_hueco>\nDonde: siem",
+      "flag": false,
+      "group": "1. Evidencia",
+      "mandatory": false,
+      "order": 1,
+      "title": "Todo lo que el equipo envio en las 6 h anteriores al hueco"
+    },
+    {
+      "description": "Como: Sysmon EID 13 sobre las claves de exclusiones, mas listado de la ruta desde el manager\nDonde: siem",
+      "flag": false,
+      "group": "1. Evidencia",
+      "mandatory": false,
+      "order": 2,
+      "title": "La ruta o el proceso excluidos y que ficheros hay hoy en esa ruta"
+    },
+    {
+      "description": "Como: EID 7045 y 4697 del registro del sistema, mas Sysmon EID 6\nDonde: siem",
+      "flag": false,
+      "group": "1. Evidencia",
+      "mandatory": false,
+      "order": 3,
+      "title": "Instalacion de servicio y carga de driver en la ventana"
+    },
+    {
+      "description": "Como: search src_ip=<ip_agente> por el colector de red, no por el agente\nDonde: siem",
+      "flag": false,
+      "group": "1. Evidencia",
+      "mandatory": false,
+      "order": 4,
+      "title": "Actividad de red del equipo vista desde el cortafuegos y el proxy"
+    },
+    {
+      "description": "Como: bcdedit /enum\nDonde: agente",
+      "flag": false,
+      "group": "1. Evidencia",
+      "mandatory": false,
+      "order": 5,
+      "title": "Configuracion de arranque del equipo, marcada como no fiable"
+    },
+    {
+      "description": "Fuente: consola_edr. Si es afirmativa, baja la severidad (un escalon como mucho).\nPregunta para el analista: la maquina no tiene datos para contestarla.\nUn despliegue toca muchos equipos a la vez; un atacante toca uno.",
+      "flag": false,
+      "group": "2. Triaje",
+      "mandatory": false,
+      "order": 6,
+      "title": "La accion salio de la consola de gestion y alcanza a mas de veinte equipos en la misma ventana"
+    },
+    {
+      "description": "Fuente: calendario_cambios. Si es afirmativa, baja la severidad (un escalon como mucho).\nResponseLab la contesta sola si hay datos; si queda pendiente, contestarla aqui.",
+      "flag": false,
+      "group": "2. Triaje",
+      "mandatory": false,
+      "order": 7,
+      "title": "Hay ventana de cambio o migracion de EDR abierta en el ITSM que cubra este equipo"
+    },
+    {
+      "description": "Fuente: consola_edr. Si es afirmativa, baja la severidad (un escalon como mucho).\nPregunta para el analista: la maquina no tiene datos para contestarla.\nReduce, no descarta. Devolver el sensor una vez hecho el trabajo es parte del procedimiento de quien sabe lo que hace.",
+      "flag": false,
+      "group": "2. Triaje",
+      "mandatory": false,
+      "order": 8,
+      "title": "El equipo volvio a reportar por si solo en menos de 15 minutos"
+    },
+    {
+      "description": "Fuente: manager. Si es afirmativa, sube la severidad.\nPregunta para el analista: la maquina no tiene datos para contestarla.\nUna exclusion de producto documentada cubre rutas que llevan anos sin cambiar.",
+      "flag": false,
+      "group": "2. Triaje",
+      "mandatory": false,
+      "order": 9,
+      "title": "La ruta excluida contiene ficheros escritos en las ultimas 24 h"
+    },
+    {
+      "description": "Fuente: historico_siem. Si es afirmativa, sube la severidad.\nResponseLab la contesta sola si hay datos; si queda pendiente, contestarla aqui.",
+      "flag": false,
+      "group": "2. Triaje",
+      "mandatory": false,
+      "order": 10,
+      "title": "El equipo acumulaba alertas de otras familias antes del hueco"
+    },
+    {
+      "description": "Fuente: cti_local. Si es afirmativa, sube la severidad.\nResponseLab la contesta sola si hay datos; si queda pendiente, contestarla aqui.",
+      "flag": false,
+      "group": "2. Triaje",
+      "mandatory": false,
+      "order": 11,
+      "title": "El driver cargado figura en la lista de drivers vulnerables conocidos"
+    },
+    {
+      "description": "Alcance: El equipo afectado. No toca cuentas ni otros equipos.\nRadio: equipo · Reversible: si\nAutomatica en clase auto_contener si la politica del cliente lo permite.\nAccion de ResponseLab: red.aislar_equipo · se deshace con red.liberar_equipo\nExcepcion: Si el inventario marca el equipo como servidor de produccion, NO se\naisla: se prepara la accion y se pide aprobacion.\n\nPor que: Reversible en un comando y el peor caso son veinte minutos sin\ntrabajar. La particularidad de esta familia es que el aislamiento tiene\nque aplicarse y confirmarse en la red - conmutador, NAC o cortafuegos -\ny no darse por bueno con la confirmacion del agente: el agente es\njustamente lo que no se puede creer. Un aislamiento que solo el sensor\nmanipulado dice que esta aplicado es peor que ninguno, porque cierra el\ncaso.\n",
+      "flag": false,
+      "group": "3. Contencion",
+      "mandatory": false,
+      "order": 12,
+      "title": "Aislar el endpoint en la red, aplicando y verificando el aislamiento fuera del agente"
+    },
+    {
+      "description": "Alcance: Una anotacion en el inventario. No toca el equipo.\nRadio: equipo · Reversible: si\nAutomatica en clase auto_contener si la politica del cliente lo permite.\nAccion de ResponseLab: inventario.marcar_no_fiable\nPor que: No rompe nada y evita el error mas caro de esta familia: que otra regla,\notro analista o el propio informe lean la ausencia de eventos de este\nequipo como ausencia de actividad. Sin esta marca, un equipo sin sensor\nparece un equipo tranquilo en todos los paneles.\n",
+      "flag": false,
+      "group": "3. Contencion",
+      "mandatory": false,
+      "order": 13,
+      "title": "Marcar el equipo como telemetria no fiable en el inventario, con la fecha de inicio del hueco"
+    },
+    {
+      "description": "Alcance: Metadatos de registro de un equipo\nRadio: equipo · Reversible: si\nAutomatica en clase auto_contener si la politica del cliente lo permite.\nAccion de ResponseLab: evidencia.retener\nPor que: Esas 6 h son la unica base sobre la que se va a poder reconstruir que\npaso, y caducan con la retencion normal mientras el caso espera turno.\nCuesta disco.\n",
+      "flag": false,
+      "group": "3. Contencion",
+      "mandatory": false,
+      "order": 14,
+      "title": "Fijar retencion extendida sobre la telemetria anterior al hueco"
+    },
+    {
+      "description": "Alcance: Todos los equipos con esa politica, en el arranque\nRadio: organizacion · Reversible: si\nRequiere aprobacion.\nAccion de ResponseLab: flota.bloquear_hash · se deshace con flota.desbloquear_hash\nPor que: La lista de bloqueo de drivers actua antes de que el sistema termine de\narrancar. Si el driver bloqueado resulta ser el de una controladora de\ndisco, una tarjeta de red o una utilidad del fabricante del portatil,\nlos equipos afectados dejan de arrancar bien y el remedio pasa por\ntocarlos de uno en uno, fisicamente. Ninguna urgencia de esta familia\njustifica ese riesgo sin que alguien contraste la lista con el\ninventario de hardware. Se deja preparada con el hash y espera.\n",
+      "flag": false,
+      "group": "3. Contencion",
+      "mandatory": false,
+      "order": 15,
+      "title": "Desplegar la regla de bloqueo del driver vulnerable en la politica de la flota"
+    },
+    {
+      "description": "Devolver el sensor a un equipo que puede seguir comprometido borra el hueco de telemetria sin resolver lo que lo causo, y hace que el caso parezca cerrado.",
+      "flag": false,
+      "group": "5. Requiere persona",
+      "mandatory": false,
+      "order": 16,
+      "title": "Reinstalar o rearrancar el sensor"
+    },
+    {
+      "description": "Si la exclusion es de producto y esta documentada, quitarla puede tirar un servidor de base de datos o de correo por rendimiento.",
+      "flag": false,
+      "group": "5. Requiere persona",
+      "mandatory": false,
+      "order": 17,
+      "title": "Retirar la exclusion de antivirus"
+    },
+    {
+      "description": "Decision de negocio, no tecnica.",
+      "flag": false,
+      "group": "5. Requiere persona",
+      "mandatory": false,
+      "order": 18,
+      "title": "Reconstruir el equipo"
+    },
+    {
+      "description": "Deja de ser un caso y pasa a ser una revision de configuracion del parque, con su propio plan y su propio responsable.",
+      "flag": false,
+      "group": "5. Requiere persona",
+      "mandatory": false,
+      "order": 19,
+      "title": "Revisar si la misma exclusion o la misma politica estan en mas equipos"
+    },
+    {
+      "description": "Escalar a L2 en 10 minutos.\nA L3 si: El sensor se desinstalo, se cargo un driver vulnerable conocido o se forzo el arranque en modo seguro\nEl plazo se cuenta desde el inicio del hueco de telemetria, no desde la alerta: entre uno y otra puede haber horas, y son precisamente las horas de las que no hay datos.",
+      "flag": false,
+      "group": "6. Escalado",
+      "mandatory": false,
+      "order": 20,
+      "title": "Escalado: L2 en 10 min"
+    }
+  ],
+  "titlePrefix": "[RL XDR]",
+  "tlp": 2
+}

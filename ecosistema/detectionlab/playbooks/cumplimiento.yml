@@ -1,0 +1,98 @@
+familia: cumplimiento
+nombre: Cumplimiento y obligaciones regulatorias
+descripcion: |
+    Detecciones derivadas de ENS, NIS2, DORA y RGPD. Se distinguen de todas las
+    demas en una cosa: la mayoria no detecta un ataque, detecta que una
+    obligacion se esta incumpliendo o que un plazo esta corriendo. El reloj no
+    lo marca el atacante sino el regulador, y no se para porque el caso se
+    cierre. Una copia de seguridad que no corrio, una notificacion de 72 horas
+    pendiente o una retencion por debajo del minimo no se contienen: se
+    escalan a quien puede firmar.
+
+enriquecimiento:
+  - fuente: registro_incidentes
+    sobre: [caso]
+    detalle: Si ya hay un caso abierto al que este hallazgo pertenece
+  - fuente: inventario
+    sobre: [agente]
+    detalle: Si el activo esta en el alcance del ENS o de DORA
+  - fuente: calendario_obligaciones
+    sobre: [caso]
+    detalle: Plazo aplicable y cuanto queda; marcos/marcos_obligaciones.csv
+  - fuente: itsm
+    sobre: [agente]
+    detalle: Si hay una excepcion aprobada y vigente
+
+evidencia:
+  - descripcion: Momento exacto en que empezo a correr el plazo
+    comando: "Primer evento del incidente asociado, no el de esta alerta"
+    donde: siem
+  - descripcion: Estado de la obligacion y quien es el responsable
+    comando: "Lookup contra marcos/marcos_obligaciones.csv por obligacion_id"
+    donde: manager
+  - descripcion: Registro de la ultima ejecucion correcta del control
+    comando: "Ultima alerta de exito de la misma serie de reglas"
+    donde: siem
+
+triaje:
+  - pregunta: Existe una excepcion aprobada y en vigor para este activo
+    fuente: itsm
+    si_afirmativo: bajar_severidad
+  - pregunta: El activo esta en el alcance de la certificacion
+    fuente: inventario
+    si_afirmativo: subir_severidad
+  - pregunta: Quedan menos de 24 h del plazo regulatorio
+    fuente: calendario_obligaciones
+    si_afirmativo: subir_severidad
+
+cierre_automatico:
+  - condicion: |
+      Fallo de copia de seguridad seguido, en la misma ventana de RPO, de una
+      ejecucion correcta del mismo trabajo sobre el mismo activo. El control se
+      cumplio; el primer intento fallido es ruido operativo.
+    justificacion: |
+      El objetivo del control es que exista copia dentro del RPO, no que no
+      falle nunca ningun intento. Si la copia existe y esta dentro de ventana,
+      la obligacion esta cubierta y abrir caso solo entrena a ignorarlos.
+  - condicion: |
+      Desviacion de reloj en una fuente que vuelve a sincronizar sola en menos
+      de 15 minutos y no tiene eventos de seguridad en esa ventana.
+    justificacion: |
+      La correlacion temporal solo se rompe si la desviacion persiste o si hay
+      eventos que fechar mal. Sin ninguna de las dos cosas, no hay hallazgo.
+
+contencion:
+  - accion: Fijar retencion extendida sobre los registros del periodo afectado
+    alcance: Los indices implicados, durante el plazo legal
+    radio: objeto
+    reversible: "si"
+    requiere_aprobacion: "no"
+    justificacion: |
+      Ocupa disco y nada mas. Frente a eso, perder los registros que sostienen
+      una notificacion regulatoria por rotacion normal es irreversible y se
+      descubre justo cuando hacen falta.
+  - accion: Abrir o actualizar la tarea de obligacion con su plazo y responsable
+    alcance: Una entrada en el ITSM
+    radio: objeto
+    reversible: "si"
+    requiere_aprobacion: "no"
+    justificacion: |
+      Anotar no rompe nada, y el plazo empieza a correr lo anote alguien o no.
+
+requiere_persona:
+  - situacion: Decidir si el incidente es notificable
+    motivo: |
+      La calificacion depende de impacto, alcance y criterio juridico, no de
+      una regla. Equivocarse por exceso tiene coste reputacional y por defecto,
+      sancion.
+  - situacion: Redactar y enviar la notificacion a la autoridad
+    motivo: Es una comunicacion oficial de la organizacion, con firma.
+  - situacion: Aceptar una desviacion como riesgo asumido
+    motivo: Es una decision de negocio con responsable nominal.
+  - situacion: Restaurar desde copia de seguridad
+    motivo: Implica decidir hasta que punto se pierde trabajo.
+
+escalado:
+  a: L2
+  plazo_min: 60
+  a_L3_si: Quedan menos de 24 h de un plazo de NIS2, DORA o RGPD

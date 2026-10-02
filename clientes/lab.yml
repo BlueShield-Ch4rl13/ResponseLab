@@ -1,0 +1,110 @@
+# Cliente de laboratorio: la plataforma de Infra-SocAnalyst
+#
+# Wazuh como SIEM y EDR (active response), TheHive para los casos, avisos por
+# Discord y las listas EDL del motor para el perimetro (pfSense las lee como
+# alias de tipo URL Table). Arranca en simulacion: decide y ensena lo que
+# haria sin tocar nada.
+#
+# Los tokens del laboratorio salen de variables de entorno (.env) para que se
+# pueda probar sin generar huellas. En un cliente real se usa token_sha256.
+
+id: lab
+nombre: Laboratorio Infra-SocAnalyst
+activo: true
+modo: simulacion
+zona_horaria: Europe/Madrid
+marcos: [rgpd, nis2]
+
+autenticacion:
+  token_env: RL_LAB_TOKEN
+  agentes:
+    token_env: RL_LAB_TOKEN_AGENTES
+  edl:
+    token_env: RL_LAB_TOKEN_EDL
+
+aprobadores:
+  - {nombre: Analista del laboratorio, email: analista@lab.test, token_env: RL_LAB_TOKEN_APROBADOR}
+
+capacidades:
+  edr: wazuh
+  agente: wazuh
+  casos: thehive
+  perimetro: [edl]
+  waf: [edl]
+
+conectores:
+  wazuh:
+    url: https://wazuh-manager:55000
+    usuario_env: RL_LAB_WAZUH_USUARIO
+    clave_env: RL_LAB_WAZUH_CLAVE
+    verificar_tls: false            # certificado autofirmado del laboratorio
+    managers: ["10.0.30.10"]          # el equipo aislado sigue hablando con el manager...
+    permitidos: ["10.0.30.20"]        # ...y con el motor (acuses e informes de triage)
+  thehive:
+    url: http://thehive:9000
+    api_key_env: RL_LAB_THEHIVE_KEY
+    organizacion: SOC
+  discord:
+    tipo: discord
+    webhook_env: RL_LAB_DISCORD_WEBHOOK
+
+avisos:
+  canales: [discord]
+
+politica:
+  contencion_automatica: true
+  acciones_prohibidas: []
+  acciones_siempre_aprobacion: []
+  excepcion_sin_datos: aprobacion
+  escalado_por_correlacion: true
+  caducidad_aprobacion_min: 240
+  bloqueo_perimetro_horas: 72
+
+inventario:
+  completo: true
+  protegidos: ["^DC\\d+$"]
+  activos:
+    - {nombre: DC01, etiquetas: [controlador_dominio, servidor_produccion]}
+    - {nombre: FS01, etiquetas: [servidor_ficheros, servidor_produccion, datos_personales]}
+    - {nombre: SRV-WEB-01, etiquetas: [servidor_produccion, servidor_aplicacion, expuesto_internet]}
+    - {nombre: victima-dmz, etiquetas: [dmz, expuesto_internet]}
+    - {nombre: CORP-FIN-07, etiquetas: [puesto, datos_personales]}
+    - {patron: "^PC-", etiquetas: [puesto]}
+    - {patron: "^MAC-", etiquetas: [puesto]}
+    - {nombre: LEGACY-FTP, ip: 10.0.20.30, etiquetas: [heredado]}
+
+listas:
+  administradores: [administrator, admin-soc]
+  cuentas_servicio: [svc_backup, svc_sql, www-data]
+  cuentas_emergencia: [breakglass@lab.test]
+  aplicaciones_negocio: []
+  software_aprobado: []
+  agentes_distribucion: [ccmexec.exe, pdqdeployrunner.exe]
+  gestores_linux: [apt, apt-get, dpkg, yum, dnf, rpm, unattended-upgrade, ansible-playbook]
+  agentes_gestion_mac: [jamf, munki]
+  team_ids_aprobados: []
+  escaneres_autorizados: ["10.0.30.50/32"]
+  bastiones: ["10.0.99.10/32"]
+  emisores_autorizados: [comunicacion@lab.test, rrhh@lab.test]
+  atribuciones_pago: [tesoreria@lab.test, cfo@lab.test]
+  servicios_aprobados: [sharepoint.com, onedrive.com]
+  bajas_anunciadas: []
+  registros_corporativos: [registry.lab.test/]
+  k8s_namespaces_no_productivos: [dev, test]
+  drivers_vulnerables: []
+  espejos_paquetes: [pypi.lab.test]
+  soportes_cifrados:
+    - {serie: USB-0001, titular: jgarcia}
+
+ventanas:
+  - {tipo: mantenimiento, dias: [ma], desde: "02:00", hasta: "04:00", equipos: ["^SRV-"]}
+  - {tipo: escaneo, dias: [ju], desde: "22:00", hasta: "23:59"}
+
+excepciones:
+  - {activo: LEGACY-FTP, ip: 10.0.20.30, segmento: 10.0.20.0/24, vence: "2027-03-31T00:00:00Z", reglas: [zta_net_001_protocolo_en_claro]}
+
+contactos:
+  L2: {email: analista@lab.test}
+  L3: {email: l3@lab.test}
+  guardia: {email: guardia@lab.test}
+  dpd: {email: dpd@lab.test}
