@@ -1,0 +1,1530 @@
+id: ResponseLab - XDR
+version: -1
+name: ResponseLab - XDR
+description: Manipulacion de la telemetria y de las defensas. Generado por ResponseLab desde el playbook de DetectionLab (xdr). Necesita que ResponseLabDecidir haya dejado el plan en ResponseLab.Plan.
+starttaskid: '0'
+tasks:
+  '0':
+    id: '0'
+    taskid: 715971c1-2e5d-5a39-9d6e-199e22244972
+    type: start
+    task:
+      id: 715971c1-2e5d-5a39-9d6e-199e22244972
+      version: -1
+      name: ''
+      description: ''
+      type: start
+      iscommand: false
+      brand: ''
+    separatecontext: false
+    continueonerrortype: ''
+    view: "{\n  \"position\": {\n    \"x\": 450,\n    \"y\": 50\n  }\n}"
+    note: false
+    timertriggers: []
+    ignoreworker: false
+    skipunavailable: false
+    quietmode: 0
+    isoversize: false
+    isautoswitchedtoquietmode: false
+    nexttasks:
+      '#none#':
+      - '1'
+  '1':
+    id: '1'
+    taskid: da8edda4-3b56-509e-bf9c-4bfd787f8405
+    type: title
+    task:
+      id: da8edda4-3b56-509e-bf9c-4bfd787f8405
+      version: -1
+      name: Contencion automatica
+      description: Pasos que ResponseLab marco como automaticos. No hay tareas manuales en esta fase.
+      type: title
+      iscommand: false
+      brand: ''
+    separatecontext: false
+    continueonerrortype: ''
+    view: "{\n  \"position\": {\n    \"x\": 450,\n    \"y\": 240\n  }\n}"
+    note: false
+    timertriggers: []
+    ignoreworker: false
+    skipunavailable: false
+    quietmode: 0
+    isoversize: false
+    isautoswitchedtoquietmode: false
+    nexttasks:
+      '#none#':
+      - '2'
+  '2':
+    id: '2'
+    taskid: af92e84d-731d-5c11-b1a7-940d191f84d2
+    type: condition
+    task:
+      id: af92e84d-731d-5c11-b1a7-940d191f84d2
+      version: -1
+      name: 'c1: Aislar el equipo desde la red, sin depender de su agente - automatica?'
+      description: 'Origen: Aislar el endpoint en la red, aplicando y verificando el aislamiento fuera del agente'
+      type: condition
+      iscommand: false
+      brand: ''
+    separatecontext: false
+    continueonerrortype: ''
+    view: "{\n  \"position\": {\n    \"x\": 450,\n    \"y\": 430\n  }\n}"
+    note: false
+    timertriggers: []
+    ignoreworker: false
+    skipunavailable: false
+    quietmode: 0
+    isoversize: false
+    isautoswitchedtoquietmode: false
+    conditions:
+    - label: 'yes'
+      condition:
+      - - operator: isEqualString
+          left:
+            value:
+              simple: ResponseLab.Plan.modos.c1
+            iscontext: true
+          right:
+            value:
+              simple: automatica
+    nexttasks:
+      'yes':
+      - '3'
+      '#default#':
+      - '4'
+  '3':
+    id: '3'
+    taskid: 23e45fd3-83fa-5ce7-b39a-c05fc0b5a901
+    type: playbook
+    task:
+      id: 23e45fd3-83fa-5ce7-b39a-c05fc0b5a901
+      version: -1
+      name: Isolate Endpoint - Generic V2
+      description: 'ResponseLab c1: Aislar el equipo desde la red, sin depender de su agente'
+      type: playbook
+      iscommand: false
+      brand: ''
+      playbookName: Isolate Endpoint - Generic V2
+    separatecontext: true
+    continueonerrortype: ''
+    view: "{\n  \"position\": {\n    \"x\": 870,\n    \"y\": 620\n  }\n}"
+    note: false
+    timertriggers: []
+    ignoreworker: false
+    skipunavailable: true
+    quietmode: 0
+    isoversize: false
+    isautoswitchedtoquietmode: false
+    scriptarguments:
+      Endpoint_hostname:
+        complex:
+          root: ResponseLab.Plan.entradas.c1
+          accessor: Endpoint_hostname
+      Endpoint_ip:
+        complex:
+          root: ResponseLab.Plan.entradas.c1
+          accessor: Endpoint_ip
+    loop:
+      iscommand: false
+      exitCondition: ''
+      wait: 1
+      max: 0
+    continueonerror: true
+    nexttasks:
+      '#none#':
+      - '4'
+  '4':
+    id: '4'
+    taskid: 2fd28b0b-90b9-50a2-9bb9-f12aabf9d9bd
+    type: title
+    task:
+      id: 2fd28b0b-90b9-50a2-9bb9-f12aabf9d9bd
+      version: -1
+      name: c1 hecho
+      description: ''
+      type: title
+      iscommand: false
+      brand: ''
+    separatecontext: false
+    continueonerrortype: ''
+    view: "{\n  \"position\": {\n    \"x\": 450,\n    \"y\": 810\n  }\n}"
+    note: false
+    timertriggers: []
+    ignoreworker: false
+    skipunavailable: false
+    quietmode: 0
+    isoversize: false
+    isautoswitchedtoquietmode: false
+    nexttasks:
+      '#none#':
+      - '5'
+  '5':
+    id: '5'
+    taskid: 836c16da-9a13-5b3e-b0ce-0a01146ce672
+    type: condition
+    task:
+      id: 836c16da-9a13-5b3e-b0ce-0a01146ce672
+      version: -1
+      name: 'c4: Bloquear la ejecucion de un hash en toda la flota - automatica?'
+      description: 'Origen: Desplegar la regla de bloqueo del driver vulnerable en la politica de la flota'
+      type: condition
+      iscommand: false
+      brand: ''
+    separatecontext: false
+    continueonerrortype: ''
+    view: "{\n  \"position\": {\n    \"x\": 450,\n    \"y\": 1000\n  }\n}"
+    note: false
+    timertriggers: []
+    ignoreworker: false
+    skipunavailable: false
+    quietmode: 0
+    isoversize: false
+    isautoswitchedtoquietmode: false
+    conditions:
+    - label: 'yes'
+      condition:
+      - - operator: isEqualString
+          left:
+            value:
+              simple: ResponseLab.Plan.modos.c4
+            iscontext: true
+          right:
+            value:
+              simple: automatica
+    nexttasks:
+      'yes':
+      - '6'
+      '#default#':
+      - '7'
+  '6':
+    id: '6'
+    taskid: 700fc17e-1419-596e-bc08-0361ef3f15e6
+    type: playbook
+    task:
+      id: 700fc17e-1419-596e-bc08-0361ef3f15e6
+      version: -1
+      name: Block File - Generic v2
+      description: 'ResponseLab c4: Bloquear la ejecucion de un hash en toda la flota'
+      type: playbook
+      iscommand: false
+      brand: ''
+      playbookName: Block File - Generic v2
+    separatecontext: true
+    continueonerrortype: ''
+    view: "{\n  \"position\": {\n    \"x\": 870,\n    \"y\": 1190\n  }\n}"
+    note: false
+    timertriggers: []
+    ignoreworker: false
+    skipunavailable: true
+    quietmode: 0
+    isoversize: false
+    isautoswitchedtoquietmode: false
+    scriptarguments:
+      SHA256:
+        complex:
+          root: ResponseLab.Plan.entradas.c4
+          accessor: SHA256
+      MD5:
+        complex:
+          root: ResponseLab.Plan.entradas.c4
+          accessor: MD5
+    loop:
+      iscommand: false
+      exitCondition: ''
+      wait: 1
+      max: 0
+    continueonerror: true
+    nexttasks:
+      '#none#':
+      - '7'
+  '7':
+    id: '7'
+    taskid: f34e11e2-325e-5db5-bc2b-0f4c72a3916a
+    type: title
+    task:
+      id: f34e11e2-325e-5db5-bc2b-0f4c72a3916a
+      version: -1
+      name: c4 hecho
+      description: ''
+      type: title
+      iscommand: false
+      brand: ''
+    separatecontext: false
+    continueonerrortype: ''
+    view: "{\n  \"position\": {\n    \"x\": 450,\n    \"y\": 1380\n  }\n}"
+    note: false
+    timertriggers: []
+    ignoreworker: false
+    skipunavailable: false
+    quietmode: 0
+    isoversize: false
+    isautoswitchedtoquietmode: false
+    nexttasks:
+      '#none#':
+      - '8'
+  '8':
+    id: '8'
+    taskid: 51b9207d-93e4-5d39-832b-0ea0a53fb146
+    type: condition
+    task:
+      id: 51b9207d-93e4-5d39-832b-0ea0a53fb146
+      version: -1
+      name: 'e1: Recoger el paquete de investigacion del EDR - automatica?'
+      description: 'Origen: Recoger el paquete de investigacion del EDR'
+      type: condition
+      iscommand: false
+      brand: ''
+    separatecontext: false
+    continueonerrortype: ''
+    view: "{\n  \"position\": {\n    \"x\": 450,\n    \"y\": 1570\n  }\n}"
+    note: false
+    timertriggers: []
+    ignoreworker: false
+    skipunavailable: false
+    quietmode: 0
+    isoversize: false
+    isautoswitchedtoquietmode: false
+    conditions:
+    - label: 'yes'
+      condition:
+      - - operator: isEqualString
+          left:
+            value:
+              simple: ResponseLab.Plan.modos.e1
+            iscontext: true
+          right:
+            value:
+              simple: automatica
+    nexttasks:
+      'yes':
+      - '9'
+      '#default#':
+      - '10'
+  '9':
+    id: '9'
+    taskid: 1859c0d5-9dcf-536d-8430-e5273a139a77
+    type: regular
+    task:
+      id: 1859c0d5-9dcf-536d-8430-e5273a139a77
+      version: -1
+      name: microsoft-atp-collect-investigation-package
+      description: 'ResponseLab e1: Recoger el paquete de investigacion del EDR'
+      type: regular
+      iscommand: true
+      brand: ''
+      script: '|||microsoft-atp-collect-investigation-package'
+    separatecontext: false
+    continueonerrortype: ''
+    view: "{\n  \"position\": {\n    \"x\": 870,\n    \"y\": 1760\n  }\n}"
+    note: false
+    timertriggers: []
+    ignoreworker: false
+    skipunavailable: true
+    quietmode: 0
+    isoversize: false
+    isautoswitchedtoquietmode: false
+    scriptarguments:
+      machine_id:
+        complex:
+          root: ResponseLab.Plan.entradas.e1
+          accessor: machine_id
+      comment:
+        complex:
+          root: ResponseLab.Plan.entradas.e1
+          accessor: comment
+    continueonerror: true
+    nexttasks:
+      '#none#':
+      - '10'
+  '10':
+    id: '10'
+    taskid: 97bb1f7e-2aa1-5614-8455-236d261afc3f
+    type: title
+    task:
+      id: 97bb1f7e-2aa1-5614-8455-236d261afc3f
+      version: -1
+      name: e1 hecho
+      description: ''
+      type: title
+      iscommand: false
+      brand: ''
+    separatecontext: false
+    continueonerrortype: ''
+    view: "{\n  \"position\": {\n    \"x\": 450,\n    \"y\": 1950\n  }\n}"
+    note: false
+    timertriggers: []
+    ignoreworker: false
+    skipunavailable: false
+    quietmode: 0
+    isoversize: false
+    isautoswitchedtoquietmode: false
+    nexttasks:
+      '#none#':
+      - '11'
+  '11':
+    id: '11'
+    taskid: 62ee9f97-1b94-57b9-a9f8-fa5d5564a1bb
+    type: title
+    task:
+      id: 62ee9f97-1b94-57b9-a9f8-fa5d5564a1bb
+      version: -1
+      name: Aprobaciones y acciones a mano
+      description: Lo que pide aprobacion se aprueba aqui; lo que no tiene traduccion en XSOAR es una tarea.
+      type: title
+      iscommand: false
+      brand: ''
+    separatecontext: false
+    continueonerrortype: ''
+    view: "{\n  \"position\": {\n    \"x\": 450,\n    \"y\": 2140\n  }\n}"
+    note: false
+    timertriggers: []
+    ignoreworker: false
+    skipunavailable: false
+    quietmode: 0
+    isoversize: false
+    isautoswitchedtoquietmode: false
+    nexttasks:
+      '#none#':
+      - '12'
+  '12':
+    id: '12'
+    taskid: f52ea4c9-47ab-52f5-a636-959523c1d4bd
+    type: condition
+    task:
+      id: f52ea4c9-47ab-52f5-a636-959523c1d4bd
+      version: -1
+      name: 'c1: Aislar el equipo desde la red, sin depender de su agente - que modo?'
+      description: 'Motivo del modo en la War Room (salida de ResponseLabDecidir). Origen: Aislar el endpoint en la red, aplicando y verificando el aislamiento fuera del agente'
+      type: condition
+      iscommand: false
+      brand: ''
+    separatecontext: false
+    continueonerrortype: ''
+    view: "{\n  \"position\": {\n    \"x\": 450,\n    \"y\": 2330\n  }\n}"
+    note: false
+    timertriggers: []
+    ignoreworker: false
+    skipunavailable: false
+    quietmode: 0
+    isoversize: false
+    isautoswitchedtoquietmode: false
+    conditions:
+    - label: aprobacion
+      condition:
+      - - operator: isEqualString
+          left:
+            value:
+              simple: ResponseLab.Plan.modos.c1
+            iscontext: true
+          right:
+            value:
+              simple: aprobacion
+    - label: manual
+      condition:
+      - - operator: isEqualString
+          left:
+            value:
+              simple: ResponseLab.Plan.modos.c1
+            iscontext: true
+          right:
+            value:
+              simple: manual
+    nexttasks:
+      '#default#':
+      - '13'
+      aprobacion:
+      - '14'
+      manual:
+      - '16'
+  '13':
+    id: '13'
+    taskid: 063170e5-fcba-59e9-a925-89028492090a
+    type: title
+    task:
+      id: 063170e5-fcba-59e9-a925-89028492090a
+      version: -1
+      name: c1 resuelto
+      description: ''
+      type: title
+      iscommand: false
+      brand: ''
+    separatecontext: false
+    continueonerrortype: ''
+    view: "{\n  \"position\": {\n    \"x\": 450,\n    \"y\": 2900\n  }\n}"
+    note: false
+    timertriggers: []
+    ignoreworker: false
+    skipunavailable: false
+    quietmode: 0
+    isoversize: false
+    isautoswitchedtoquietmode: false
+    nexttasks:
+      '#none#':
+      - '17'
+  '14':
+    id: '14'
+    taskid: c02e6e41-1545-5f26-b981-c177d6c89857
+    type: condition
+    task:
+      id: c02e6e41-1545-5f26-b981-c177d6c89857
+      version: -1
+      name: 'Aprobar: Aislar el equipo desde la red, sin depender de su agente'
+      description: 'Radio equipo, reversible si, se deshace con red.liberar_equipo. Origen: Aislar el endpoint en la red, aplicando y verificando el aislamiento fuera del agente Por que: Reversible en un comando y el peor caso son veinte minutos sin trabajar. La particularidad de esta familia es que el aislamiento tiene que aplicarse y confirmarse en la red - conmutador, NAC o cortafuegos - y no darse por bueno con la confirmacion del agente: el agente es justamente lo que no se puede creer. Un aislamiento que solo el sensor manipulado dice que esta aplicado es peor que ninguno, porque cierra el caso.'
+      type: condition
+      iscommand: false
+      brand: ''
+    separatecontext: false
+    continueonerrortype: ''
+    view: "{\n  \"position\": {\n    \"x\": 30,\n    \"y\": 2520\n  }\n}"
+    note: false
+    timertriggers: []
+    ignoreworker: false
+    skipunavailable: false
+    quietmode: 0
+    isoversize: false
+    isautoswitchedtoquietmode: false
+    nexttasks:
+      Si:
+      - '15'
+      'No':
+      - '13'
+  '15':
+    id: '15'
+    taskid: 136d4123-0976-5659-a38e-795dda342868
+    type: playbook
+    task:
+      id: 136d4123-0976-5659-a38e-795dda342868
+      version: -1
+      name: Isolate Endpoint - Generic V2
+      description: 'ResponseLab c1: Aislar el equipo desde la red, sin depender de su agente'
+      type: playbook
+      iscommand: false
+      brand: ''
+      playbookName: Isolate Endpoint - Generic V2
+    separatecontext: true
+    continueonerrortype: ''
+    view: "{\n  \"position\": {\n    \"x\": 30,\n    \"y\": 2710\n  }\n}"
+    note: false
+    timertriggers: []
+    ignoreworker: false
+    skipunavailable: true
+    quietmode: 0
+    isoversize: false
+    isautoswitchedtoquietmode: false
+    scriptarguments:
+      Endpoint_hostname:
+        complex:
+          root: ResponseLab.Plan.entradas.c1
+          accessor: Endpoint_hostname
+      Endpoint_ip:
+        complex:
+          root: ResponseLab.Plan.entradas.c1
+          accessor: Endpoint_ip
+    loop:
+      iscommand: false
+      exitCondition: ''
+      wait: 1
+      max: 0
+    continueonerror: true
+    nexttasks:
+      '#none#':
+      - '13'
+  '16':
+    id: '16'
+    taskid: 788070b8-80d8-53b5-94ef-e838aae47647
+    type: regular
+    task:
+      id: 788070b8-80d8-53b5-94ef-e838aae47647
+      version: -1
+      name: 'A mano: Aislar el equipo desde la red, sin depender de su agente'
+      description: 'ResponseLab la deja al analista (motivo en la War Room). Origen: Aislar el endpoint en la red, aplicando y verificando el aislamiento fuera del agente Por que: Reversible en un comando y el peor caso son veinte minutos sin trabajar. La particularidad de esta familia es que el aislamiento tiene que aplicarse y confirmarse en la red - conmutador, NAC o cortafuegos - y no darse por bueno con la confirmacion del agente: el agente es justamente lo que no se puede creer. Un aislamiento que solo el sensor manipulado dice que esta aplicado es peor que ninguno, porque cierra el caso.'
+      type: regular
+      iscommand: false
+      brand: ''
+    separatecontext: false
+    continueonerrortype: ''
+    view: "{\n  \"position\": {\n    \"x\": 870,\n    \"y\": 2520\n  }\n}"
+    note: false
+    timertriggers: []
+    ignoreworker: false
+    skipunavailable: false
+    quietmode: 0
+    isoversize: false
+    isautoswitchedtoquietmode: false
+    nexttasks:
+      '#none#':
+      - '13'
+  '17':
+    id: '17'
+    taskid: 57d5d4ac-edd7-5691-8681-ae3895831dc6
+    type: condition
+    task:
+      id: 57d5d4ac-edd7-5691-8681-ae3895831dc6
+      version: -1
+      name: 'c2: Marcar la telemetria del equipo como no fiable - que modo?'
+      description: 'Motivo del modo en la War Room (salida de ResponseLabDecidir). Origen: Marcar el equipo como telemetria no fiable en el inventario, con la fecha de inicio del hueco'
+      type: condition
+      iscommand: false
+      brand: ''
+    separatecontext: false
+    continueonerrortype: ''
+    view: "{\n  \"position\": {\n    \"x\": 450,\n    \"y\": 3090\n  }\n}"
+    note: false
+    timertriggers: []
+    ignoreworker: false
+    skipunavailable: false
+    quietmode: 0
+    isoversize: false
+    isautoswitchedtoquietmode: false
+    conditions:
+    - label: aprobacion
+      condition:
+      - - operator: isEqualString
+          left:
+            value:
+              simple: ResponseLab.Plan.modos.c2
+            iscontext: true
+          right:
+            value:
+              simple: aprobacion
+    - label: manual
+      condition:
+      - - operator: isEqualString
+          left:
+            value:
+              simple: ResponseLab.Plan.modos.c2
+            iscontext: true
+          right:
+            value:
+              simple: manual
+    - label: automatica
+      condition:
+      - - operator: isEqualString
+          left:
+            value:
+              simple: ResponseLab.Plan.modos.c2
+            iscontext: true
+          right:
+            value:
+              simple: automatica
+    nexttasks:
+      '#default#':
+      - '18'
+      aprobacion:
+      - '19'
+      manual:
+      - '21'
+      automatica:
+      - '21'
+  '18':
+    id: '18'
+    taskid: ae39dd4e-d487-5ffe-8953-70a0c5ba69cc
+    type: title
+    task:
+      id: ae39dd4e-d487-5ffe-8953-70a0c5ba69cc
+      version: -1
+      name: c2 resuelto
+      description: ''
+      type: title
+      iscommand: false
+      brand: ''
+    separatecontext: false
+    continueonerrortype: ''
+    view: "{\n  \"position\": {\n    \"x\": 450,\n    \"y\": 3660\n  }\n}"
+    note: false
+    timertriggers: []
+    ignoreworker: false
+    skipunavailable: false
+    quietmode: 0
+    isoversize: false
+    isautoswitchedtoquietmode: false
+    nexttasks:
+      '#none#':
+      - '22'
+  '19':
+    id: '19'
+    taskid: 508d40fc-7086-5c3d-b6c0-856a4dfa3ce3
+    type: condition
+    task:
+      id: 508d40fc-7086-5c3d-b6c0-856a4dfa3ce3
+      version: -1
+      name: 'Aprobar: Marcar la telemetria del equipo como no fiable'
+      description: 'Radio equipo, reversible si. Origen: Marcar el equipo como telemetria no fiable en el inventario, con la fecha de inicio del hueco Por que: No rompe nada y evita el error mas caro de esta familia: que otra regla, otro analista o el propio informe lean la ausencia de eventos de este equipo como ausencia de actividad. Sin esta marca, un equipo sin sensor parece un equipo tranquilo en todos los paneles.'
+      type: condition
+      iscommand: false
+      brand: ''
+    separatecontext: false
+    continueonerrortype: ''
+    view: "{\n  \"position\": {\n    \"x\": 30,\n    \"y\": 3280\n  }\n}"
+    note: false
+    timertriggers: []
+    ignoreworker: false
+    skipunavailable: false
+    quietmode: 0
+    isoversize: false
+    isautoswitchedtoquietmode: false
+    nexttasks:
+      Si:
+      - '20'
+      'No':
+      - '18'
+  '20':
+    id: '20'
+    taskid: 886c3c13-c416-56ee-b865-6c05638276d1
+    type: regular
+    task:
+      id: 886c3c13-c416-56ee-b865-6c05638276d1
+      version: -1
+      name: 'Ejecutar a mano: Marcar la telemetria del equipo como no fiable'
+      description: 'Aprobada. XSOAR no tiene traduccion nativa de inventario.marcar_no_fiable: hazla con la herramienta del cliente o con el motor de ResponseLab. Origen: Marcar el equipo como telemetria no fiable en el inventario, con la fecha de inicio del hueco'
+      type: regular
+      iscommand: false
+      brand: ''
+    separatecontext: false
+    continueonerrortype: ''
+    view: "{\n  \"position\": {\n    \"x\": 30,\n    \"y\": 3470\n  }\n}"
+    note: false
+    timertriggers: []
+    ignoreworker: false
+    skipunavailable: false
+    quietmode: 0
+    isoversize: false
+    isautoswitchedtoquietmode: false
+    nexttasks:
+      '#none#':
+      - '18'
+  '21':
+    id: '21'
+    taskid: 2cd50815-9db5-5865-a252-c9bc4b912e43
+    type: regular
+    task:
+      id: 2cd50815-9db5-5865-a252-c9bc4b912e43
+      version: -1
+      name: 'A mano: Marcar la telemetria del equipo como no fiable'
+      description: 'ResponseLab la deja al analista (motivo en la War Room). Origen: Marcar el equipo como telemetria no fiable en el inventario, con la fecha de inicio del hueco Por que: No rompe nada y evita el error mas caro de esta familia: que otra regla, otro analista o el propio informe lean la ausencia de eventos de este equipo como ausencia de actividad. Sin esta marca, un equipo sin sensor parece un equipo tranquilo en todos los paneles.'
+      type: regular
+      iscommand: false
+      brand: ''
+    separatecontext: false
+    continueonerrortype: ''
+    view: "{\n  \"position\": {\n    \"x\": 870,\n    \"y\": 3280\n  }\n}"
+    note: false
+    timertriggers: []
+    ignoreworker: false
+    skipunavailable: false
+    quietmode: 0
+    isoversize: false
+    isautoswitchedtoquietmode: false
+    nexttasks:
+      '#none#':
+      - '18'
+  '22':
+    id: '22'
+    taskid: 2b78e581-2875-5671-9d8e-f1563e8e144d
+    type: condition
+    task:
+      id: 2b78e581-2875-5671-9d8e-f1563e8e144d
+      version: -1
+      name: 'c3: Fijar retencion extendida sobre los registros de la ventana del hecho - que modo?'
+      description: 'Motivo del modo en la War Room (salida de ResponseLabDecidir). Origen: Fijar retencion extendida sobre la telemetria anterior al hueco'
+      type: condition
+      iscommand: false
+      brand: ''
+    separatecontext: false
+    continueonerrortype: ''
+    view: "{\n  \"position\": {\n    \"x\": 450,\n    \"y\": 3850\n  }\n}"
+    note: false
+    timertriggers: []
+    ignoreworker: false
+    skipunavailable: false
+    quietmode: 0
+    isoversize: false
+    isautoswitchedtoquietmode: false
+    conditions:
+    - label: aprobacion
+      condition:
+      - - operator: isEqualString
+          left:
+            value:
+              simple: ResponseLab.Plan.modos.c3
+            iscontext: true
+          right:
+            value:
+              simple: aprobacion
+    - label: manual
+      condition:
+      - - operator: isEqualString
+          left:
+            value:
+              simple: ResponseLab.Plan.modos.c3
+            iscontext: true
+          right:
+            value:
+              simple: manual
+    - label: automatica
+      condition:
+      - - operator: isEqualString
+          left:
+            value:
+              simple: ResponseLab.Plan.modos.c3
+            iscontext: true
+          right:
+            value:
+              simple: automatica
+    nexttasks:
+      '#default#':
+      - '23'
+      aprobacion:
+      - '24'
+      manual:
+      - '26'
+      automatica:
+      - '26'
+  '23':
+    id: '23'
+    taskid: 221059c7-5bb1-5ba5-b2e2-c7ec4625352c
+    type: title
+    task:
+      id: 221059c7-5bb1-5ba5-b2e2-c7ec4625352c
+      version: -1
+      name: c3 resuelto
+      description: ''
+      type: title
+      iscommand: false
+      brand: ''
+    separatecontext: false
+    continueonerrortype: ''
+    view: "{\n  \"position\": {\n    \"x\": 450,\n    \"y\": 4420\n  }\n}"
+    note: false
+    timertriggers: []
+    ignoreworker: false
+    skipunavailable: false
+    quietmode: 0
+    isoversize: false
+    isautoswitchedtoquietmode: false
+    nexttasks:
+      '#none#':
+      - '27'
+  '24':
+    id: '24'
+    taskid: 840ddb29-d7b4-5224-b65d-f2279b7d4829
+    type: condition
+    task:
+      id: 840ddb29-d7b4-5224-b65d-f2279b7d4829
+      version: -1
+      name: 'Aprobar: Fijar retencion extendida sobre los registros de la ventana del hecho'
+      description: 'Radio objeto, reversible si. Origen: Fijar retencion extendida sobre la telemetria anterior al hueco Por que: Esas 6 h son la unica base sobre la que se va a poder reconstruir que paso, y caducan con la retencion normal mientras el caso espera turno. Cuesta disco.'
+      type: condition
+      iscommand: false
+      brand: ''
+    separatecontext: false
+    continueonerrortype: ''
+    view: "{\n  \"position\": {\n    \"x\": 30,\n    \"y\": 4040\n  }\n}"
+    note: false
+    timertriggers: []
+    ignoreworker: false
+    skipunavailable: false
+    quietmode: 0
+    isoversize: false
+    isautoswitchedtoquietmode: false
+    nexttasks:
+      Si:
+      - '25'
+      'No':
+      - '23'
+  '25':
+    id: '25'
+    taskid: 63705680-71b3-5e60-a860-feb96766f42a
+    type: regular
+    task:
+      id: 63705680-71b3-5e60-a860-feb96766f42a
+      version: -1
+      name: 'Ejecutar a mano: Fijar retencion extendida sobre los registros de la ventana del hecho'
+      description: 'Aprobada. XSOAR no tiene traduccion nativa de evidencia.retener: hazla con la herramienta del cliente o con el motor de ResponseLab. Origen: Fijar retencion extendida sobre la telemetria anterior al hueco'
+      type: regular
+      iscommand: false
+      brand: ''
+    separatecontext: false
+    continueonerrortype: ''
+    view: "{\n  \"position\": {\n    \"x\": 30,\n    \"y\": 4230\n  }\n}"
+    note: false
+    timertriggers: []
+    ignoreworker: false
+    skipunavailable: false
+    quietmode: 0
+    isoversize: false
+    isautoswitchedtoquietmode: false
+    nexttasks:
+      '#none#':
+      - '23'
+  '26':
+    id: '26'
+    taskid: b10505ed-86fa-5571-9d5f-9e1ffefeeeed
+    type: regular
+    task:
+      id: b10505ed-86fa-5571-9d5f-9e1ffefeeeed
+      version: -1
+      name: 'A mano: Fijar retencion extendida sobre los registros de la ventana del hecho'
+      description: 'ResponseLab la deja al analista (motivo en la War Room). Origen: Fijar retencion extendida sobre la telemetria anterior al hueco Por que: Esas 6 h son la unica base sobre la que se va a poder reconstruir que paso, y caducan con la retencion normal mientras el caso espera turno. Cuesta disco.'
+      type: regular
+      iscommand: false
+      brand: ''
+    separatecontext: false
+    continueonerrortype: ''
+    view: "{\n  \"position\": {\n    \"x\": 870,\n    \"y\": 4040\n  }\n}"
+    note: false
+    timertriggers: []
+    ignoreworker: false
+    skipunavailable: false
+    quietmode: 0
+    isoversize: false
+    isautoswitchedtoquietmode: false
+    nexttasks:
+      '#none#':
+      - '23'
+  '27':
+    id: '27'
+    taskid: c957f369-06b0-5fab-9838-f54512350da3
+    type: condition
+    task:
+      id: c957f369-06b0-5fab-9838-f54512350da3
+      version: -1
+      name: 'c4: Bloquear la ejecucion de un hash en toda la flota - que modo?'
+      description: 'Motivo del modo en la War Room (salida de ResponseLabDecidir). Origen: Desplegar la regla de bloqueo del driver vulnerable en la politica de la flota'
+      type: condition
+      iscommand: false
+      brand: ''
+    separatecontext: false
+    continueonerrortype: ''
+    view: "{\n  \"position\": {\n    \"x\": 450,\n    \"y\": 4610\n  }\n}"
+    note: false
+    timertriggers: []
+    ignoreworker: false
+    skipunavailable: false
+    quietmode: 0
+    isoversize: false
+    isautoswitchedtoquietmode: false
+    conditions:
+    - label: aprobacion
+      condition:
+      - - operator: isEqualString
+          left:
+            value:
+              simple: ResponseLab.Plan.modos.c4
+            iscontext: true
+          right:
+            value:
+              simple: aprobacion
+    - label: manual
+      condition:
+      - - operator: isEqualString
+          left:
+            value:
+              simple: ResponseLab.Plan.modos.c4
+            iscontext: true
+          right:
+            value:
+              simple: manual
+    nexttasks:
+      '#default#':
+      - '28'
+      aprobacion:
+      - '29'
+      manual:
+      - '31'
+  '28':
+    id: '28'
+    taskid: e02dac5c-100e-559e-980b-c6f8235c5ba8
+    type: title
+    task:
+      id: e02dac5c-100e-559e-980b-c6f8235c5ba8
+      version: -1
+      name: c4 resuelto
+      description: ''
+      type: title
+      iscommand: false
+      brand: ''
+    separatecontext: false
+    continueonerrortype: ''
+    view: "{\n  \"position\": {\n    \"x\": 450,\n    \"y\": 5180\n  }\n}"
+    note: false
+    timertriggers: []
+    ignoreworker: false
+    skipunavailable: false
+    quietmode: 0
+    isoversize: false
+    isautoswitchedtoquietmode: false
+    nexttasks:
+      '#none#':
+      - '32'
+  '29':
+    id: '29'
+    taskid: 1f45d338-4434-5dff-810d-c91cf3e9d5be
+    type: condition
+    task:
+      id: 1f45d338-4434-5dff-810d-c91cf3e9d5be
+      version: -1
+      name: 'Aprobar: Bloquear la ejecucion de un hash en toda la flota'
+      description: 'Radio organizacion, reversible si, se deshace con flota.desbloquear_hash. Origen: Desplegar la regla de bloqueo del driver vulnerable en la politica de la flota Por que: La lista de bloqueo de drivers actua antes de que el sistema termine de arrancar. Si el driver bloqueado resulta ser el de una controladora de disco, una tarjeta de red o una utilidad del fabricante del portatil, los equipos afectados dejan de arrancar bien y el remedio pasa por tocarlos de uno en uno, fisicamente. Ninguna urgencia de esta familia justifica ese riesgo sin que alguien contraste la lista con el inventario de hardware. Se deja preparada con el hash y espera.'
+      type: condition
+      iscommand: false
+      brand: ''
+    separatecontext: false
+    continueonerrortype: ''
+    view: "{\n  \"position\": {\n    \"x\": 30,\n    \"y\": 4800\n  }\n}"
+    note: false
+    timertriggers: []
+    ignoreworker: false
+    skipunavailable: false
+    quietmode: 0
+    isoversize: false
+    isautoswitchedtoquietmode: false
+    nexttasks:
+      Si:
+      - '30'
+      'No':
+      - '28'
+  '30':
+    id: '30'
+    taskid: b785a0b7-5a12-5184-9688-8c0bf70c8928
+    type: playbook
+    task:
+      id: b785a0b7-5a12-5184-9688-8c0bf70c8928
+      version: -1
+      name: Block File - Generic v2
+      description: 'ResponseLab c4: Bloquear la ejecucion de un hash en toda la flota'
+      type: playbook
+      iscommand: false
+      brand: ''
+      playbookName: Block File - Generic v2
+    separatecontext: true
+    continueonerrortype: ''
+    view: "{\n  \"position\": {\n    \"x\": 30,\n    \"y\": 4990\n  }\n}"
+    note: false
+    timertriggers: []
+    ignoreworker: false
+    skipunavailable: true
+    quietmode: 0
+    isoversize: false
+    isautoswitchedtoquietmode: false
+    scriptarguments:
+      SHA256:
+        complex:
+          root: ResponseLab.Plan.entradas.c4
+          accessor: SHA256
+      MD5:
+        complex:
+          root: ResponseLab.Plan.entradas.c4
+          accessor: MD5
+    loop:
+      iscommand: false
+      exitCondition: ''
+      wait: 1
+      max: 0
+    continueonerror: true
+    nexttasks:
+      '#none#':
+      - '28'
+  '31':
+    id: '31'
+    taskid: 6347ce1e-a949-5174-bb81-2c99862883a3
+    type: regular
+    task:
+      id: 6347ce1e-a949-5174-bb81-2c99862883a3
+      version: -1
+      name: 'A mano: Bloquear la ejecucion de un hash en toda la flota'
+      description: 'ResponseLab la deja al analista (motivo en la War Room). Origen: Desplegar la regla de bloqueo del driver vulnerable en la politica de la flota Por que: La lista de bloqueo de drivers actua antes de que el sistema termine de arrancar. Si el driver bloqueado resulta ser el de una controladora de disco, una tarjeta de red o una utilidad del fabricante del portatil, los equipos afectados dejan de arrancar bien y el remedio pasa por tocarlos de uno en uno, fisicamente. Ninguna urgencia de esta familia justifica ese riesgo sin que alguien contraste la lista con el inventario de hardware. Se deja preparada con el hash y espera.'
+      type: regular
+      iscommand: false
+      brand: ''
+    separatecontext: false
+    continueonerrortype: ''
+    view: "{\n  \"position\": {\n    \"x\": 870,\n    \"y\": 4800\n  }\n}"
+    note: false
+    timertriggers: []
+    ignoreworker: false
+    skipunavailable: false
+    quietmode: 0
+    isoversize: false
+    isautoswitchedtoquietmode: false
+    nexttasks:
+      '#none#':
+      - '28'
+  '32':
+    id: '32'
+    taskid: bfb7f29f-cb94-5c03-bf32-d376cce17470
+    type: condition
+    task:
+      id: bfb7f29f-cb94-5c03-bf32-d376cce17470
+      version: -1
+      name: 'e1: Recoger el paquete de investigacion del EDR - que modo?'
+      description: 'Motivo del modo en la War Room (salida de ResponseLabDecidir). Origen: Recoger el paquete de investigacion del EDR'
+      type: condition
+      iscommand: false
+      brand: ''
+    separatecontext: false
+    continueonerrortype: ''
+    view: "{\n  \"position\": {\n    \"x\": 450,\n    \"y\": 5370\n  }\n}"
+    note: false
+    timertriggers: []
+    ignoreworker: false
+    skipunavailable: false
+    quietmode: 0
+    isoversize: false
+    isautoswitchedtoquietmode: false
+    conditions:
+    - label: aprobacion
+      condition:
+      - - operator: isEqualString
+          left:
+            value:
+              simple: ResponseLab.Plan.modos.e1
+            iscontext: true
+          right:
+            value:
+              simple: aprobacion
+    - label: manual
+      condition:
+      - - operator: isEqualString
+          left:
+            value:
+              simple: ResponseLab.Plan.modos.e1
+            iscontext: true
+          right:
+            value:
+              simple: manual
+    nexttasks:
+      '#default#':
+      - '33'
+      aprobacion:
+      - '34'
+      manual:
+      - '36'
+  '33':
+    id: '33'
+    taskid: 11be5507-a246-58bb-b22e-549e297b9645
+    type: title
+    task:
+      id: 11be5507-a246-58bb-b22e-549e297b9645
+      version: -1
+      name: e1 resuelto
+      description: ''
+      type: title
+      iscommand: false
+      brand: ''
+    separatecontext: false
+    continueonerrortype: ''
+    view: "{\n  \"position\": {\n    \"x\": 450,\n    \"y\": 5940\n  }\n}"
+    note: false
+    timertriggers: []
+    ignoreworker: false
+    skipunavailable: false
+    quietmode: 0
+    isoversize: false
+    isautoswitchedtoquietmode: false
+    nexttasks:
+      '#none#':
+      - '37'
+  '34':
+    id: '34'
+    taskid: 3291cb4a-a732-5ec3-bdfe-830c69e3b512
+    type: condition
+    task:
+      id: 3291cb4a-a732-5ec3-bdfe-830c69e3b512
+      version: -1
+      name: 'Aprobar: Recoger el paquete de investigacion del EDR'
+      description: 'Radio objeto, reversible si. Origen: Recoger el paquete de investigacion del EDR'
+      type: condition
+      iscommand: false
+      brand: ''
+    separatecontext: false
+    continueonerrortype: ''
+    view: "{\n  \"position\": {\n    \"x\": 30,\n    \"y\": 5560\n  }\n}"
+    note: false
+    timertriggers: []
+    ignoreworker: false
+    skipunavailable: false
+    quietmode: 0
+    isoversize: false
+    isautoswitchedtoquietmode: false
+    nexttasks:
+      Si:
+      - '35'
+      'No':
+      - '33'
+  '35':
+    id: '35'
+    taskid: 60476efd-2704-56fe-95a0-fadaae3808a7
+    type: regular
+    task:
+      id: 60476efd-2704-56fe-95a0-fadaae3808a7
+      version: -1
+      name: microsoft-atp-collect-investigation-package
+      description: 'ResponseLab e1: Recoger el paquete de investigacion del EDR'
+      type: regular
+      iscommand: true
+      brand: ''
+      script: '|||microsoft-atp-collect-investigation-package'
+    separatecontext: false
+    continueonerrortype: ''
+    view: "{\n  \"position\": {\n    \"x\": 30,\n    \"y\": 5750\n  }\n}"
+    note: false
+    timertriggers: []
+    ignoreworker: false
+    skipunavailable: true
+    quietmode: 0
+    isoversize: false
+    isautoswitchedtoquietmode: false
+    scriptarguments:
+      machine_id:
+        complex:
+          root: ResponseLab.Plan.entradas.e1
+          accessor: machine_id
+      comment:
+        complex:
+          root: ResponseLab.Plan.entradas.e1
+          accessor: comment
+    continueonerror: true
+    nexttasks:
+      '#none#':
+      - '33'
+  '36':
+    id: '36'
+    taskid: 3ae1cd9c-ef10-57ad-bdf4-7674fa74ba80
+    type: regular
+    task:
+      id: 3ae1cd9c-ef10-57ad-bdf4-7674fa74ba80
+      version: -1
+      name: 'A mano: Recoger el paquete de investigacion del EDR'
+      description: 'ResponseLab la deja al analista (motivo en la War Room). Origen: Recoger el paquete de investigacion del EDR'
+      type: regular
+      iscommand: false
+      brand: ''
+    separatecontext: false
+    continueonerrortype: ''
+    view: "{\n  \"position\": {\n    \"x\": 870,\n    \"y\": 5560\n  }\n}"
+    note: false
+    timertriggers: []
+    ignoreworker: false
+    skipunavailable: false
+    quietmode: 0
+    isoversize: false
+    isautoswitchedtoquietmode: false
+    nexttasks:
+      '#none#':
+      - '33'
+  '37':
+    id: '37'
+    taskid: 7069def2-a5e8-54ae-af23-7d05bb049a45
+    type: title
+    task:
+      id: 7069def2-a5e8-54ae-af23-7d05bb049a45
+      version: -1
+      name: Checklist del playbook
+      description: ''
+      type: title
+      iscommand: false
+      brand: ''
+    separatecontext: false
+    continueonerrortype: ''
+    view: "{\n  \"position\": {\n    \"x\": 450,\n    \"y\": 6130\n  }\n}"
+    note: false
+    timertriggers: []
+    ignoreworker: false
+    skipunavailable: false
+    quietmode: 0
+    isoversize: false
+    isautoswitchedtoquietmode: false
+    nexttasks:
+      '#none#':
+      - '38'
+  '38':
+    id: '38'
+    taskid: 7c2ab536-0090-522d-9f88-6968dd158d43
+    type: regular
+    task:
+      id: 7c2ab536-0090-522d-9f88-6968dd158d43
+      version: -1
+      name: Escalar segun el plan
+      description: 'Plazo del playbook: L2 en 10 min. El plan de este incidente: ${ResponseLab.Plan.escalado.a} en ${ResponseLab.Plan.escalado.plazo_min} min.
+
+        A L3 si: El sensor se desinstalo, se cargo un driver vulnerable conocido o se forzo el arranque en modo seguro'
+      type: regular
+      iscommand: false
+      brand: ''
+    separatecontext: false
+    continueonerrortype: ''
+    view: "{\n  \"position\": {\n    \"x\": 450,\n    \"y\": 6320\n  }\n}"
+    note: false
+    timertriggers: []
+    ignoreworker: false
+    skipunavailable: false
+    quietmode: 0
+    isoversize: false
+    isautoswitchedtoquietmode: false
+    nexttasks:
+      '#none#':
+      - '39'
+  '39':
+    id: '39'
+    taskid: fc54e786-906f-5c17-be94-23a23fa7d453
+    type: regular
+    task:
+      id: fc54e786-906f-5c17-be94-23a23fa7d453
+      version: -1
+      name: 'Evidencia: Ultimo latido del sensor y los limites exactos del hueco de telemetria'
+      description: 'Como: stats max(_time) by host alrededor de la ventana del evento
+
+        Donde: siem'
+      type: regular
+      iscommand: false
+      brand: ''
+    separatecontext: false
+    continueonerrortype: ''
+    view: "{\n  \"position\": {\n    \"x\": 450,\n    \"y\": 6510\n  }\n}"
+    note: false
+    timertriggers: []
+    ignoreworker: false
+    skipunavailable: false
+    quietmode: 0
+    isoversize: false
+    isautoswitchedtoquietmode: false
+    nexttasks:
+      '#none#':
+      - '40'
+  '40':
+    id: '40'
+    taskid: e49e646f-ff69-50c6-b6e4-652ccd8abde8
+    type: regular
+    task:
+      id: e49e646f-ff69-50c6-b6e4-652ccd8abde8
+      version: -1
+      name: 'Evidencia: Todo lo que el equipo envio en las 6 h anteriores al hueco'
+      description: 'Como: search host=X earliest=-6h@h latest=<inicio_hueco>
+
+        Donde: siem'
+      type: regular
+      iscommand: false
+      brand: ''
+    separatecontext: false
+    continueonerrortype: ''
+    view: "{\n  \"position\": {\n    \"x\": 450,\n    \"y\": 6700\n  }\n}"
+    note: false
+    timertriggers: []
+    ignoreworker: false
+    skipunavailable: false
+    quietmode: 0
+    isoversize: false
+    isautoswitchedtoquietmode: false
+    nexttasks:
+      '#none#':
+      - '41'
+  '41':
+    id: '41'
+    taskid: 78ae75a6-f989-5ee8-aba9-2c428e359a4e
+    type: regular
+    task:
+      id: 78ae75a6-f989-5ee8-aba9-2c428e359a4e
+      version: -1
+      name: 'Evidencia: La ruta o el proceso excluidos y que ficheros hay hoy en esa ruta'
+      description: 'Como: Sysmon EID 13 sobre las claves de exclusiones, mas listado de la ruta desde el manager
+
+        Donde: siem'
+      type: regular
+      iscommand: false
+      brand: ''
+    separatecontext: false
+    continueonerrortype: ''
+    view: "{\n  \"position\": {\n    \"x\": 450,\n    \"y\": 6890\n  }\n}"
+    note: false
+    timertriggers: []
+    ignoreworker: false
+    skipunavailable: false
+    quietmode: 0
+    isoversize: false
+    isautoswitchedtoquietmode: false
+    nexttasks:
+      '#none#':
+      - '42'
+  '42':
+    id: '42'
+    taskid: 24421284-873d-5ecb-9484-29e9c5b6523d
+    type: regular
+    task:
+      id: 24421284-873d-5ecb-9484-29e9c5b6523d
+      version: -1
+      name: 'Evidencia: Instalacion de servicio y carga de driver en la ventana'
+      description: 'Como: EID 7045 y 4697 del registro del sistema, mas Sysmon EID 6
+
+        Donde: siem'
+      type: regular
+      iscommand: false
+      brand: ''
+    separatecontext: false
+    continueonerrortype: ''
+    view: "{\n  \"position\": {\n    \"x\": 450,\n    \"y\": 7080\n  }\n}"
+    note: false
+    timertriggers: []
+    ignoreworker: false
+    skipunavailable: false
+    quietmode: 0
+    isoversize: false
+    isautoswitchedtoquietmode: false
+    nexttasks:
+      '#none#':
+      - '43'
+  '43':
+    id: '43'
+    taskid: 022477eb-77db-594c-ad42-6e1de5ec85e2
+    type: regular
+    task:
+      id: 022477eb-77db-594c-ad42-6e1de5ec85e2
+      version: -1
+      name: 'Evidencia: Actividad de red del equipo vista desde el cortafuegos y el proxy'
+      description: 'Como: search src_ip=<ip_agente> por el colector de red, no por el agente
+
+        Donde: siem'
+      type: regular
+      iscommand: false
+      brand: ''
+    separatecontext: false
+    continueonerrortype: ''
+    view: "{\n  \"position\": {\n    \"x\": 450,\n    \"y\": 7270\n  }\n}"
+    note: false
+    timertriggers: []
+    ignoreworker: false
+    skipunavailable: false
+    quietmode: 0
+    isoversize: false
+    isautoswitchedtoquietmode: false
+    nexttasks:
+      '#none#':
+      - '44'
+  '44':
+    id: '44'
+    taskid: 5547829e-9f15-59f0-ad45-693f29364d19
+    type: regular
+    task:
+      id: 5547829e-9f15-59f0-ad45-693f29364d19
+      version: -1
+      name: 'Evidencia: Configuracion de arranque del equipo, marcada como no fiable'
+      description: 'Como: bcdedit /enum
+
+        Donde: agente'
+      type: regular
+      iscommand: false
+      brand: ''
+    separatecontext: false
+    continueonerrortype: ''
+    view: "{\n  \"position\": {\n    \"x\": 450,\n    \"y\": 7460\n  }\n}"
+    note: false
+    timertriggers: []
+    ignoreworker: false
+    skipunavailable: false
+    quietmode: 0
+    isoversize: false
+    isautoswitchedtoquietmode: false
+    nexttasks:
+      '#none#':
+      - '45'
+  '45':
+    id: '45'
+    taskid: 47b140c7-0cab-56b9-884d-5603dfdf747a
+    type: regular
+    task:
+      id: 47b140c7-0cab-56b9-884d-5603dfdf747a
+      version: -1
+      name: Contestar el triaje pendiente
+      description: 'Pendientes en este incidente: ${ResponseLab.Plan.triaje_pendiente}
+
+
+        Preguntas del playbook:
+
+        - La accion salio de la consola de gestion y alcanza a mas de veinte equipos en la misma ventana
+
+        - Hay ventana de cambio o migracion de EDR abierta en el ITSM que cubra este equipo
+
+        - El equipo volvio a reportar por si solo en menos de 15 minutos
+
+        - La ruta excluida contiene ficheros escritos en las ultimas 24 h
+
+        - El equipo acumulaba alertas de otras familias antes del hueco
+
+        - El driver cargado figura en la lista de drivers vulnerables conocidos'
+      type: regular
+      iscommand: false
+      brand: ''
+    separatecontext: false
+    continueonerrortype: ''
+    view: "{\n  \"position\": {\n    \"x\": 450,\n    \"y\": 7650\n  }\n}"
+    note: false
+    timertriggers: []
+    ignoreworker: false
+    skipunavailable: false
+    quietmode: 0
+    isoversize: false
+    isautoswitchedtoquietmode: false
+    nexttasks:
+      '#none#':
+      - '46'
+  '46':
+    id: '46'
+    taskid: 2e119c9a-595e-5476-a35a-7761ea4d591e
+    type: regular
+    task:
+      id: 2e119c9a-595e-5476-a35a-7761ea4d591e
+      version: -1
+      name: Situaciones que requieren a una persona
+      description: 'Nunca automatico:
+
+        - Reinstalar o rearrancar el sensor
+
+        - Retirar la exclusion de antivirus
+
+        - Reconstruir el equipo
+
+        - Revisar si la misma exclusion o la misma politica estan en mas equipos'
+      type: regular
+      iscommand: false
+      brand: ''
+    separatecontext: false
+    continueonerrortype: ''
+    view: "{\n  \"position\": {\n    \"x\": 450,\n    \"y\": 7840\n  }\n}"
+    note: false
+    timertriggers: []
+    ignoreworker: false
+    skipunavailable: false
+    quietmode: 0
+    isoversize: false
+    isautoswitchedtoquietmode: false
+    nexttasks:
+      '#none#':
+      - '47'
+  '47':
+    id: '47'
+    taskid: faba0cc5-5492-577b-8c21-4f23df4231fc
+    type: title
+    task:
+      id: faba0cc5-5492-577b-8c21-4f23df4231fc
+      version: -1
+      name: Hecho
+      description: ''
+      type: title
+      iscommand: false
+      brand: ''
+    separatecontext: false
+    continueonerrortype: ''
+    view: "{\n  \"position\": {\n    \"x\": 450,\n    \"y\": 8030\n  }\n}"
+    note: false
+    timertriggers: []
+    ignoreworker: false
+    skipunavailable: false
+    quietmode: 0
+    isoversize: false
+    isautoswitchedtoquietmode: false
+view: "{\n  \"linkLabelsPosition\": {},\n  \"paper\": {\n    \"dimensions\": {\n      \"height\": 8180,\n      \"width\": 1240,\n      \"x\": -20,\n      \"y\": 0\n    }\n  }\n}"
+inputs: []
+outputs: []
+tests:
+- No tests
+fromversion: 6.10.0

@@ -1,0 +1,1463 @@
+id: ResponseLab - Macos
+version: -1
+name: ResponseLab - Macos
+description: Endpoint macOS. Generado por ResponseLab desde el playbook de DetectionLab (macos). Necesita que ResponseLabDecidir haya dejado el plan en ResponseLab.Plan.
+starttaskid: '0'
+tasks:
+  '0':
+    id: '0'
+    taskid: d6026adb-a7ee-5ff5-a942-3431ccf459dc
+    type: start
+    task:
+      id: d6026adb-a7ee-5ff5-a942-3431ccf459dc
+      version: -1
+      name: ''
+      description: ''
+      type: start
+      iscommand: false
+      brand: ''
+    separatecontext: false
+    continueonerrortype: ''
+    view: "{\n  \"position\": {\n    \"x\": 450,\n    \"y\": 50\n  }\n}"
+    note: false
+    timertriggers: []
+    ignoreworker: false
+    skipunavailable: false
+    quietmode: 0
+    isoversize: false
+    isautoswitchedtoquietmode: false
+    nexttasks:
+      '#none#':
+      - '1'
+  '1':
+    id: '1'
+    taskid: b3a78d30-63e0-572f-8719-d7166fe8b95f
+    type: title
+    task:
+      id: b3a78d30-63e0-572f-8719-d7166fe8b95f
+      version: -1
+      name: Contencion automatica
+      description: Pasos que ResponseLab marco como automaticos. No hay tareas manuales en esta fase.
+      type: title
+      iscommand: false
+      brand: ''
+    separatecontext: false
+    continueonerrortype: ''
+    view: "{\n  \"position\": {\n    \"x\": 450,\n    \"y\": 240\n  }\n}"
+    note: false
+    timertriggers: []
+    ignoreworker: false
+    skipunavailable: false
+    quietmode: 0
+    isoversize: false
+    isautoswitchedtoquietmode: false
+    nexttasks:
+      '#none#':
+      - '2'
+  '2':
+    id: '2'
+    taskid: fd25b5ce-77f5-5dca-9156-06663dacb6be
+    type: condition
+    task:
+      id: fd25b5ce-77f5-5dca-9156-06663dacb6be
+      version: -1
+      name: 'c1: Aislar el equipo en la red - automatica?'
+      description: 'Origen: Aislar el equipo en la red, dejando solo la comunicacion con el manager'
+      type: condition
+      iscommand: false
+      brand: ''
+    separatecontext: false
+    continueonerrortype: ''
+    view: "{\n  \"position\": {\n    \"x\": 450,\n    \"y\": 430\n  }\n}"
+    note: false
+    timertriggers: []
+    ignoreworker: false
+    skipunavailable: false
+    quietmode: 0
+    isoversize: false
+    isautoswitchedtoquietmode: false
+    conditions:
+    - label: 'yes'
+      condition:
+      - - operator: isEqualString
+          left:
+            value:
+              simple: ResponseLab.Plan.modos.c1
+            iscontext: true
+          right:
+            value:
+              simple: automatica
+    nexttasks:
+      'yes':
+      - '3'
+      '#default#':
+      - '4'
+  '3':
+    id: '3'
+    taskid: 6a869787-cfe8-5c6e-87a2-b05a3dceb2f9
+    type: playbook
+    task:
+      id: 6a869787-cfe8-5c6e-87a2-b05a3dceb2f9
+      version: -1
+      name: Isolate Endpoint - Generic V2
+      description: 'ResponseLab c1: Aislar el equipo en la red'
+      type: playbook
+      iscommand: false
+      brand: ''
+      playbookName: Isolate Endpoint - Generic V2
+    separatecontext: true
+    continueonerrortype: ''
+    view: "{\n  \"position\": {\n    \"x\": 870,\n    \"y\": 620\n  }\n}"
+    note: false
+    timertriggers: []
+    ignoreworker: false
+    skipunavailable: true
+    quietmode: 0
+    isoversize: false
+    isautoswitchedtoquietmode: false
+    scriptarguments:
+      Endpoint_hostname:
+        complex:
+          root: ResponseLab.Plan.entradas.c1
+          accessor: Endpoint_hostname
+      Endpoint_id:
+        complex:
+          root: ResponseLab.Plan.entradas.c1
+          accessor: Endpoint_id
+      Endpoint_ip:
+        complex:
+          root: ResponseLab.Plan.entradas.c1
+          accessor: Endpoint_ip
+    loop:
+      iscommand: false
+      exitCondition: ''
+      wait: 1
+      max: 0
+    continueonerror: true
+    nexttasks:
+      '#none#':
+      - '4'
+  '4':
+    id: '4'
+    taskid: 8abf41db-199c-5c26-bc7e-a1801f7c897f
+    type: title
+    task:
+      id: 8abf41db-199c-5c26-bc7e-a1801f7c897f
+      version: -1
+      name: c1 hecho
+      description: ''
+      type: title
+      iscommand: false
+      brand: ''
+    separatecontext: false
+    continueonerrortype: ''
+    view: "{\n  \"position\": {\n    \"x\": 450,\n    \"y\": 810\n  }\n}"
+    note: false
+    timertriggers: []
+    ignoreworker: false
+    skipunavailable: false
+    quietmode: 0
+    isoversize: false
+    isautoswitchedtoquietmode: false
+    nexttasks:
+      '#none#':
+      - '5'
+  '5':
+    id: '5'
+    taskid: d61d3efa-4ed6-5b17-9e84-30bec90a9fd8
+    type: condition
+    task:
+      id: d61d3efa-4ed6-5b17-9e84-30bec90a9fd8
+      version: -1
+      name: 'c3: Poner un fichero en cuarentena - automatica?'
+      description: 'Origen: Poner el binario en cuarentena moviendolo al almacen de custodia, conservando hash y atributos extendidos'
+      type: condition
+      iscommand: false
+      brand: ''
+    separatecontext: false
+    continueonerrortype: ''
+    view: "{\n  \"position\": {\n    \"x\": 450,\n    \"y\": 1000\n  }\n}"
+    note: false
+    timertriggers: []
+    ignoreworker: false
+    skipunavailable: false
+    quietmode: 0
+    isoversize: false
+    isautoswitchedtoquietmode: false
+    conditions:
+    - label: 'yes'
+      condition:
+      - - operator: isEqualString
+          left:
+            value:
+              simple: ResponseLab.Plan.modos.c3
+            iscontext: true
+          right:
+            value:
+              simple: automatica
+    nexttasks:
+      'yes':
+      - '6'
+      '#default#':
+      - '7'
+  '6':
+    id: '6'
+    taskid: d8f26c2f-7351-5741-bba4-8897fe8f9e19
+    type: regular
+    task:
+      id: d8f26c2f-7351-5741-bba4-8897fe8f9e19
+      version: -1
+      name: microsoft-atp-stop-and-quarantine-file
+      description: 'ResponseLab c3: Poner un fichero en cuarentena'
+      type: regular
+      iscommand: true
+      brand: ''
+      script: '|||microsoft-atp-stop-and-quarantine-file'
+    separatecontext: false
+    continueonerrortype: ''
+    view: "{\n  \"position\": {\n    \"x\": 870,\n    \"y\": 1190\n  }\n}"
+    note: false
+    timertriggers: []
+    ignoreworker: false
+    skipunavailable: true
+    quietmode: 0
+    isoversize: false
+    isautoswitchedtoquietmode: false
+    scriptarguments:
+      machine_id:
+        complex:
+          root: ResponseLab.Plan.entradas.c3
+          accessor: machine_id
+      file_hash:
+        complex:
+          root: ResponseLab.Plan.entradas.c3
+          accessor: file_hash
+      comment:
+        complex:
+          root: ResponseLab.Plan.entradas.c3
+          accessor: comment
+    continueonerror: true
+    nexttasks:
+      '#none#':
+      - '7'
+  '7':
+    id: '7'
+    taskid: ec529815-806d-5788-b50d-3b6cd449f29c
+    type: title
+    task:
+      id: ec529815-806d-5788-b50d-3b6cd449f29c
+      version: -1
+      name: c3 hecho
+      description: ''
+      type: title
+      iscommand: false
+      brand: ''
+    separatecontext: false
+    continueonerrortype: ''
+    view: "{\n  \"position\": {\n    \"x\": 450,\n    \"y\": 1380\n  }\n}"
+    note: false
+    timertriggers: []
+    ignoreworker: false
+    skipunavailable: false
+    quietmode: 0
+    isoversize: false
+    isautoswitchedtoquietmode: false
+    nexttasks:
+      '#none#':
+      - '8'
+  '8':
+    id: '8'
+    taskid: 0e2fa054-dfa7-519f-a2eb-f8e8fc2ecf39
+    type: title
+    task:
+      id: 0e2fa054-dfa7-519f-a2eb-f8e8fc2ecf39
+      version: -1
+      name: Aprobaciones y acciones a mano
+      description: Lo que pide aprobacion se aprueba aqui; lo que no tiene traduccion en XSOAR es una tarea.
+      type: title
+      iscommand: false
+      brand: ''
+    separatecontext: false
+    continueonerrortype: ''
+    view: "{\n  \"position\": {\n    \"x\": 450,\n    \"y\": 1570\n  }\n}"
+    note: false
+    timertriggers: []
+    ignoreworker: false
+    skipunavailable: false
+    quietmode: 0
+    isoversize: false
+    isautoswitchedtoquietmode: false
+    nexttasks:
+      '#none#':
+      - '9'
+  '9':
+    id: '9'
+    taskid: 56fc3d68-d0fa-5389-aeba-dcfd2cec4a27
+    type: condition
+    task:
+      id: 56fc3d68-d0fa-5389-aeba-dcfd2cec4a27
+      version: -1
+      name: 'c1: Aislar el equipo en la red - que modo?'
+      description: 'Motivo del modo en la War Room (salida de ResponseLabDecidir). Origen: Aislar el equipo en la red, dejando solo la comunicacion con el manager'
+      type: condition
+      iscommand: false
+      brand: ''
+    separatecontext: false
+    continueonerrortype: ''
+    view: "{\n  \"position\": {\n    \"x\": 450,\n    \"y\": 1760\n  }\n}"
+    note: false
+    timertriggers: []
+    ignoreworker: false
+    skipunavailable: false
+    quietmode: 0
+    isoversize: false
+    isautoswitchedtoquietmode: false
+    conditions:
+    - label: aprobacion
+      condition:
+      - - operator: isEqualString
+          left:
+            value:
+              simple: ResponseLab.Plan.modos.c1
+            iscontext: true
+          right:
+            value:
+              simple: aprobacion
+    - label: manual
+      condition:
+      - - operator: isEqualString
+          left:
+            value:
+              simple: ResponseLab.Plan.modos.c1
+            iscontext: true
+          right:
+            value:
+              simple: manual
+    nexttasks:
+      '#default#':
+      - '10'
+      aprobacion:
+      - '11'
+      manual:
+      - '13'
+  '10':
+    id: '10'
+    taskid: af34da5b-b19d-50ba-89cd-e0b7c8ed49ac
+    type: title
+    task:
+      id: af34da5b-b19d-50ba-89cd-e0b7c8ed49ac
+      version: -1
+      name: c1 resuelto
+      description: ''
+      type: title
+      iscommand: false
+      brand: ''
+    separatecontext: false
+    continueonerrortype: ''
+    view: "{\n  \"position\": {\n    \"x\": 450,\n    \"y\": 2330\n  }\n}"
+    note: false
+    timertriggers: []
+    ignoreworker: false
+    skipunavailable: false
+    quietmode: 0
+    isoversize: false
+    isautoswitchedtoquietmode: false
+    nexttasks:
+      '#none#':
+      - '14'
+  '11':
+    id: '11'
+    taskid: bada04f5-db96-5223-bed6-6715104a3754
+    type: condition
+    task:
+      id: bada04f5-db96-5223-bed6-6715104a3754
+      version: -1
+      name: 'Aprobar: Aislar el equipo en la red'
+      description: 'Radio equipo, reversible si, se deshace con endpoint.liberar. Origen: Aislar el equipo en la red, dejando solo la comunicacion con el manager Por que: Reversible en un comando y el peor caso son veinte minutos de trabajo perdidos. Frente a eso, un volcado de llavero sin contener sigue subiendo credenciales de navegador y certificados mientras el turno tria.'
+      type: condition
+      iscommand: false
+      brand: ''
+    separatecontext: false
+    continueonerrortype: ''
+    view: "{\n  \"position\": {\n    \"x\": 30,\n    \"y\": 1950\n  }\n}"
+    note: false
+    timertriggers: []
+    ignoreworker: false
+    skipunavailable: false
+    quietmode: 0
+    isoversize: false
+    isautoswitchedtoquietmode: false
+    nexttasks:
+      Si:
+      - '12'
+      'No':
+      - '10'
+  '12':
+    id: '12'
+    taskid: 97e46310-7d82-5f2b-8622-e2bd99da9abb
+    type: playbook
+    task:
+      id: 97e46310-7d82-5f2b-8622-e2bd99da9abb
+      version: -1
+      name: Isolate Endpoint - Generic V2
+      description: 'ResponseLab c1: Aislar el equipo en la red'
+      type: playbook
+      iscommand: false
+      brand: ''
+      playbookName: Isolate Endpoint - Generic V2
+    separatecontext: true
+    continueonerrortype: ''
+    view: "{\n  \"position\": {\n    \"x\": 30,\n    \"y\": 2140\n  }\n}"
+    note: false
+    timertriggers: []
+    ignoreworker: false
+    skipunavailable: true
+    quietmode: 0
+    isoversize: false
+    isautoswitchedtoquietmode: false
+    scriptarguments:
+      Endpoint_hostname:
+        complex:
+          root: ResponseLab.Plan.entradas.c1
+          accessor: Endpoint_hostname
+      Endpoint_id:
+        complex:
+          root: ResponseLab.Plan.entradas.c1
+          accessor: Endpoint_id
+      Endpoint_ip:
+        complex:
+          root: ResponseLab.Plan.entradas.c1
+          accessor: Endpoint_ip
+    loop:
+      iscommand: false
+      exitCondition: ''
+      wait: 1
+      max: 0
+    continueonerror: true
+    nexttasks:
+      '#none#':
+      - '10'
+  '13':
+    id: '13'
+    taskid: 016bc69e-2cd8-58d1-b49f-3612c506b88f
+    type: regular
+    task:
+      id: 016bc69e-2cd8-58d1-b49f-3612c506b88f
+      version: -1
+      name: 'A mano: Aislar el equipo en la red'
+      description: 'ResponseLab la deja al analista (motivo en la War Room). Origen: Aislar el equipo en la red, dejando solo la comunicacion con el manager Por que: Reversible en un comando y el peor caso son veinte minutos de trabajo perdidos. Frente a eso, un volcado de llavero sin contener sigue subiendo credenciales de navegador y certificados mientras el turno tria.'
+      type: regular
+      iscommand: false
+      brand: ''
+    separatecontext: false
+    continueonerrortype: ''
+    view: "{\n  \"position\": {\n    \"x\": 870,\n    \"y\": 1950\n  }\n}"
+    note: false
+    timertriggers: []
+    ignoreworker: false
+    skipunavailable: false
+    quietmode: 0
+    isoversize: false
+    isautoswitchedtoquietmode: false
+    nexttasks:
+      '#none#':
+      - '10'
+  '14':
+    id: '14'
+    taskid: f7c565f0-ccb5-521c-bb22-a7e68d48d4e0
+    type: condition
+    task:
+      id: f7c565f0-ccb5-521c-bb22-a7e68d48d4e0
+      version: -1
+      name: 'c2: Matar un proceso identificado sin ambiguedad - que modo?'
+      description: 'Motivo del modo en la War Room (salida de ResponseLabDecidir). Origen: Matar el proceso por PID y hora de arranque'
+      type: condition
+      iscommand: false
+      brand: ''
+    separatecontext: false
+    continueonerrortype: ''
+    view: "{\n  \"position\": {\n    \"x\": 450,\n    \"y\": 2520\n  }\n}"
+    note: false
+    timertriggers: []
+    ignoreworker: false
+    skipunavailable: false
+    quietmode: 0
+    isoversize: false
+    isautoswitchedtoquietmode: false
+    conditions:
+    - label: aprobacion
+      condition:
+      - - operator: isEqualString
+          left:
+            value:
+              simple: ResponseLab.Plan.modos.c2
+            iscontext: true
+          right:
+            value:
+              simple: aprobacion
+    - label: manual
+      condition:
+      - - operator: isEqualString
+          left:
+            value:
+              simple: ResponseLab.Plan.modos.c2
+            iscontext: true
+          right:
+            value:
+              simple: manual
+    - label: automatica
+      condition:
+      - - operator: isEqualString
+          left:
+            value:
+              simple: ResponseLab.Plan.modos.c2
+            iscontext: true
+          right:
+            value:
+              simple: automatica
+    nexttasks:
+      '#default#':
+      - '15'
+      aprobacion:
+      - '16'
+      manual:
+      - '18'
+      automatica:
+      - '18'
+  '15':
+    id: '15'
+    taskid: 247a1ccc-288c-53a6-8e55-a5f6ccffe6ab
+    type: title
+    task:
+      id: 247a1ccc-288c-53a6-8e55-a5f6ccffe6ab
+      version: -1
+      name: c2 resuelto
+      description: ''
+      type: title
+      iscommand: false
+      brand: ''
+    separatecontext: false
+    continueonerrortype: ''
+    view: "{\n  \"position\": {\n    \"x\": 450,\n    \"y\": 3090\n  }\n}"
+    note: false
+    timertriggers: []
+    ignoreworker: false
+    skipunavailable: false
+    quietmode: 0
+    isoversize: false
+    isautoswitchedtoquietmode: false
+    nexttasks:
+      '#none#':
+      - '19'
+  '16':
+    id: '16'
+    taskid: 844635dc-12de-53c7-84b8-0912a7cc0e1f
+    type: condition
+    task:
+      id: 844635dc-12de-53c7-84b8-0912a7cc0e1f
+      version: -1
+      name: 'Aprobar: Matar un proceso identificado sin ambiguedad'
+      description: 'Radio proceso, reversible no. Origen: Matar el proceso por PID y hora de arranque Por que: No se deshace, pero el alcance es un proceso y el error se paga con una aplicacion que hay que volver a abrir. Identificarlo por PID mas hora de arranque evita el fallo clasico de matar el proceso equivocado despues de que el PID se reutilice.'
+      type: condition
+      iscommand: false
+      brand: ''
+    separatecontext: false
+    continueonerrortype: ''
+    view: "{\n  \"position\": {\n    \"x\": 30,\n    \"y\": 2710\n  }\n}"
+    note: false
+    timertriggers: []
+    ignoreworker: false
+    skipunavailable: false
+    quietmode: 0
+    isoversize: false
+    isautoswitchedtoquietmode: false
+    nexttasks:
+      Si:
+      - '17'
+      'No':
+      - '15'
+  '17':
+    id: '17'
+    taskid: 98c1a9e0-0a09-5b69-b469-7e0add3e482c
+    type: regular
+    task:
+      id: 98c1a9e0-0a09-5b69-b469-7e0add3e482c
+      version: -1
+      name: 'Ejecutar a mano: Matar un proceso identificado sin ambiguedad'
+      description: 'Aprobada. XSOAR no tiene traduccion nativa de proceso.matar: hazla con la herramienta del cliente o con el motor de ResponseLab. Origen: Matar el proceso por PID y hora de arranque'
+      type: regular
+      iscommand: false
+      brand: ''
+    separatecontext: false
+    continueonerrortype: ''
+    view: "{\n  \"position\": {\n    \"x\": 30,\n    \"y\": 2900\n  }\n}"
+    note: false
+    timertriggers: []
+    ignoreworker: false
+    skipunavailable: false
+    quietmode: 0
+    isoversize: false
+    isautoswitchedtoquietmode: false
+    nexttasks:
+      '#none#':
+      - '15'
+  '18':
+    id: '18'
+    taskid: b01fb9ec-6b63-5614-9b94-d1a6715bb09e
+    type: regular
+    task:
+      id: b01fb9ec-6b63-5614-9b94-d1a6715bb09e
+      version: -1
+      name: 'A mano: Matar un proceso identificado sin ambiguedad'
+      description: 'ResponseLab la deja al analista (motivo en la War Room). Origen: Matar el proceso por PID y hora de arranque Por que: No se deshace, pero el alcance es un proceso y el error se paga con una aplicacion que hay que volver a abrir. Identificarlo por PID mas hora de arranque evita el fallo clasico de matar el proceso equivocado despues de que el PID se reutilice.'
+      type: regular
+      iscommand: false
+      brand: ''
+    separatecontext: false
+    continueonerrortype: ''
+    view: "{\n  \"position\": {\n    \"x\": 870,\n    \"y\": 2710\n  }\n}"
+    note: false
+    timertriggers: []
+    ignoreworker: false
+    skipunavailable: false
+    quietmode: 0
+    isoversize: false
+    isautoswitchedtoquietmode: false
+    nexttasks:
+      '#none#':
+      - '15'
+  '19':
+    id: '19'
+    taskid: 842d2c92-f5bc-5ae2-a7fb-7c12f6952857
+    type: condition
+    task:
+      id: 842d2c92-f5bc-5ae2-a7fb-7c12f6952857
+      version: -1
+      name: 'c3: Poner un fichero en cuarentena - que modo?'
+      description: 'Motivo del modo en la War Room (salida de ResponseLabDecidir). Origen: Poner el binario en cuarentena moviendolo al almacen de custodia, conservando hash y atributos extendidos'
+      type: condition
+      iscommand: false
+      brand: ''
+    separatecontext: false
+    continueonerrortype: ''
+    view: "{\n  \"position\": {\n    \"x\": 450,\n    \"y\": 3280\n  }\n}"
+    note: false
+    timertriggers: []
+    ignoreworker: false
+    skipunavailable: false
+    quietmode: 0
+    isoversize: false
+    isautoswitchedtoquietmode: false
+    conditions:
+    - label: aprobacion
+      condition:
+      - - operator: isEqualString
+          left:
+            value:
+              simple: ResponseLab.Plan.modos.c3
+            iscontext: true
+          right:
+            value:
+              simple: aprobacion
+    - label: manual
+      condition:
+      - - operator: isEqualString
+          left:
+            value:
+              simple: ResponseLab.Plan.modos.c3
+            iscontext: true
+          right:
+            value:
+              simple: manual
+    nexttasks:
+      '#default#':
+      - '20'
+      aprobacion:
+      - '21'
+      manual:
+      - '23'
+  '20':
+    id: '20'
+    taskid: 7740a965-60e9-5430-8304-b32e5db3adaf
+    type: title
+    task:
+      id: 7740a965-60e9-5430-8304-b32e5db3adaf
+      version: -1
+      name: c3 resuelto
+      description: ''
+      type: title
+      iscommand: false
+      brand: ''
+    separatecontext: false
+    continueonerrortype: ''
+    view: "{\n  \"position\": {\n    \"x\": 450,\n    \"y\": 3850\n  }\n}"
+    note: false
+    timertriggers: []
+    ignoreworker: false
+    skipunavailable: false
+    quietmode: 0
+    isoversize: false
+    isautoswitchedtoquietmode: false
+    nexttasks:
+      '#none#':
+      - '24'
+  '21':
+    id: '21'
+    taskid: c636cb81-8612-55df-a750-1887fa9ea799
+    type: condition
+    task:
+      id: c636cb81-8612-55df-a750-1887fa9ea799
+      version: -1
+      name: 'Aprobar: Poner un fichero en cuarentena'
+      description: 'Radio objeto, reversible si, se deshace con fichero.restaurar. Origen: Poner el binario en cuarentena moviendolo al almacen de custodia, conservando hash y atributos extendidos Por que: Se conserva la ruta y los xattr, asi que devolverlo es un comando; y conservar el atributo de cuarentena importa porque es la evidencia de por donde entro.'
+      type: condition
+      iscommand: false
+      brand: ''
+    separatecontext: false
+    continueonerrortype: ''
+    view: "{\n  \"position\": {\n    \"x\": 30,\n    \"y\": 3470\n  }\n}"
+    note: false
+    timertriggers: []
+    ignoreworker: false
+    skipunavailable: false
+    quietmode: 0
+    isoversize: false
+    isautoswitchedtoquietmode: false
+    nexttasks:
+      Si:
+      - '22'
+      'No':
+      - '20'
+  '22':
+    id: '22'
+    taskid: 53dbaabe-700a-5c71-bca1-8f1c0196518c
+    type: regular
+    task:
+      id: 53dbaabe-700a-5c71-bca1-8f1c0196518c
+      version: -1
+      name: microsoft-atp-stop-and-quarantine-file
+      description: 'ResponseLab c3: Poner un fichero en cuarentena'
+      type: regular
+      iscommand: true
+      brand: ''
+      script: '|||microsoft-atp-stop-and-quarantine-file'
+    separatecontext: false
+    continueonerrortype: ''
+    view: "{\n  \"position\": {\n    \"x\": 30,\n    \"y\": 3660\n  }\n}"
+    note: false
+    timertriggers: []
+    ignoreworker: false
+    skipunavailable: true
+    quietmode: 0
+    isoversize: false
+    isautoswitchedtoquietmode: false
+    scriptarguments:
+      machine_id:
+        complex:
+          root: ResponseLab.Plan.entradas.c3
+          accessor: machine_id
+      file_hash:
+        complex:
+          root: ResponseLab.Plan.entradas.c3
+          accessor: file_hash
+      comment:
+        complex:
+          root: ResponseLab.Plan.entradas.c3
+          accessor: comment
+    continueonerror: true
+    nexttasks:
+      '#none#':
+      - '20'
+  '23':
+    id: '23'
+    taskid: b63eebb4-3fe0-5eb0-ba25-d4d91dc25ad9
+    type: regular
+    task:
+      id: b63eebb4-3fe0-5eb0-ba25-d4d91dc25ad9
+      version: -1
+      name: 'A mano: Poner un fichero en cuarentena'
+      description: 'ResponseLab la deja al analista (motivo en la War Room). Origen: Poner el binario en cuarentena moviendolo al almacen de custodia, conservando hash y atributos extendidos Por que: Se conserva la ruta y los xattr, asi que devolverlo es un comando; y conservar el atributo de cuarentena importa porque es la evidencia de por donde entro.'
+      type: regular
+      iscommand: false
+      brand: ''
+    separatecontext: false
+    continueonerrortype: ''
+    view: "{\n  \"position\": {\n    \"x\": 870,\n    \"y\": 3470\n  }\n}"
+    note: false
+    timertriggers: []
+    ignoreworker: false
+    skipunavailable: false
+    quietmode: 0
+    isoversize: false
+    isautoswitchedtoquietmode: false
+    nexttasks:
+      '#none#':
+      - '20'
+  '24':
+    id: '24'
+    taskid: 67820bc2-89b5-56cf-9467-0ef40d6b7cc7
+    type: condition
+    task:
+      id: 67820bc2-89b5-56cf-9467-0ef40d6b7cc7
+      version: -1
+      name: 'c4: Deshabilitar un elemento de persistencia exportando antes su definicion - que modo?'
+      description: 'Motivo del modo en la War Room (salida de ResponseLabDecidir). Origen: Descargar y retirar el elemento de persistencia (launchctl bootout mas mover el plist)'
+      type: condition
+      iscommand: false
+      brand: ''
+    separatecontext: false
+    continueonerrortype: ''
+    view: "{\n  \"position\": {\n    \"x\": 450,\n    \"y\": 4040\n  }\n}"
+    note: false
+    timertriggers: []
+    ignoreworker: false
+    skipunavailable: false
+    quietmode: 0
+    isoversize: false
+    isautoswitchedtoquietmode: false
+    conditions:
+    - label: aprobacion
+      condition:
+      - - operator: isEqualString
+          left:
+            value:
+              simple: ResponseLab.Plan.modos.c4
+            iscontext: true
+          right:
+            value:
+              simple: aprobacion
+    - label: manual
+      condition:
+      - - operator: isEqualString
+          left:
+            value:
+              simple: ResponseLab.Plan.modos.c4
+            iscontext: true
+          right:
+            value:
+              simple: manual
+    - label: automatica
+      condition:
+      - - operator: isEqualString
+          left:
+            value:
+              simple: ResponseLab.Plan.modos.c4
+            iscontext: true
+          right:
+            value:
+              simple: automatica
+    nexttasks:
+      '#default#':
+      - '25'
+      aprobacion:
+      - '26'
+      manual:
+      - '28'
+      automatica:
+      - '28'
+  '25':
+    id: '25'
+    taskid: 9da5d56b-5fff-5c28-ab6b-3e1d5a92d8e4
+    type: title
+    task:
+      id: 9da5d56b-5fff-5c28-ab6b-3e1d5a92d8e4
+      version: -1
+      name: c4 resuelto
+      description: ''
+      type: title
+      iscommand: false
+      brand: ''
+    separatecontext: false
+    continueonerrortype: ''
+    view: "{\n  \"position\": {\n    \"x\": 450,\n    \"y\": 4610\n  }\n}"
+    note: false
+    timertriggers: []
+    ignoreworker: false
+    skipunavailable: false
+    quietmode: 0
+    isoversize: false
+    isautoswitchedtoquietmode: false
+    nexttasks:
+      '#none#':
+      - '29'
+  '26':
+    id: '26'
+    taskid: fb0c1b26-0a90-56cf-94f5-45b2c94945b8
+    type: condition
+    task:
+      id: fb0c1b26-0a90-56cf-94f5-45b2c94945b8
+      version: -1
+      name: 'Aprobar: Deshabilitar un elemento de persistencia exportando antes su definicion'
+      description: 'Radio objeto, reversible si, se deshace con persistencia.restaurar. Origen: Descargar y retirar el elemento de persistencia (launchctl bootout mas mover el plist) Por que: El plist se guarda antes, asi que la accion se deshace, pero en un parque pequeno una parte de los LaunchDaemons son de herramientas internas que nadie inventario nunca: retirar el equivocado deja un equipo sin VPN, sin copia de seguridad o sin el agente de gestion, y nadie lo relaciona con el incidente hasta dias despues. Preparar la accion cuesta lo mismo que ejecutarla y la valida quien conoce el parque.'
+      type: condition
+      iscommand: false
+      brand: ''
+    separatecontext: false
+    continueonerrortype: ''
+    view: "{\n  \"position\": {\n    \"x\": 30,\n    \"y\": 4230\n  }\n}"
+    note: false
+    timertriggers: []
+    ignoreworker: false
+    skipunavailable: false
+    quietmode: 0
+    isoversize: false
+    isautoswitchedtoquietmode: false
+    nexttasks:
+      Si:
+      - '27'
+      'No':
+      - '25'
+  '27':
+    id: '27'
+    taskid: 183e531e-fb8e-533c-b582-76fddfc8a78d
+    type: regular
+    task:
+      id: 183e531e-fb8e-533c-b582-76fddfc8a78d
+      version: -1
+      name: 'Ejecutar a mano: Deshabilitar un elemento de persistencia exportando antes su definicion'
+      description: 'Aprobada. XSOAR no tiene traduccion nativa de persistencia.deshabilitar: hazla con la herramienta del cliente o con el motor de ResponseLab. Origen: Descargar y retirar el elemento de persistencia (launchctl bootout mas mover el plist)'
+      type: regular
+      iscommand: false
+      brand: ''
+    separatecontext: false
+    continueonerrortype: ''
+    view: "{\n  \"position\": {\n    \"x\": 30,\n    \"y\": 4420\n  }\n}"
+    note: false
+    timertriggers: []
+    ignoreworker: false
+    skipunavailable: false
+    quietmode: 0
+    isoversize: false
+    isautoswitchedtoquietmode: false
+    nexttasks:
+      '#none#':
+      - '25'
+  '28':
+    id: '28'
+    taskid: 7cd5757b-6b64-5b2e-b418-5a216a8c93a0
+    type: regular
+    task:
+      id: 7cd5757b-6b64-5b2e-b418-5a216a8c93a0
+      version: -1
+      name: 'A mano: Deshabilitar un elemento de persistencia exportando antes su definicion'
+      description: 'ResponseLab la deja al analista (motivo en la War Room). Origen: Descargar y retirar el elemento de persistencia (launchctl bootout mas mover el plist) Por que: El plist se guarda antes, asi que la accion se deshace, pero en un parque pequeno una parte de los LaunchDaemons son de herramientas internas que nadie inventario nunca: retirar el equivocado deja un equipo sin VPN, sin copia de seguridad o sin el agente de gestion, y nadie lo relaciona con el incidente hasta dias despues. Preparar la accion cuesta lo mismo que ejecutarla y la valida quien conoce el parque.'
+      type: regular
+      iscommand: false
+      brand: ''
+    separatecontext: false
+    continueonerrortype: ''
+    view: "{\n  \"position\": {\n    \"x\": 870,\n    \"y\": 4230\n  }\n}"
+    note: false
+    timertriggers: []
+    ignoreworker: false
+    skipunavailable: false
+    quietmode: 0
+    isoversize: false
+    isautoswitchedtoquietmode: false
+    nexttasks:
+      '#none#':
+      - '25'
+  '29':
+    id: '29'
+    taskid: ca434114-c6f1-5deb-a688-829d61944e17
+    type: condition
+    task:
+      id: ca434114-c6f1-5deb-a688-829d61944e17
+      version: -1
+      name: 'e1: Recoger triage forense del equipo con FtriageDFIR - que modo?'
+      description: 'Motivo del modo en la War Room (salida de ResponseLabDecidir). Origen: Recoger triage forense del equipo con FtriageDFIR'
+      type: condition
+      iscommand: false
+      brand: ''
+    separatecontext: false
+    continueonerrortype: ''
+    view: "{\n  \"position\": {\n    \"x\": 450,\n    \"y\": 4800\n  }\n}"
+    note: false
+    timertriggers: []
+    ignoreworker: false
+    skipunavailable: false
+    quietmode: 0
+    isoversize: false
+    isautoswitchedtoquietmode: false
+    conditions:
+    - label: aprobacion
+      condition:
+      - - operator: isEqualString
+          left:
+            value:
+              simple: ResponseLab.Plan.modos.e1
+            iscontext: true
+          right:
+            value:
+              simple: aprobacion
+    - label: manual
+      condition:
+      - - operator: isEqualString
+          left:
+            value:
+              simple: ResponseLab.Plan.modos.e1
+            iscontext: true
+          right:
+            value:
+              simple: manual
+    - label: automatica
+      condition:
+      - - operator: isEqualString
+          left:
+            value:
+              simple: ResponseLab.Plan.modos.e1
+            iscontext: true
+          right:
+            value:
+              simple: automatica
+    nexttasks:
+      '#default#':
+      - '30'
+      aprobacion:
+      - '31'
+      manual:
+      - '33'
+      automatica:
+      - '33'
+  '30':
+    id: '30'
+    taskid: 99a12c13-3342-5c74-8729-2ea9a1f4f30a
+    type: title
+    task:
+      id: 99a12c13-3342-5c74-8729-2ea9a1f4f30a
+      version: -1
+      name: e1 resuelto
+      description: ''
+      type: title
+      iscommand: false
+      brand: ''
+    separatecontext: false
+    continueonerrortype: ''
+    view: "{\n  \"position\": {\n    \"x\": 450,\n    \"y\": 5370\n  }\n}"
+    note: false
+    timertriggers: []
+    ignoreworker: false
+    skipunavailable: false
+    quietmode: 0
+    isoversize: false
+    isautoswitchedtoquietmode: false
+    nexttasks:
+      '#none#':
+      - '34'
+  '31':
+    id: '31'
+    taskid: 62c29e52-49d0-5a6d-b0d5-cbfc18b9d956
+    type: condition
+    task:
+      id: 62c29e52-49d0-5a6d-b0d5-cbfc18b9d956
+      version: -1
+      name: 'Aprobar: Recoger triage forense del equipo con FtriageDFIR'
+      description: 'Radio objeto, reversible si. Origen: Recoger triage forense del equipo con FtriageDFIR'
+      type: condition
+      iscommand: false
+      brand: ''
+    separatecontext: false
+    continueonerrortype: ''
+    view: "{\n  \"position\": {\n    \"x\": 30,\n    \"y\": 4990\n  }\n}"
+    note: false
+    timertriggers: []
+    ignoreworker: false
+    skipunavailable: false
+    quietmode: 0
+    isoversize: false
+    isautoswitchedtoquietmode: false
+    nexttasks:
+      Si:
+      - '32'
+      'No':
+      - '30'
+  '32':
+    id: '32'
+    taskid: 81788e28-9e25-57fa-bbab-9589f7eebd74
+    type: regular
+    task:
+      id: 81788e28-9e25-57fa-bbab-9589f7eebd74
+      version: -1
+      name: 'Ejecutar a mano: Recoger triage forense del equipo con FtriageDFIR'
+      description: 'Aprobada. XSOAR no tiene traduccion nativa de evidencia.triage_forense: hazla con la herramienta del cliente o con el motor de ResponseLab. Origen: Recoger triage forense del equipo con FtriageDFIR'
+      type: regular
+      iscommand: false
+      brand: ''
+    separatecontext: false
+    continueonerrortype: ''
+    view: "{\n  \"position\": {\n    \"x\": 30,\n    \"y\": 5180\n  }\n}"
+    note: false
+    timertriggers: []
+    ignoreworker: false
+    skipunavailable: false
+    quietmode: 0
+    isoversize: false
+    isautoswitchedtoquietmode: false
+    nexttasks:
+      '#none#':
+      - '30'
+  '33':
+    id: '33'
+    taskid: e73cfcf6-401c-5f57-99b6-ed651aeea2c0
+    type: regular
+    task:
+      id: e73cfcf6-401c-5f57-99b6-ed651aeea2c0
+      version: -1
+      name: 'A mano: Recoger triage forense del equipo con FtriageDFIR'
+      description: 'ResponseLab la deja al analista (motivo en la War Room). Origen: Recoger triage forense del equipo con FtriageDFIR'
+      type: regular
+      iscommand: false
+      brand: ''
+    separatecontext: false
+    continueonerrortype: ''
+    view: "{\n  \"position\": {\n    \"x\": 870,\n    \"y\": 4990\n  }\n}"
+    note: false
+    timertriggers: []
+    ignoreworker: false
+    skipunavailable: false
+    quietmode: 0
+    isoversize: false
+    isautoswitchedtoquietmode: false
+    nexttasks:
+      '#none#':
+      - '30'
+  '34':
+    id: '34'
+    taskid: bd9a68ff-fe3e-5e52-b448-ccacddbdfcae
+    type: title
+    task:
+      id: bd9a68ff-fe3e-5e52-b448-ccacddbdfcae
+      version: -1
+      name: Checklist del playbook
+      description: ''
+      type: title
+      iscommand: false
+      brand: ''
+    separatecontext: false
+    continueonerrortype: ''
+    view: "{\n  \"position\": {\n    \"x\": 450,\n    \"y\": 5560\n  }\n}"
+    note: false
+    timertriggers: []
+    ignoreworker: false
+    skipunavailable: false
+    quietmode: 0
+    isoversize: false
+    isautoswitchedtoquietmode: false
+    nexttasks:
+      '#none#':
+      - '35'
+  '35':
+    id: '35'
+    taskid: c7115f27-50a9-5492-b6fe-60fac71480c2
+    type: regular
+    task:
+      id: c7115f27-50a9-5492-b6fe-60fac71480c2
+      version: -1
+      name: Escalar segun el plan
+      description: 'Plazo del playbook: L2 en 30 min. El plan de este incidente: ${ResponseLab.Plan.escalado.a} en ${ResponseLab.Plan.escalado.plazo_min} min.
+
+        A L3 si: Se volco el llavero, se deshabilito SIP o el equipo guarda claves de firma'
+      type: regular
+      iscommand: false
+      brand: ''
+    separatecontext: false
+    continueonerrortype: ''
+    view: "{\n  \"position\": {\n    \"x\": 450,\n    \"y\": 5750\n  }\n}"
+    note: false
+    timertriggers: []
+    ignoreworker: false
+    skipunavailable: false
+    quietmode: 0
+    isoversize: false
+    isautoswitchedtoquietmode: false
+    nexttasks:
+      '#none#':
+      - '36'
+  '36':
+    id: '36'
+    taskid: e113158a-dfbe-53bc-9983-c53867f298fd
+    type: regular
+    task:
+      id: e113158a-dfbe-53bc-9983-c53867f298fd
+      version: -1
+      name: 'Evidencia: Firma, notarizacion y Team ID del binario'
+      description: 'Como: codesign -dv --verbose=4 <ruta> y spctl -a -vv <ruta>
+
+        Donde: agente'
+      type: regular
+      iscommand: false
+      brand: ''
+    separatecontext: false
+    continueonerrortype: ''
+    view: "{\n  \"position\": {\n    \"x\": 450,\n    \"y\": 5940\n  }\n}"
+    note: false
+    timertriggers: []
+    ignoreworker: false
+    skipunavailable: false
+    quietmode: 0
+    isoversize: false
+    isautoswitchedtoquietmode: false
+    nexttasks:
+      '#none#':
+      - '37'
+  '37':
+    id: '37'
+    taskid: 4ce3810a-352c-5f1f-804e-d5b82d7c5fbd
+    type: regular
+    task:
+      id: 4ce3810a-352c-5f1f-804e-d5b82d7c5fbd
+      version: -1
+      name: 'Evidencia: Procedencia del fichero segun el atributo de cuarentena'
+      description: 'Como: xattr -p com.apple.quarantine <ruta>
+
+        Donde: agente'
+      type: regular
+      iscommand: false
+      brand: ''
+    separatecontext: false
+    continueonerrortype: ''
+    view: "{\n  \"position\": {\n    \"x\": 450,\n    \"y\": 6130\n  }\n}"
+    note: false
+    timertriggers: []
+    ignoreworker: false
+    skipunavailable: false
+    quietmode: 0
+    isoversize: false
+    isautoswitchedtoquietmode: false
+    nexttasks:
+      '#none#':
+      - '38'
+  '38':
+    id: '38'
+    taskid: 90745692-5d40-5357-abb3-33f59b6f57ef
+    type: regular
+    task:
+      id: 90745692-5d40-5357-abb3-33f59b6f57ef
+      version: -1
+      name: 'Evidencia: Persistencia declarada y su contenido'
+      description: 'Como: launchctl list y cat de los plist en ~/Library/LaunchAgents y /Library/LaunchDaemons
+
+        Donde: agente'
+      type: regular
+      iscommand: false
+      brand: ''
+    separatecontext: false
+    continueonerrortype: ''
+    view: "{\n  \"position\": {\n    \"x\": 450,\n    \"y\": 6320\n  }\n}"
+    note: false
+    timertriggers: []
+    ignoreworker: false
+    skipunavailable: false
+    quietmode: 0
+    isoversize: false
+    isautoswitchedtoquietmode: false
+    nexttasks:
+      '#none#':
+      - '39'
+  '39':
+    id: '39'
+    taskid: 99ef69e9-481d-57e9-8d8f-0030f8f392b2
+    type: regular
+    task:
+      id: 99ef69e9-481d-57e9-8d8f-0030f8f392b2
+      version: -1
+      name: 'Evidencia: Concesiones TCC vigentes, en copia y solo lectura'
+      description: 'Como: cp de TCC.db al almacen de evidencia y sqlite3 sobre la copia
+
+        Donde: agente'
+      type: regular
+      iscommand: false
+      brand: ''
+    separatecontext: false
+    continueonerrortype: ''
+    view: "{\n  \"position\": {\n    \"x\": 450,\n    \"y\": 6510\n  }\n}"
+    note: false
+    timertriggers: []
+    ignoreworker: false
+    skipunavailable: false
+    quietmode: 0
+    isoversize: false
+    isautoswitchedtoquietmode: false
+    nexttasks:
+      '#none#':
+      - '40'
+  '40':
+    id: '40'
+    taskid: 7d1786a1-19e6-556e-af9a-9313f27f5051
+    type: regular
+    task:
+      id: 7d1786a1-19e6-556e-af9a-9313f27f5051
+      version: -1
+      name: 'Evidencia: Arbol de procesos y actividad en la ventana, desde el registro unificado'
+      description: 'Como: log show --predicate ''eventMessage CONTAINS "<indicador>"'' --last 30m
+
+        Donde: agente'
+      type: regular
+      iscommand: false
+      brand: ''
+    separatecontext: false
+    continueonerrortype: ''
+    view: "{\n  \"position\": {\n    \"x\": 450,\n    \"y\": 6700\n  }\n}"
+    note: false
+    timertriggers: []
+    ignoreworker: false
+    skipunavailable: false
+    quietmode: 0
+    isoversize: false
+    isautoswitchedtoquietmode: false
+    nexttasks:
+      '#none#':
+      - '41'
+  '41':
+    id: '41'
+    taskid: 8b76818a-2740-5669-aed8-021b52edf806
+    type: regular
+    task:
+      id: 8b76818a-2740-5669-aed8-021b52edf806
+      version: -1
+      name: 'Evidencia: Usuarios locales incluidos los ocultos por UniqueID bajo 500'
+      description: 'Como: dscl . -list /Users UniqueID
+
+        Donde: agente'
+      type: regular
+      iscommand: false
+      brand: ''
+    separatecontext: false
+    continueonerrortype: ''
+    view: "{\n  \"position\": {\n    \"x\": 450,\n    \"y\": 6890\n  }\n}"
+    note: false
+    timertriggers: []
+    ignoreworker: false
+    skipunavailable: false
+    quietmode: 0
+    isoversize: false
+    isautoswitchedtoquietmode: false
+    nexttasks:
+      '#none#':
+      - '42'
+  '42':
+    id: '42'
+    taskid: 8e51317c-b069-5823-96d3-0aa71448db73
+    type: regular
+    task:
+      id: 8e51317c-b069-5823-96d3-0aa71448db73
+      version: -1
+      name: Contestar el triaje pendiente
+      description: 'Pendientes en este incidente: ${ResponseLab.Plan.triaje_pendiente}
+
+
+        Preguntas del playbook:
+
+        - El binario esta notarizado y su Team ID figura en el catalogo aprobado
+
+        - El proceso padre es el agente de gestion del parque y hay ventana de despliegue abierta
+
+        - SIP esta deshabilitado o Gatekeeper se desactivo en la misma sesion
+
+        - El equipo pertenece a direccion o guarda claves de firma de aplicaciones
+
+        - Es la primera vez que ese binario se ejecuta en todo el parque'
+      type: regular
+      iscommand: false
+      brand: ''
+    separatecontext: false
+    continueonerrortype: ''
+    view: "{\n  \"position\": {\n    \"x\": 450,\n    \"y\": 7080\n  }\n}"
+    note: false
+    timertriggers: []
+    ignoreworker: false
+    skipunavailable: false
+    quietmode: 0
+    isoversize: false
+    isautoswitchedtoquietmode: false
+    nexttasks:
+      '#none#':
+      - '43'
+  '43':
+    id: '43'
+    taskid: 83ed7150-d8b6-52db-be26-90405e5e5bc5
+    type: regular
+    task:
+      id: 83ed7150-d8b6-52db-be26-90405e5e5bc5
+      version: -1
+      name: Comprobar las condiciones de cierre
+      description: 'Se puede cerrar como benigno si:
+
+        - Descarga y ejecucion desde /tmp, /var/folders o la cache del gestor (mac_descarga_y_ejecucion) cuyo proceso padre es el agente de gestion del parque o el gestor de paquetes registrado del equipo, firmado con un Team ID del catalogo, dentro de la ventana de mantenimiento publicada en el ITSM.'
+      type: regular
+      iscommand: false
+      brand: ''
+    separatecontext: false
+    continueonerrortype: ''
+    view: "{\n  \"position\": {\n    \"x\": 450,\n    \"y\": 7270\n  }\n}"
+    note: false
+    timertriggers: []
+    ignoreworker: false
+    skipunavailable: false
+    quietmode: 0
+    isoversize: false
+    isautoswitchedtoquietmode: false
+    nexttasks:
+      '#none#':
+      - '44'
+  '44':
+    id: '44'
+    taskid: 9b343cf8-2516-56f9-8828-d08c050102b8
+    type: regular
+    task:
+      id: 9b343cf8-2516-56f9-8828-d08c050102b8
+      version: -1
+      name: Situaciones que requieren a una persona
+      description: 'Nunca automatico:
+
+        - Rotar las credenciales guardadas en el llavero afectado
+
+        - Restablecer la base de datos TCC
+
+        - Reinstalar el equipo
+
+        - Eliminar el usuario local oculto creado'
+      type: regular
+      iscommand: false
+      brand: ''
+    separatecontext: false
+    continueonerrortype: ''
+    view: "{\n  \"position\": {\n    \"x\": 450,\n    \"y\": 7460\n  }\n}"
+    note: false
+    timertriggers: []
+    ignoreworker: false
+    skipunavailable: false
+    quietmode: 0
+    isoversize: false
+    isautoswitchedtoquietmode: false
+    nexttasks:
+      '#none#':
+      - '45'
+  '45':
+    id: '45'
+    taskid: c3d4851d-8cb5-529c-b7b0-5616a33f3c88
+    type: title
+    task:
+      id: c3d4851d-8cb5-529c-b7b0-5616a33f3c88
+      version: -1
+      name: Hecho
+      description: ''
+      type: title
+      iscommand: false
+      brand: ''
+    separatecontext: false
+    continueonerrortype: ''
+    view: "{\n  \"position\": {\n    \"x\": 450,\n    \"y\": 7650\n  }\n}"
+    note: false
+    timertriggers: []
+    ignoreworker: false
+    skipunavailable: false
+    quietmode: 0
+    isoversize: false
+    isautoswitchedtoquietmode: false
+view: "{\n  \"linkLabelsPosition\": {},\n  \"paper\": {\n    \"dimensions\": {\n      \"height\": 7800,\n      \"width\": 1240,\n      \"x\": -20,\n      \"y\": 0\n    }\n  }\n}"
+inputs: []
+outputs: []
+tests:
+- No tests
+fromversion: 6.10.0

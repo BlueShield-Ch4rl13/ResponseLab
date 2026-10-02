@@ -1,0 +1,842 @@
+id: ResponseLab - ZTA
+version: -1
+name: ResponseLab - ZTA
+description: Desviaciones del modelo de confianza cero. Generado por ResponseLab desde el playbook de DetectionLab (zta). Necesita que ResponseLabDecidir haya dejado el plan en ResponseLab.Plan.
+starttaskid: '0'
+tasks:
+  '0':
+    id: '0'
+    taskid: 8c1df371-51a4-5a80-a812-9c95c13156a3
+    type: start
+    task:
+      id: 8c1df371-51a4-5a80-a812-9c95c13156a3
+      version: -1
+      name: ''
+      description: ''
+      type: start
+      iscommand: false
+      brand: ''
+    separatecontext: false
+    continueonerrortype: ''
+    view: "{\n  \"position\": {\n    \"x\": 450,\n    \"y\": 50\n  }\n}"
+    note: false
+    timertriggers: []
+    ignoreworker: false
+    skipunavailable: false
+    quietmode: 0
+    isoversize: false
+    isautoswitchedtoquietmode: false
+    nexttasks:
+      '#none#':
+      - '1'
+  '1':
+    id: '1'
+    taskid: 9d68ff55-66ae-5d30-abb0-fbffe4e34014
+    type: title
+    task:
+      id: 9d68ff55-66ae-5d30-abb0-fbffe4e34014
+      version: -1
+      name: Contencion automatica
+      description: Pasos que ResponseLab marco como automaticos. No hay tareas manuales en esta fase.
+      type: title
+      iscommand: false
+      brand: ''
+    separatecontext: false
+    continueonerrortype: ''
+    view: "{\n  \"position\": {\n    \"x\": 450,\n    \"y\": 240\n  }\n}"
+    note: false
+    timertriggers: []
+    ignoreworker: false
+    skipunavailable: false
+    quietmode: 0
+    isoversize: false
+    isautoswitchedtoquietmode: false
+    nexttasks:
+      '#none#':
+      - '2'
+  '2':
+    id: '2'
+    taskid: d7dbd89c-7a62-5976-80c7-672e161a50b5
+    type: condition
+    task:
+      id: d7dbd89c-7a62-5976-80c7-672e161a50b5
+      version: -1
+      name: 'c2: Aislar el equipo en la red - automatica?'
+      description: 'Origen: Aislar el endpoint en la red, unicamente para el borrado del registro de auditoria'
+      type: condition
+      iscommand: false
+      brand: ''
+    separatecontext: false
+    continueonerrortype: ''
+    view: "{\n  \"position\": {\n    \"x\": 450,\n    \"y\": 430\n  }\n}"
+    note: false
+    timertriggers: []
+    ignoreworker: false
+    skipunavailable: false
+    quietmode: 0
+    isoversize: false
+    isautoswitchedtoquietmode: false
+    conditions:
+    - label: 'yes'
+      condition:
+      - - operator: isEqualString
+          left:
+            value:
+              simple: ResponseLab.Plan.modos.c2
+            iscontext: true
+          right:
+            value:
+              simple: automatica
+    nexttasks:
+      'yes':
+      - '3'
+      '#default#':
+      - '4'
+  '3':
+    id: '3'
+    taskid: 01e1a6ce-4e30-5230-b16d-f52e926ff034
+    type: playbook
+    task:
+      id: 01e1a6ce-4e30-5230-b16d-f52e926ff034
+      version: -1
+      name: Isolate Endpoint - Generic V2
+      description: 'ResponseLab c2: Aislar el equipo en la red'
+      type: playbook
+      iscommand: false
+      brand: ''
+      playbookName: Isolate Endpoint - Generic V2
+    separatecontext: true
+    continueonerrortype: ''
+    view: "{\n  \"position\": {\n    \"x\": 870,\n    \"y\": 620\n  }\n}"
+    note: false
+    timertriggers: []
+    ignoreworker: false
+    skipunavailable: true
+    quietmode: 0
+    isoversize: false
+    isautoswitchedtoquietmode: false
+    scriptarguments:
+      Endpoint_hostname:
+        complex:
+          root: ResponseLab.Plan.entradas.c2
+          accessor: Endpoint_hostname
+      Endpoint_id:
+        complex:
+          root: ResponseLab.Plan.entradas.c2
+          accessor: Endpoint_id
+      Endpoint_ip:
+        complex:
+          root: ResponseLab.Plan.entradas.c2
+          accessor: Endpoint_ip
+    loop:
+      iscommand: false
+      exitCondition: ''
+      wait: 1
+      max: 0
+    continueonerror: true
+    nexttasks:
+      '#none#':
+      - '4'
+  '4':
+    id: '4'
+    taskid: 13b53847-89c3-50e0-bd12-3f8b672ae188
+    type: title
+    task:
+      id: 13b53847-89c3-50e0-bd12-3f8b672ae188
+      version: -1
+      name: c2 hecho
+      description: ''
+      type: title
+      iscommand: false
+      brand: ''
+    separatecontext: false
+    continueonerrortype: ''
+    view: "{\n  \"position\": {\n    \"x\": 450,\n    \"y\": 810\n  }\n}"
+    note: false
+    timertriggers: []
+    ignoreworker: false
+    skipunavailable: false
+    quietmode: 0
+    isoversize: false
+    isautoswitchedtoquietmode: false
+    nexttasks:
+      '#none#':
+      - '5'
+  '5':
+    id: '5'
+    taskid: 9963b5d9-bbe6-5d64-8875-da8466026d93
+    type: title
+    task:
+      id: 9963b5d9-bbe6-5d64-8875-da8466026d93
+      version: -1
+      name: Aprobaciones y acciones a mano
+      description: Lo que pide aprobacion se aprueba aqui; lo que no tiene traduccion en XSOAR es una tarea.
+      type: title
+      iscommand: false
+      brand: ''
+    separatecontext: false
+    continueonerrortype: ''
+    view: "{\n  \"position\": {\n    \"x\": 450,\n    \"y\": 1000\n  }\n}"
+    note: false
+    timertriggers: []
+    ignoreworker: false
+    skipunavailable: false
+    quietmode: 0
+    isoversize: false
+    isautoswitchedtoquietmode: false
+    nexttasks:
+      '#none#':
+      - '6'
+  '6':
+    id: '6'
+    taskid: ea1ba011-7ff4-5399-b33a-e7853c70d772
+    type: condition
+    task:
+      id: ea1ba011-7ff4-5399-b33a-e7853c70d772
+      version: -1
+      name: 'c1: Abrir la tarea de desviacion contra el propietario del activo - que modo?'
+      description: 'Motivo del modo en la War Room (salida de ResponseLabDecidir). Origen: Abrir o actualizar la tarea de desviacion contra el propietario del activo, con la evidencia y el plazo del plan'
+      type: condition
+      iscommand: false
+      brand: ''
+    separatecontext: false
+    continueonerrortype: ''
+    view: "{\n  \"position\": {\n    \"x\": 450,\n    \"y\": 1190\n  }\n}"
+    note: false
+    timertriggers: []
+    ignoreworker: false
+    skipunavailable: false
+    quietmode: 0
+    isoversize: false
+    isautoswitchedtoquietmode: false
+    conditions:
+    - label: aprobacion
+      condition:
+      - - operator: isEqualString
+          left:
+            value:
+              simple: ResponseLab.Plan.modos.c1
+            iscontext: true
+          right:
+            value:
+              simple: aprobacion
+    - label: manual
+      condition:
+      - - operator: isEqualString
+          left:
+            value:
+              simple: ResponseLab.Plan.modos.c1
+            iscontext: true
+          right:
+            value:
+              simple: manual
+    - label: automatica
+      condition:
+      - - operator: isEqualString
+          left:
+            value:
+              simple: ResponseLab.Plan.modos.c1
+            iscontext: true
+          right:
+            value:
+              simple: automatica
+    nexttasks:
+      '#default#':
+      - '7'
+      aprobacion:
+      - '8'
+      manual:
+      - '10'
+      automatica:
+      - '10'
+  '7':
+    id: '7'
+    taskid: 0d2f04ee-fd50-50d4-8a0d-2cd99561394c
+    type: title
+    task:
+      id: 0d2f04ee-fd50-50d4-8a0d-2cd99561394c
+      version: -1
+      name: c1 resuelto
+      description: ''
+      type: title
+      iscommand: false
+      brand: ''
+    separatecontext: false
+    continueonerrortype: ''
+    view: "{\n  \"position\": {\n    \"x\": 450,\n    \"y\": 1760\n  }\n}"
+    note: false
+    timertriggers: []
+    ignoreworker: false
+    skipunavailable: false
+    quietmode: 0
+    isoversize: false
+    isautoswitchedtoquietmode: false
+    nexttasks:
+      '#none#':
+      - '11'
+  '8':
+    id: '8'
+    taskid: 6e618fa1-721a-521b-ba11-233b630e1e00
+    type: condition
+    task:
+      id: 6e618fa1-721a-521b-ba11-233b630e1e00
+      version: -1
+      name: 'Aprobar: Abrir la tarea de desviacion contra el propietario del activo'
+      description: 'Radio objeto, reversible si. Origen: Abrir o actualizar la tarea de desviacion contra el propietario del activo, con la evidencia y el plazo del plan Por que: En esta familia la accion util no toca el activo. El fallo tipico aqui no es contener de menos sino cerrar la alerta y que la desviacion siga exactamente igual el trimestre siguiente, disparando la misma regla. Encolar es barato y es lo unico que corrige algo.'
+      type: condition
+      iscommand: false
+      brand: ''
+    separatecontext: false
+    continueonerrortype: ''
+    view: "{\n  \"position\": {\n    \"x\": 30,\n    \"y\": 1380\n  }\n}"
+    note: false
+    timertriggers: []
+    ignoreworker: false
+    skipunavailable: false
+    quietmode: 0
+    isoversize: false
+    isautoswitchedtoquietmode: false
+    nexttasks:
+      Si:
+      - '9'
+      'No':
+      - '7'
+  '9':
+    id: '9'
+    taskid: fafbb99a-d198-5a4c-82ba-f00153e0607e
+    type: regular
+    task:
+      id: fafbb99a-d198-5a4c-82ba-f00153e0607e
+      version: -1
+      name: 'Ejecutar a mano: Abrir la tarea de desviacion contra el propietario del activo'
+      description: 'Aprobada. XSOAR no tiene traduccion nativa de caso.tarea_desviacion: hazla con la herramienta del cliente o con el motor de ResponseLab. Origen: Abrir o actualizar la tarea de desviacion contra el propietario del activo, con la evidencia y el plazo del plan'
+      type: regular
+      iscommand: false
+      brand: ''
+    separatecontext: false
+    continueonerrortype: ''
+    view: "{\n  \"position\": {\n    \"x\": 30,\n    \"y\": 1570\n  }\n}"
+    note: false
+    timertriggers: []
+    ignoreworker: false
+    skipunavailable: false
+    quietmode: 0
+    isoversize: false
+    isautoswitchedtoquietmode: false
+    nexttasks:
+      '#none#':
+      - '7'
+  '10':
+    id: '10'
+    taskid: 62d8655f-876b-52b8-9972-a65ceaedbb6c
+    type: regular
+    task:
+      id: 62d8655f-876b-52b8-9972-a65ceaedbb6c
+      version: -1
+      name: 'A mano: Abrir la tarea de desviacion contra el propietario del activo'
+      description: 'ResponseLab la deja al analista (motivo en la War Room). Origen: Abrir o actualizar la tarea de desviacion contra el propietario del activo, con la evidencia y el plazo del plan Por que: En esta familia la accion util no toca el activo. El fallo tipico aqui no es contener de menos sino cerrar la alerta y que la desviacion siga exactamente igual el trimestre siguiente, disparando la misma regla. Encolar es barato y es lo unico que corrige algo.'
+      type: regular
+      iscommand: false
+      brand: ''
+    separatecontext: false
+    continueonerrortype: ''
+    view: "{\n  \"position\": {\n    \"x\": 870,\n    \"y\": 1380\n  }\n}"
+    note: false
+    timertriggers: []
+    ignoreworker: false
+    skipunavailable: false
+    quietmode: 0
+    isoversize: false
+    isautoswitchedtoquietmode: false
+    nexttasks:
+      '#none#':
+      - '7'
+  '11':
+    id: '11'
+    taskid: babfc42b-3975-5e54-846f-fdbd45596ea8
+    type: condition
+    task:
+      id: babfc42b-3975-5e54-846f-fdbd45596ea8
+      version: -1
+      name: 'c2: Aislar el equipo en la red - que modo?'
+      description: 'Motivo del modo en la War Room (salida de ResponseLabDecidir). Origen: Aislar el endpoint en la red, unicamente para el borrado del registro de auditoria'
+      type: condition
+      iscommand: false
+      brand: ''
+    separatecontext: false
+    continueonerrortype: ''
+    view: "{\n  \"position\": {\n    \"x\": 450,\n    \"y\": 1950\n  }\n}"
+    note: false
+    timertriggers: []
+    ignoreworker: false
+    skipunavailable: false
+    quietmode: 0
+    isoversize: false
+    isautoswitchedtoquietmode: false
+    conditions:
+    - label: aprobacion
+      condition:
+      - - operator: isEqualString
+          left:
+            value:
+              simple: ResponseLab.Plan.modos.c2
+            iscontext: true
+          right:
+            value:
+              simple: aprobacion
+    - label: manual
+      condition:
+      - - operator: isEqualString
+          left:
+            value:
+              simple: ResponseLab.Plan.modos.c2
+            iscontext: true
+          right:
+            value:
+              simple: manual
+    nexttasks:
+      '#default#':
+      - '12'
+      aprobacion:
+      - '13'
+      manual:
+      - '15'
+  '12':
+    id: '12'
+    taskid: 360adaf5-a44e-549b-b549-d5e3fa28969f
+    type: title
+    task:
+      id: 360adaf5-a44e-549b-b549-d5e3fa28969f
+      version: -1
+      name: c2 resuelto
+      description: ''
+      type: title
+      iscommand: false
+      brand: ''
+    separatecontext: false
+    continueonerrortype: ''
+    view: "{\n  \"position\": {\n    \"x\": 450,\n    \"y\": 2520\n  }\n}"
+    note: false
+    timertriggers: []
+    ignoreworker: false
+    skipunavailable: false
+    quietmode: 0
+    isoversize: false
+    isautoswitchedtoquietmode: false
+    nexttasks:
+      '#none#':
+      - '16'
+  '13':
+    id: '13'
+    taskid: f22f1303-b730-520f-971a-2c7566ab6b21
+    type: condition
+    task:
+      id: f22f1303-b730-520f-971a-2c7566ab6b21
+      version: -1
+      name: 'Aprobar: Aislar el equipo en la red'
+      description: 'Radio equipo, reversible si, se deshace con endpoint.liberar. Origen: Aislar el endpoint en la red, unicamente para el borrado del registro de auditoria Por que: Es la unica regla de la familia con un adversario probable detras: borrar el registro no es deriva de configuracion, y el apagado ordenado que la explicaria se distingue porque va seguido del arranque. El resto de la familia no llega a este nivel de automatizacion ni deberia, y por eso la accion lleva la restriccion escrita en el alcance.'
+      type: condition
+      iscommand: false
+      brand: ''
+    separatecontext: false
+    continueonerrortype: ''
+    view: "{\n  \"position\": {\n    \"x\": 30,\n    \"y\": 2140\n  }\n}"
+    note: false
+    timertriggers: []
+    ignoreworker: false
+    skipunavailable: false
+    quietmode: 0
+    isoversize: false
+    isautoswitchedtoquietmode: false
+    nexttasks:
+      Si:
+      - '14'
+      'No':
+      - '12'
+  '14':
+    id: '14'
+    taskid: ecff6c43-2e2a-5d97-90b2-87af16280d1d
+    type: playbook
+    task:
+      id: ecff6c43-2e2a-5d97-90b2-87af16280d1d
+      version: -1
+      name: Isolate Endpoint - Generic V2
+      description: 'ResponseLab c2: Aislar el equipo en la red'
+      type: playbook
+      iscommand: false
+      brand: ''
+      playbookName: Isolate Endpoint - Generic V2
+    separatecontext: true
+    continueonerrortype: ''
+    view: "{\n  \"position\": {\n    \"x\": 30,\n    \"y\": 2330\n  }\n}"
+    note: false
+    timertriggers: []
+    ignoreworker: false
+    skipunavailable: true
+    quietmode: 0
+    isoversize: false
+    isautoswitchedtoquietmode: false
+    scriptarguments:
+      Endpoint_hostname:
+        complex:
+          root: ResponseLab.Plan.entradas.c2
+          accessor: Endpoint_hostname
+      Endpoint_id:
+        complex:
+          root: ResponseLab.Plan.entradas.c2
+          accessor: Endpoint_id
+      Endpoint_ip:
+        complex:
+          root: ResponseLab.Plan.entradas.c2
+          accessor: Endpoint_ip
+    loop:
+      iscommand: false
+      exitCondition: ''
+      wait: 1
+      max: 0
+    continueonerror: true
+    nexttasks:
+      '#none#':
+      - '12'
+  '15':
+    id: '15'
+    taskid: 6fcdc02b-c465-5e43-acd5-4465f57bc4d5
+    type: regular
+    task:
+      id: 6fcdc02b-c465-5e43-acd5-4465f57bc4d5
+      version: -1
+      name: 'A mano: Aislar el equipo en la red'
+      description: 'ResponseLab la deja al analista (motivo en la War Room). Origen: Aislar el endpoint en la red, unicamente para el borrado del registro de auditoria Por que: Es la unica regla de la familia con un adversario probable detras: borrar el registro no es deriva de configuracion, y el apagado ordenado que la explicaria se distingue porque va seguido del arranque. El resto de la familia no llega a este nivel de automatizacion ni deberia, y por eso la accion lleva la restriccion escrita en el alcance.'
+      type: regular
+      iscommand: false
+      brand: ''
+    separatecontext: false
+    continueonerrortype: ''
+    view: "{\n  \"position\": {\n    \"x\": 870,\n    \"y\": 2140\n  }\n}"
+    note: false
+    timertriggers: []
+    ignoreworker: false
+    skipunavailable: false
+    quietmode: 0
+    isoversize: false
+    isautoswitchedtoquietmode: false
+    nexttasks:
+      '#none#':
+      - '12'
+  '16':
+    id: '16'
+    taskid: fc0854ea-835b-555f-b286-de3bd172fe5b
+    type: title
+    task:
+      id: fc0854ea-835b-555f-b286-de3bd172fe5b
+      version: -1
+      name: Checklist del playbook
+      description: ''
+      type: title
+      iscommand: false
+      brand: ''
+    separatecontext: false
+    continueonerrortype: ''
+    view: "{\n  \"position\": {\n    \"x\": 450,\n    \"y\": 2710\n  }\n}"
+    note: false
+    timertriggers: []
+    ignoreworker: false
+    skipunavailable: false
+    quietmode: 0
+    isoversize: false
+    isautoswitchedtoquietmode: false
+    nexttasks:
+      '#none#':
+      - '17'
+  '17':
+    id: '17'
+    taskid: e5f9c349-6623-5024-a231-53484879b67f
+    type: regular
+    task:
+      id: e5f9c349-6623-5024-a231-53484879b67f
+      version: -1
+      name: Escalar segun el plan
+      description: 'Plazo del playbook: L2 en 240 min. El plan de este incidente: ${ResponseLab.Plan.escalado.a} en ${ResponseLab.Plan.escalado.plazo_min} min.
+
+        A L3 si: La alerta es borrado del registro de auditoria sin apagado ordenado posterior'
+      type: regular
+      iscommand: false
+      brand: ''
+    separatecontext: false
+    continueonerrortype: ''
+    view: "{\n  \"position\": {\n    \"x\": 450,\n    \"y\": 2900\n  }\n}"
+    note: false
+    timertriggers: []
+    ignoreworker: false
+    skipunavailable: false
+    quietmode: 0
+    isoversize: false
+    isautoswitchedtoquietmode: false
+    nexttasks:
+      '#none#':
+      - '18'
+  '18':
+    id: '18'
+    taskid: 74c7fa1c-487c-5ae7-8c89-16d664e5c88d
+    type: regular
+    task:
+      id: 74c7fa1c-487c-5ae7-8c89-16d664e5c88d
+      version: -1
+      name: 'Evidencia: El valor exacto de la desviacion, no su categoria'
+      description: 'Como: Campo concreto del evento: protocolo, puerto, tipo de autenticacion, numero de serie del soporte
+
+        Donde: siem'
+      type: regular
+      iscommand: false
+      brand: ''
+    separatecontext: false
+    continueonerrortype: ''
+    view: "{\n  \"position\": {\n    \"x\": 450,\n    \"y\": 3090\n  }\n}"
+    note: false
+    timertriggers: []
+    ignoreworker: false
+    skipunavailable: false
+    quietmode: 0
+    isoversize: false
+    isautoswitchedtoquietmode: false
+    nexttasks:
+      '#none#':
+      - '19'
+  '19':
+    id: '19'
+    taskid: 97710e16-9188-5feb-bc24-09f8e30b8dc9
+    type: regular
+    task:
+      id: 97710e16-9188-5feb-bc24-09f8e30b8dc9
+      version: -1
+      name: 'Evidencia: Desde cuando existe la desviacion'
+      description: 'Como: stats min(_time) by host, campo_desviacion en 90 dias
+
+        Donde: siem'
+      type: regular
+      iscommand: false
+      brand: ''
+    separatecontext: false
+    continueonerrortype: ''
+    view: "{\n  \"position\": {\n    \"x\": 450,\n    \"y\": 3280\n  }\n}"
+    note: false
+    timertriggers: []
+    ignoreworker: false
+    skipunavailable: false
+    quietmode: 0
+    isoversize: false
+    isautoswitchedtoquietmode: false
+    nexttasks:
+      '#none#':
+      - '20'
+  '20':
+    id: '20'
+    taskid: f7de02a1-b474-596c-86aa-5b20cb87f7c5
+    type: regular
+    task:
+      id: f7de02a1-b474-596c-86aa-5b20cb87f7c5
+      version: -1
+      name: 'Evidencia: Alcance real de la desviacion en el parque'
+      description: 'Como: stats dc(host) values(host) by campo_desviacion
+
+        Donde: siem'
+      type: regular
+      iscommand: false
+      brand: ''
+    separatecontext: false
+    continueonerrortype: ''
+    view: "{\n  \"position\": {\n    \"x\": 450,\n    \"y\": 3470\n  }\n}"
+    note: false
+    timertriggers: []
+    ignoreworker: false
+    skipunavailable: false
+    quietmode: 0
+    isoversize: false
+    isautoswitchedtoquietmode: false
+    nexttasks:
+      '#none#':
+      - '21'
+  '21':
+    id: '21'
+    taskid: 115340a6-0b43-5203-8d3b-c0b09d7002ff
+    type: regular
+    task:
+      id: 115340a6-0b43-5203-8d3b-c0b09d7002ff
+      version: -1
+      name: 'Evidencia: Para el borrado de auditoria, los eventos inmediatamente anteriores y si hubo arranque despues'
+      description: 'Como: search host=X earliest=-30m@m latest=<evento> y EID 6005/6013 posteriores
+
+        Donde: siem'
+      type: regular
+      iscommand: false
+      brand: ''
+    separatecontext: false
+    continueonerrortype: ''
+    view: "{\n  \"position\": {\n    \"x\": 450,\n    \"y\": 3660\n  }\n}"
+    note: false
+    timertriggers: []
+    ignoreworker: false
+    skipunavailable: false
+    quietmode: 0
+    isoversize: false
+    isautoswitchedtoquietmode: false
+    nexttasks:
+      '#none#':
+      - '22'
+  '22':
+    id: '22'
+    taskid: 675f48ee-7530-5604-b87b-160a0592876c
+    type: regular
+    task:
+      id: 675f48ee-7530-5604-b87b-160a0592876c
+      version: -1
+      name: 'Evidencia: Cambio concreto en el fichero de dependencias, con quien lo firmo'
+      description: 'Como: git log -p -1 <fichero> o diff contra la version del repositorio
+
+        Donde: agente'
+      type: regular
+      iscommand: false
+      brand: ''
+    separatecontext: false
+    continueonerrortype: ''
+    view: "{\n  \"position\": {\n    \"x\": 450,\n    \"y\": 3850\n  }\n}"
+    note: false
+    timertriggers: []
+    ignoreworker: false
+    skipunavailable: false
+    quietmode: 0
+    isoversize: false
+    isautoswitchedtoquietmode: false
+    nexttasks:
+      '#none#':
+      - '23'
+  '23':
+    id: '23'
+    taskid: 0bc6544f-e452-51ff-9dfd-268f233aa433
+    type: regular
+    task:
+      id: 0bc6544f-e452-51ff-9dfd-268f233aa433
+      version: -1
+      name: Contestar el triaje pendiente
+      description: 'Pendientes en este incidente: ${ResponseLab.Plan.triaje_pendiente}
+
+
+        Preguntas del playbook:
+
+        - La desviacion esta cubierta por una excepcion aprobada y en vigor
+
+        - La excepcion existe pero esta caducada
+
+        - Ya hay tarea de remediacion abierta para ese activo y esa desviacion
+
+        - La desviacion aparece en un unico activo y no en el resto de su grupo
+
+        - La alerta es borrado del registro de auditoria sin apagado ordenado posterior'
+      type: regular
+      iscommand: false
+      brand: ''
+    separatecontext: false
+    continueonerrortype: ''
+    view: "{\n  \"position\": {\n    \"x\": 450,\n    \"y\": 4040\n  }\n}"
+    note: false
+    timertriggers: []
+    ignoreworker: false
+    skipunavailable: false
+    quietmode: 0
+    isoversize: false
+    isautoswitchedtoquietmode: false
+    nexttasks:
+      '#none#':
+      - '24'
+  '24':
+    id: '24'
+    taskid: 83cf07c8-41df-5e45-a17b-9f10651d2452
+    type: regular
+    task:
+      id: 83cf07c8-41df-5e45-a17b-9f10651d2452
+      version: -1
+      name: Comprobar las condiciones de cierre
+      description: 'Se puede cerrar como benigno si:
+
+        - Protocolo en claro (zta_net_001) hacia un activo que figura en el inventario de sistemas heredados con excepcion aprobada, en vigor y con fecha de remediacion futura, y con el origen dentro del segmento declarado en esa misma excepcion.
+
+        - Montaje de almacenamiento extraible (zta_dev_001) cuyo numero de serie figura en la lista de soportes cifrados aprobados y cuyo titular registrado coincide con el usuario de la sesion.
+
+        - Instalacion de paquete desde repositorio no aprobado (zta_sup_002) en un equipo de la unidad organizativa de desarrollo con permiso explicito registrado, cuando el indice de origen es un espejo mantenido por la organizacion.'
+      type: regular
+      iscommand: false
+      brand: ''
+    separatecontext: false
+    continueonerrortype: ''
+    view: "{\n  \"position\": {\n    \"x\": 450,\n    \"y\": 4230\n  }\n}"
+    note: false
+    timertriggers: []
+    ignoreworker: false
+    skipunavailable: false
+    quietmode: 0
+    isoversize: false
+    isautoswitchedtoquietmode: false
+    nexttasks:
+      '#none#':
+      - '25'
+  '25':
+    id: '25'
+    taskid: 522fbce1-6cc9-558d-999f-0f634ec4e51d
+    type: regular
+    task:
+      id: 522fbce1-6cc9-558d-999f-0f634ec4e51d
+      version: -1
+      name: Situaciones que requieren a una persona
+      description: 'Nunca automatico:
+
+        - Aprobar, denegar o prorrogar una excepcion
+
+        - Fijar la fecha de remediacion
+
+        - Retirar o segmentar el equipamiento heredado
+
+        - Deshabilitar la autenticacion heredada en el inquilino'
+      type: regular
+      iscommand: false
+      brand: ''
+    separatecontext: false
+    continueonerrortype: ''
+    view: "{\n  \"position\": {\n    \"x\": 450,\n    \"y\": 4420\n  }\n}"
+    note: false
+    timertriggers: []
+    ignoreworker: false
+    skipunavailable: false
+    quietmode: 0
+    isoversize: false
+    isautoswitchedtoquietmode: false
+    nexttasks:
+      '#none#':
+      - '26'
+  '26':
+    id: '26'
+    taskid: e56a8386-3bb6-533f-a0d2-972289dae0c9
+    type: title
+    task:
+      id: e56a8386-3bb6-533f-a0d2-972289dae0c9
+      version: -1
+      name: Hecho
+      description: ''
+      type: title
+      iscommand: false
+      brand: ''
+    separatecontext: false
+    continueonerrortype: ''
+    view: "{\n  \"position\": {\n    \"x\": 450,\n    \"y\": 4610\n  }\n}"
+    note: false
+    timertriggers: []
+    ignoreworker: false
+    skipunavailable: false
+    quietmode: 0
+    isoversize: false
+    isautoswitchedtoquietmode: false
+view: "{\n  \"linkLabelsPosition\": {},\n  \"paper\": {\n    \"dimensions\": {\n      \"height\": 4760,\n      \"width\": 1240,\n      \"x\": -20,\n      \"y\": 0\n    }\n  }\n}"
+inputs: []
+outputs: []
+tests:
+- No tests
+fromversion: 6.10.0
