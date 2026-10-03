@@ -1,0 +1,9 @@
+{
+  "_comentario": "Opcional, en los AGENTES. Repartelo con la configuracion centralizada: /var/ossec/etc/shared/<grupo>/responselab.conf en el manager llega a etc/shared/ (Linux) o shared\\ (Windows) de cada agente. Sin token_agentes los acuses siguen llegando por Wazuh; con el, el informe completo de FtriageDFIR se sube directamente al motor (el motor debe estar en 'permitidos' para que funcione con el equipo aislado).",
+  "ftriage": "/opt/ftriage/triage.py",
+  "python_ftriage": "/usr/bin/python3",
+  "motor": "https://10.0.30.20:8443",
+  "cliente": "lab",
+  "token_agentes": "",
+  "ca": ""
+}

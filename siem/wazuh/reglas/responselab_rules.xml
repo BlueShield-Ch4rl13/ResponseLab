@@ -1,0 +1,45 @@
+<!--
+  ResponseLab: acuses de los scripts de active response.
+
+  Los scripts responselab_ar.py / responselab_ar.ps1 escriben una linea JSON
+  {"responselab_ar": {...}} en active-responses.log, que el agente ya envia al
+  manager (viene en la configuracion por defecto del agente). El decodificador
+  json de Wazuh la descompone y estas reglas la convierten en alerta; la
+  integracion custom-responselab se la pasa al motor como acuse.
+
+  Rango 109900-109919: DetectionLab usa 100xxx-101xxx e Infra-SocAnalyst 110xxx.
+  Copiar a /var/ossec/etc/rules/ (lo hace instalar-manager.sh).
+-->
+<group name="responselab,active_response,">
+
+  <rule id="109900" level="3">
+    <decoded_as>json</decoded_as>
+    <field name="responselab_ar.accion" type="pcre2">.+</field>
+    <description>ResponseLab: $(responselab_ar.accion) en el equipo: $(responselab_ar.estado)</description>
+    <group>responselab_acuse,</group>
+  </rule>
+
+  <rule id="109901" level="10">
+    <if_sid>109900</if_sid>
+    <field name="responselab_ar.estado">^fallida$</field>
+    <description>ResponseLab: no se pudo $(responselab_ar.accion) en el equipo: $(responselab_ar.detalle)</description>
+    <group>responselab_acuse,</group>
+  </rule>
+
+  <rule id="109902" level="10">
+    <if_sid>109900</if_sid>
+    <field name="responselab_ar.accion">^aislar$</field>
+    <field name="responselab_ar.estado">^aplicada$</field>
+    <description>ResponseLab: equipo aislado de la red por respuesta automatica</description>
+    <group>responselab_acuse,</group>
+  </rule>
+
+  <rule id="109903" level="8">
+    <if_sid>109900</if_sid>
+    <field name="responselab_ar.accion">^liberar$</field>
+    <field name="responselab_ar.estado">^aplicada$</field>
+    <description>ResponseLab: aislamiento de red levantado</description>
+    <group>responselab_acuse,</group>
+  </rule>
+
+</group>

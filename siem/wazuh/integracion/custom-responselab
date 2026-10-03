@@ -1,0 +1,15 @@
+#!/bin/sh
+# Lanzador de la integracion custom-responselab para Wazuh (manager).
+# Lo invoca wazuh-integratord; usa el Python que trae el propio manager.
+# Mismo patron que custom-shuffle de Infra-SocAnalyst.
+# Permisos: root:wazuh 750 (los pone siem/wazuh/instalar-manager.sh).
+WPYTHON_BIN="framework/python/bin/python3"
+SCRIPT_PATH_NAME="$0"
+DIR_NAME="$(cd "$(dirname "${SCRIPT_PATH_NAME}")"; pwd -P)"
+SCRIPT="${DIR_NAME}/custom-responselab.py"
+if [ -z "${WAZUH_PATH}" ]; then
+    WAZUH_PATH="$(cd "${DIR_NAME}/.."; pwd)"
+fi
+PYTHON_BIN="${WAZUH_PATH}/${WPYTHON_BIN}"
+[ -x "${PYTHON_BIN}" ] || PYTHON_BIN="$(command -v python3)"
+exec "${PYTHON_BIN}" "${SCRIPT}" "$@"

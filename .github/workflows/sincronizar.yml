@@ -1,0 +1,78 @@
+name: Sincronizar con el ecosistema
+
+# La cadena de actualizacion automatica:
+#
+#   DetectionLab, Infra-SocAnalyst, SplunkLab, News CTI, FtriageDFIR, Malpipe
+#        |  (cada dia, o al instante con repository_dispatch)
+#        v
+#   tools/sincronizar.py -> compilar -> validar -> pruebas -> escenarios
+#        |  (solo si TODO pasa)
+#        v
+#   commit en main -> los motores descargan el catalogo nuevo (RL_ACTUALIZACION_URL),
+#                     lo vuelven a validar y solo entonces lo usan
+#
+# Si un cambio aguas arriba rompe algo (una accion que ya no esta mapeada, un
+# contrato que cambia de formato, un ataque que deja de contenerse), este
+# workflow falla y no publica nada: produccion sigue con el catalogo anterior.
+#
+# Para que DetectionLab dispare la sincronizacion al momento, su workflow puede
+# llamar a la API con un token que tenga permiso sobre este repositorio:
+#   curl -X POST -H "Authorization: Bearer $TOKEN" \
+#     https://api.github.com/repos/BlueShield-Ch4rl13/ResponseLab/dispatches \
+#     -d '{"event_type": "ecosistema-actualizado"}'
+
+on:
+  schedule:
+    - cron: '30 6 * * *'        # despues del refresco diario de DetectionLab (06:00 UTC)
+  repository_dispatch:
+    types: [ecosistema-actualizado]
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: sincronizar
+  cancel-in-progress: false
+
+jobs:
+  sincronizar:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+
+      - uses: actions/setup-python@v6
+        with:
+          python-version: '3.12'
+          cache: pip
+
+      - name: Instalar dependencias
+        run: pip install -r requirements-dev.txt
+
+      - name: Traer los cambios del ecosistema
+        run: python tools/sincronizar.py
+
+      - name: Compilar catalogo y artefactos de cada SOAR y SIEM
+        run: python tools/compilar.py
+
+      - name: Validar catalogo, contratos e invariantes
+        run: python tools/validar.py
+
+      - name: Pruebas
+        run: python -m pytest -q
+
+      - name: Escenarios de ataque
+        run: python tools/simular.py
+
+      - name: Publicar si hay cambios
+        run: |
+          if [ -z "$(git status --porcelain)" ]; then
+            echo "El ecosistema no ha cambiado nada que ResponseLab consuma."
+            exit 0
+          fi
+          git config user.name  "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add -A ecosistema catalogo soar siem docs
+          git commit -m "sincroniza con el ecosistema ($(date -u +%Y-%m-%d))"
+          git pull --rebase
+          git push

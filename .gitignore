@@ -1,0 +1,22 @@
+# Python
+__pycache__/
+*.py[cod]
+*.egg-info/
+build/
+dist/
+.venv/
+venv/
+
+# Herramientas
+.pytest_cache/
+.ruff_cache/
+.coverage
+htmlcov/
+
+# Estado del motor y secretos: nunca al repositorio
+datos/
+*.db
+*.sqlite3
+.env
+*.pem
+*.key

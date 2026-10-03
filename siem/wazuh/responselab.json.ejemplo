@@ -1,0 +1,18 @@
+{
+  "_comentario": "Copiar a /var/ossec/etc/responselab.json (root:wazuh, 640). Tokens: python -m responselab token en el motor (el token aqui, su huella en el perfil del cliente).",
+  "motor": "https://10.0.30.20:8443",
+  "verificar_tls": true,
+  "ca": "/var/ossec/etc/responselab-ca.pem",
+  "timeout": 10,
+  "reintentos": 2,
+  "cliente": "lab",
+  "clientes": {
+    "lab": {
+      "token_ingesta": "PEGA_AQUI_EL_TOKEN_DE_INGESTA",
+      "token_agentes": "PEGA_AQUI_EL_TOKEN_DE_AGENTES"
+    }
+  },
+  "clientes_por_agente": [
+    {"patron": "^ACME-", "cliente": "acme"}
+  ]
+}

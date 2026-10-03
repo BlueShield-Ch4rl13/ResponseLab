@@ -1,0 +1,14 @@
+# Texto con LF en todas partes...
+* text=auto eol=lf
+
+# ...salvo lo que ejecuta Windows: cmd.exe no lee bien un .cmd con LF y
+# PowerShell 5.1 espera CRLF en sus scripts.
+*.ps1 text eol=crlf
+*.cmd text eol=crlf
+*.bat text eol=crlf
+
+# Los lanzadores de active response de Linux no llevan extension: LF siempre.
+siem/wazuh/active-response/linux/* text eol=lf
+
+*.png binary
+*.jpg binary

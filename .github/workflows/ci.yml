@@ -1,0 +1,133 @@
+name: CI
+
+# Lo que tiene que ser verdad antes de que un cambio llegue a un motor:
+# el catalogo es coherente, lo generado para cada SOAR esta al dia, las
+# pruebas pasan, los ataques de escenarios/ se contienen como se espera y los
+# scripts de Windows funcionan en un Windows de verdad.
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  pruebas:
+    name: Validar, generar y probar (Python ${{ matrix.python }})
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        python: ["3.10", "3.12"]
+    steps:
+      - uses: actions/checkout@v7
+
+      - uses: actions/setup-python@v6
+        with:
+          python-version: ${{ matrix.python }}
+          cache: pip
+
+      - name: Instalar dependencias
+        run: pip install -r requirements-dev.txt
+
+      - name: Analisis estatico
+        run: ruff check .
+
+      # Errores de catalogo, contratos rotos con el ecosistema o una regla que
+      # pueda acabar en una accion automatica de radio cuenta u organizacion.
+      - name: Catalogo, contratos e invariantes
+        run: python tools/validar.py
+
+      # Lo que se importa en cada SOAR se genera desde el catalogo: si alguien
+      # cambia una fuente sin regenerar, lo commiteado ya no es lo que se decide.
+      - name: Lo generado esta al dia
+        run: python tools/compilar.py --comprobar
+
+      - name: Pruebas
+        run: python -m pytest -q
+
+      - name: Escenarios de ataque
+        run: python tools/simular.py
+
+  windows:
+    name: Scripts de Windows (PowerShell 5.1)
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v7
+
+      - name: Sintaxis de todos los .ps1 con Windows PowerShell 5.1
+        shell: powershell
+        run: |
+          $errores = 0
+          Get-ChildItem -Recurse -Filter *.ps1 | ForEach-Object {
+            $tokens = $null; $fallos = $null
+            [void][System.Management.Automation.Language.Parser]::ParseFile($_.FullName, [ref]$tokens, [ref]$fallos)
+            foreach ($f in $fallos) {
+              $errores++
+              Write-Host "::error file=$($_.FullName),line=$($f.Extent.StartLineNumber)::$($f.Message)"
+            }
+          }
+          if ($errores) { exit 1 }
+          Write-Host "Sin errores de sintaxis"
+
+      # El script de active response en simulacion, lanzado como lo lanza
+      # wazuh-execd (el .cmd, que busca el PowerShell de 64 bits): protocolo de
+      # Wazuh, aislamiento y acuse, sin tocar el cortafuegos del runner.
+      - name: Active response en simulacion
+        shell: powershell
+        run: |
+          $env:RL_AR_SIMULACION = '1'
+          $env:RL_WAZUH_DIR = Join-Path $env:RUNNER_TEMP 'ossec-agent'
+          $env:RL_ESTADO_DIR = Join-Path $env:RUNNER_TEMP 'ProgramData-ResponseLab'
+          New-Item -ItemType Directory -Force -Path $env:RL_WAZUH_DIR | Out-Null
+          Set-Content -Path (Join-Path $env:RL_WAZUH_DIR 'ossec.conf') -Encoding ASCII `
+            -Value '<ossec_config><client><server><address>10.0.30.2</address></server></client></ossec_config>'
+          $origen = @{ name = 'ci'; module = 'wazuh-execd' }
+          $orden = @{ version = 1; origin = $origen; command = 'add'; parameters = @{ extra_args = @()
+                      alert = @{ data = @{ responselab = @{ ejecucion_id = 'ci-1'; permitidos = @('10.0.30.20') } } }
+                      program = 'active-response/bin/responselab-aislar.cmd' } } | ConvertTo-Json -Depth 8 -Compress
+          $seguir = @{ version = 1; origin = $origen; command = 'continue'; parameters = @{} } | ConvertTo-Json -Compress
+          "$orden`n$seguir`n" | & cmd.exe /c "siem\wazuh\active-response\windows\responselab-aislar.cmd"
+          $log = Get-ChildItem -Recurse -Path $env:RL_WAZUH_DIR -Filter 'active-responses.log' | Select-Object -First 1
+          if (-not $log) { throw 'el script no escribio el acuse' }
+          Get-Content -LiteralPath $log.FullName
+          $acuse = (Get-Content -LiteralPath $log.FullName | Select-Object -Last 1 | ConvertFrom-Json).responselab_ar
+          if ($acuse.accion -ne 'aislar' -or $acuse.estado -ne 'aplicada') {
+            throw "acuse inesperado: $($acuse | ConvertTo-Json -Compress)"
+          }
+          Write-Host "Acuse correcto: $($acuse.detalle)"
+
+  imagen:
+    name: Imagen del motor
+    needs: [pruebas, windows]
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      packages: write
+    steps:
+      - uses: actions/checkout@v7
+
+      - name: Nombre de la imagen (GHCR exige minusculas)
+        run: echo "IMAGEN=ghcr.io/${GITHUB_REPOSITORY,,}" >> "$GITHUB_ENV"
+
+      - uses: docker/setup-buildx-action@v3
+
+      - uses: docker/login-action@v3
+        if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - uses: docker/build-push-action@v6
+        with:
+          context: .
+          push: ${{ github.event_name == 'push' && github.ref == 'refs/heads/main' }}
+          tags: |
+            ${{ env.IMAGEN }}:latest
+            ${{ env.IMAGEN }}:${{ github.sha }}
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
