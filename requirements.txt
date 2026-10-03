@@ -1,6 +1,10 @@
-# Dependencias del motor (las mismas que pyproject.toml)
-fastapi>=0.110
-uvicorn>=0.29
-httpx>=0.27
-PyYAML>=6.0
+# Dependencias del motor. Fijadas a version exacta: el CI afirma "lo generado ==
+# lo commiteado" y corre en 3.10/3.12, asi que una version flotante podria poner
+# el CI en rojo sin tocar codigo. Subelas con dependabot, no a mano.
+fastapi==0.142.2
+uvicorn==0.46.0
+httpx==0.28.1
+PyYAML==6.0.3
+# tzdata es el paquete de datos de zonas horarias (respaldo en sistemas sin la
+# base del SO); se deja flotante para tener siempre las reglas de TZ vigentes.
 tzdata>=2024.1
