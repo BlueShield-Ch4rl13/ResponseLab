@@ -21,7 +21,7 @@ classifiers = [
 ]
 dependencies = [
   "fastapi==0.142.2",
-  "uvicorn==0.46.0",
+  "uvicorn==0.54.0",
   "httpx==0.28.1",
   "PyYAML==6.0.3",
   "tzdata>=2024.1",     # datos de zonas horarias: flotante a proposito
