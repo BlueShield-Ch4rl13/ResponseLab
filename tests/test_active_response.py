@@ -457,8 +457,15 @@ def test_cuarentena_y_restauracion_de_ida_y_vuelta(wazuh, tmp_path):
     assert r.acuse["datos"] == {"custodia": str(custodia), "sha256": sha, "ruta": str(victima)}
     assert not victima.exists()
     guardado = custodia / "fichero"
-    assert guardado.read_bytes() == b"MZ\x90\x00 contenido de prueba"
     assert stat.S_IMODE(guardado.stat().st_mode) == 0, "en custodia el fichero no se puede ejecutar ni leer"
+    # Con permisos 000 solo root puede leerlo (wazuh-execd corre como root),
+    # pero el CI no corre como root: se abre un momento para comprobar el
+    # contenido y se deja exactamente como estaba antes de restaurar.
+    os.chmod(guardado, 0o400)
+    try:
+        assert guardado.read_bytes() == b"MZ\x90\x00 contenido de prueba"
+    finally:
+        os.chmod(guardado, 0)
     assert stat.S_IMODE((wazuh / "var" / "responselab" / "custodia").stat().st_mode) == 0o700
     meta = json.loads((custodia / "meta.json").read_text(encoding="utf-8"))
     assert meta["ruta"] == str(victima) and meta["sha256"] == sha and meta["modo"] == 0o640

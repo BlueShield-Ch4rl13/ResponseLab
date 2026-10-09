@@ -1,5 +1,7 @@
 # Pruebas y analisis estatico
+# Fijadas con == (las mismas que pyproject.toml): el CI instala de aqui y una
+# version nueva no debe cambiar el resultado sin pasar por un PR de dependabot.
 -r requirements.txt
-pytest>=8.0
-pytest-asyncio>=0.23
-ruff>=0.6
+pytest==9.1.1
+pytest-asyncio==1.4.0
+ruff==0.16.10
