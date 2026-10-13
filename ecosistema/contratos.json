@@ -192,15 +192,13 @@
       "media"
     ],
     "tipos_ioc": [
-      "cve",
       "domain",
       "filehash-md5",
       "filehash-sha1",
-      "filehash-sha256",
       "hostname",
       "ip:port",
-      "ipv4",
       "md5_hash",
+      "sha1_hash",
       "sha256_hash",
       "url"
     ]

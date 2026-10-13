@@ -1,7 +1,7 @@
 """
 ResponseLab - XDR: Manipulacion de la telemetria y de las defensas
 
-Generado por ResponseLab (tools/compilar.py) desde el catalogo 01bbe55923a1.
+Generado por ResponseLab (tools/compilar.py) desde el catalogo b8fce7924587.
 Ejecuta el plan que deja responselab_enrutador para esta familia.
 """
 import json
