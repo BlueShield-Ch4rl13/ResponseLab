@@ -2,7 +2,7 @@
 
 <!-- Generado por tools/compilar.py desde catalogo/catalogo.json - no editar a mano -->
 
-Catálogo `b8fce7924587` · **235 reglas** · **16 familias** · **54 acciones ejecutables** · **7 secuencias de ataque**
+Catálogo `fe2063126a96` · **235 reglas** · **16 familias** · **54 acciones ejecutables** · **7 secuencias de ataque**
 
 | Origen | Reglas |
 |---|---:|
