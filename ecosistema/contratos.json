@@ -192,6 +192,7 @@
       "media"
     ],
     "tipos_ioc": [
+      "cve",
       "domain",
       "filehash-md5",
       "filehash-sha1",

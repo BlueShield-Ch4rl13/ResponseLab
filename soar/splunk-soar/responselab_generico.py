@@ -1,7 +1,7 @@
 """
 ResponseLab - Generico: Generico (regla o familia sin playbook)
 
-Generado por ResponseLab (tools/compilar.py) desde el catalogo fe2063126a96.
+Generado por ResponseLab (tools/compilar.py) desde el catalogo 97d78baaceed.
 Ejecuta el plan que deja responselab_enrutador para esta familia.
 """
 import json
