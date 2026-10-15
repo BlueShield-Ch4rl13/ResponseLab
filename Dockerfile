@@ -7,7 +7,7 @@
 # declarativos. Los perfiles de cliente se montan desde fuera (cambian sin
 # reconstruir) y el estado vive en un volumen. Sin TLS: va detras de un proxy
 # (ver docker-compose.yml).
-FROM python:3.12-slim
+FROM python:3.14-slim
 
 ENV PYTHONDONTWRITEBYTECODE=1 \
     PYTHONUNBUFFERED=1 \
