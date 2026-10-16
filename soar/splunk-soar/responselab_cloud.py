@@ -1,7 +1,7 @@
 """
 ResponseLab - Cloud: Identidad y plano de control en la nube
 
-Generado por ResponseLab (tools/compilar.py) desde el catalogo 97d78baaceed.
+Generado por ResponseLab (tools/compilar.py) desde el catalogo a6a61d471545.
 Ejecuta el plan que deja responselab_enrutador para esta familia.
 """
 import json
