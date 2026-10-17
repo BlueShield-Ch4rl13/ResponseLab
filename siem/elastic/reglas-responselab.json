@@ -1,6 +1,6 @@
 {
  "_generado": "Generado por ResponseLab (tools/compilar.py). No editar.",
- "version_catalogo": "a6a61d471545",
+ "version_catalogo": "fccf1cee24b6",
  "titulos": [
   "AS-REP Roasting - peticion sin preautenticacion Kerberos",
   "Abuso de DPAPI - masterkeys y clave de respaldo del dominio",

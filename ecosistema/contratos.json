@@ -198,8 +198,6 @@
       "filehash-sha256",
       "hostname",
       "ip:port",
-      "md5_hash",
-      "sha1_hash",
       "sha256_hash",
       "url"
     ]

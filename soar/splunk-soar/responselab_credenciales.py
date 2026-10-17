@@ -1,7 +1,7 @@
 """
 ResponseLab - Credenciales: Volcado y robo de credenciales
 
-Generado por ResponseLab (tools/compilar.py) desde el catalogo a6a61d471545.
+Generado por ResponseLab (tools/compilar.py) desde el catalogo fccf1cee24b6.
 Ejecuta el plan que deja responselab_enrutador para esta familia.
 """
 import json
