@@ -32,12 +32,12 @@
     "sincronizado": "2026-10-01T18:36:22Z"
   },
   "newscti": {
-    "commit": "f5e4a1b4a7ee8b4b147d00cde45174860a6a2ae7",
-    "contenido_sha256": "ef517af5a1bcdc92d509311ede58ef235729a794178f865fd539487058e2b551",
-    "fecha_commit": "2026-10-17T10:36:21Z",
+    "commit": "1ee4b39ac35c32c22308521fc0563661f7050cd4",
+    "contenido_sha256": "a8e5ffb930ac665efb3e2283df5955ab49466e96899ce755f95f7c02fe91d406",
+    "fecha_commit": "2026-10-18T10:54:50Z",
     "rama": "main",
     "repo": "https://github.com/BlueShield-Ch4rl13/ScriptNewsCTI.git",
-    "sincronizado": "2026-10-17T11:01:32Z"
+    "sincronizado": "2026-10-18T11:27:59Z"
   },
   "splunklab": {
     "commit": "5e3c1b6fc80a062e39129d2583772fa9ab9284e4",

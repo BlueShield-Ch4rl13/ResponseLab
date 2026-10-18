@@ -5189,8 +5189,8 @@
       "contenido_sha256": "355ecde5de36979b5078a96a77778443c0025a1852fc6ee703bbe5dfc7641ab6"
     },
     "newscti": {
-      "commit": "f5e4a1b4a7ee8b4b147d00cde45174860a6a2ae7",
-      "contenido_sha256": "ef517af5a1bcdc92d509311ede58ef235729a794178f865fd539487058e2b551"
+      "commit": "1ee4b39ac35c32c22308521fc0563661f7050cd4",
+      "contenido_sha256": "a8e5ffb930ac665efb3e2283df5955ab49466e96899ce755f95f7c02fe91d406"
     },
     "splunklab": {
       "commit": "5e3c1b6fc80a062e39129d2583772fa9ab9284e4",
@@ -10895,5 +10895,5 @@
       "ventana_min": 1440
     }
   ],
-  "version": "fccf1cee24b6"
+  "version": "16317c8e42d1"
 }

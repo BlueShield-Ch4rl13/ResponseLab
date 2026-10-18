@@ -1,7 +1,7 @@
 """
 ResponseLab - Cumplimiento: Cumplimiento y obligaciones regulatorias
 
-Generado por ResponseLab (tools/compilar.py) desde el catalogo fccf1cee24b6.
+Generado por ResponseLab (tools/compilar.py) desde el catalogo 16317c8e42d1.
 Ejecuta el plan que deja responselab_enrutador para esta familia.
 """
 import json

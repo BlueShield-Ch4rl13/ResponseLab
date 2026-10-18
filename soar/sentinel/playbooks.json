@@ -3,7 +3,7 @@
   "contentVersion": "1.0.0.0",
   "metadata": {
     "descripcion": "ResponseLab: playbooks de respuesta para Microsoft Sentinel. Generado por tools/compilar.py; no editar a mano.",
-    "version_catalogo": "fccf1cee24b6",
+    "version_catalogo": "16317c8e42d1",
     "reglas_reconocidas": 127,
     "familias": [
       "ad",
