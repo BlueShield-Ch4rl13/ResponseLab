@@ -13,9 +13,19 @@ Como se actualiza solo sin poner en riesgo la produccion
 Y aunque un catalogo malicioso pasara la validacion, las invariantes estan en
 el codigo (responselab/nucleo.py), no en los datos: ningun catalogo puede hacer
 automatica una accion de radio cuenta u organizacion.
+
+Firma (RL_CATALOGO_CLAVE)
+-------------------------
+Si el motor tiene RL_CATALOGO_CLAVE, solo acepta un catalogo remoto que venga
+con su firma (<url>.firma: HMAC-SHA256 del fichero en hexadecimal) hecha con
+esa clave. La clave la tiene la persona que revisa y publica el catalogo
+(tools/firmar_catalogo.py), no el bot de GitHub: un catalogo que nadie ha
+revisado, o un repositorio comprometido, no llega a produccion.
 """
 from __future__ import annotations
 
+import hashlib
+import hmac
 import json
 import logging
 import os
@@ -29,8 +39,9 @@ log = logging.getLogger("responselab.catalogo")
 
 
 class GestorCatalogo:
-    def __init__(self, ruta_local: Path, carpeta_datos: Path, url_remota: str = ""):
+    def __init__(self, ruta_local: Path, carpeta_datos: Path, url_remota: str = "", clave_firma: str | None = None):
         self.ruta_local = ruta_local
+        self.clave_firma = (os.environ.get("RL_CATALOGO_CLAVE", "") if clave_firma is None else clave_firma).encode()
         self.descargado = carpeta_datos / "catalogo" / "catalogo.json"
         self.url = url_remota
         self.actual: nucleo.Catalogo | None = None
@@ -100,13 +111,24 @@ class GestorCatalogo:
         try:
             async with httpx.AsyncClient(timeout=60, transport=transporte) as c:
                 r = await c.get(self.url, headers=cab)
-            if r.status_code == 304:
-                return {"estado": "sin cambios", "version": self.actual.version if self.actual else ""}
-            r.raise_for_status()
+                if r.status_code == 304:
+                    return {"estado": "sin cambios", "version": self.actual.version if self.actual else ""}
+                r.raise_for_status()
+                firma = ""
+                if self.clave_firma:
+                    rf = await c.get(self.url + ".firma")
+                    rf.raise_for_status()
+                    firma = rf.text.strip()
             datos = r.json()
         except (httpx.HTTPError, ValueError) as e:
             self.ultimo_error = f"descarga: {e}"
             return {"estado": "error", "error": self.ultimo_error}
+        if self.clave_firma:
+            esperada = hmac.new(self.clave_firma, r.content, hashlib.sha256).hexdigest()
+            if not hmac.compare_digest(esperada, firma):
+                self.ultimo_error = "catalogo remoto rechazado: la firma no corresponde (RL_CATALOGO_CLAVE)"
+                log.error(self.ultimo_error)
+                return {"estado": "rechazado", "errores": ["firma no valida"]}
         if self.actual and datos.get("version") == self.actual.version:
             self.etag = r.headers.get("etag", "")
             return {"estado": "sin cambios", "version": self.actual.version}
