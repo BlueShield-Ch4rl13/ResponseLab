@@ -106,9 +106,12 @@ distintos para ingerir alertas, para los agentes, para las listas EDL de los
 cortafuegos y para cada aprobador. El token de un cliente nunca sirve para otro.
 
 **El ecosistema se sincroniza solo, pero no a ciegas.** Copiar en vez de leer en
-caliente hace que cada cambio aguas arriba llegue como un diff revisable. Si
+caliente hace que cada cambio aguas arriba llegue como un diff revisable: el bot
+abre un pull request (`sincronizacion/auto`), no empuja a `main`. Si
 DetectionLab cambia una acción de contención y deja de estar mapeada a algo
-ejecutable, el CI se pone en rojo antes de que la vea un motor.
+ejecutable, el CI se pone en rojo antes de que la vea un motor. Con
+`RL_CATALOGO_CLAVE`, los motores solo aceptan un catálogo firmado por quien lo
+revisó (`tools/firmar_catalogo.py`).
 
 ---
 
@@ -284,10 +287,31 @@ propio diseño es parte del producto:
 - tokens separados por cliente y por función;
 - secretos fuera de los perfiles;
 - límites de tamaño y de frecuencia en la entrada;
-- auditoría encadenada;
+- auditoría encadenada con HMAC (la clave no está en la base de datos);
+- acuses que solo cierran la ejecución del equipo al que se mandó la orden;
+- active response que rechaza rutas con `..` y comprueba la ruta real, no el texto;
+- `/salud` sin token solo dice si el motor está vivo;
 - contenedor sin privilegios y con el sistema de ficheros en solo lectura.
 
 Para informar de una vulnerabilidad, mira [`SECURITY.md`](SECURITY.md).
+
+---
+
+## 🧾 Cómo está probado
+
+Lo que se ejecuta en cada cambio (`.github/workflows/ci.yml`):
+
+| Qué | Cómo |
+|---|---|
+| Motor, API, conectores, almacén | `pytest` (más de 1.180 pruebas) en Linux y Windows |
+| Active response de Linux | El script real contra una instalación de Wazuh falsa en un directorio temporal, con `RL_AR_SIMULACION=1`: los comandos (`nft`, `iptables`, `systemctl`, `kill`) se registran y no se ejecutan; los ficheros sí se mueven, solo dentro del temporal |
+| Catálogo y contratos | `tools/validar.py` |
+| Diez ataques de extremo a extremo | `tools/simular.py` contra el motor en simulación |
+| Estilo | `ruff` |
+
+Lo que **no** cubre el CI: agentes de Wazuh reales, ni los SOAR y EDR de verdad
+(los conectores se prueban con respuestas HTTP simuladas). Para eso está
+`docker-compose.lab.yml` con Infra-SocAnalyst.
 
 ---
 
