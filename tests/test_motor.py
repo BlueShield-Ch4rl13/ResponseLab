@@ -702,6 +702,35 @@ async def test_acuses_actualizan_el_estado_de_la_ejecucion(motor):
         motor.acuse("lab", "ej-no-existe", "ok", {})
 
 
+async def test_acuse_de_otro_agente_se_rechaza(motor):
+    """Un acuse solo cierra la ejecucion del equipo al que se mando la orden."""
+    ej = await aislamiento(motor)
+    equipo = ej["objetivo"].get("equipo.nombre")
+    assert equipo, "la ejecucion de aislamiento lleva el equipo objetivo"
+    with pytest.raises(AlertaRechazada, match="acuse rechazado"):
+        motor.acuse("lab", ej["id"], "ok", {"agente": "OTRO-EQUIPO", "agente_id": "099"})
+    assert motor.almacen.ejecucion(ej["id"])["estado"] == ej["estado"], "no cambia"
+    assert "acuse.rechazado" in eventos(motor, "lab")
+    assert motor.acuse("lab", ej["id"], "ok", {"agente": equipo.lower() + ".corp.local"})["estado"] == "confirmada"
+
+
+async def test_acuse_no_permite_cualquier_transicion(motor):
+    ej = await aislamiento(motor)
+    assert motor.acuse("lab", ej["id"], "ok", {})["estado"] == "confirmada"
+    assert motor.acuse("lab", ej["id"], "ok", {}).get("repetido") is True, "el mismo acuse repetido no cambia nada"
+    with pytest.raises(AlertaRechazada, match="un acuse no la pasa"):
+        motor.acuse("lab", ej["id"], "fallida", {})
+    assert motor.almacen.ejecucion(ej["id"])["estado"] == "confirmada"
+
+
+async def test_deshacer_con_inversa_que_no_esta_en_el_catalogo_no_da_500(motor):
+    ej = await aislamiento(motor)
+    inversa = motor.catalogo.actual.acciones[ej["accion"]]["deshacer"]
+    del motor.catalogo.actual.acciones[inversa]
+    with pytest.raises(AlertaRechazada, match="no esta en el catalogo"):
+        await motor.deshacer("lab", ej["id"], "analista@lab.test")
+
+
 async def test_acuse_con_informe_ftriage_del_equipo_se_incorpora(motor):
     ej = await aislamiento(motor)
     informe = {"host": {"hostname": "CORP-FIN-07"},

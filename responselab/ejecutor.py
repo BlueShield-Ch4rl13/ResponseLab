@@ -411,7 +411,10 @@ class Motor:
         if not inversa:
             raise AlertaRechazada(f"{ej['accion']} no tiene accion inversa (radio {meta.get('radio')}, "
                                   f"reversible {meta.get('reversible')})")
-        meta_inv = self.catalogo.actual.acciones[inversa]
+        meta_inv = self.catalogo.actual.acciones.get(inversa)
+        if not meta_inv:
+            # El catalogo nombra una inversa que no define: error del catalogo, no del analista
+            raise AlertaRechazada(f"la accion inversa '{inversa}' de {ej['accion']} no esta en el catalogo actual")
         alerta = self._alerta_guardada(cliente_id, ej["alerta_id"]) or {"id": ej["alerta_id"]}
         plan = alerta.pop("_plan", {})
         paso = {"id": f"deshacer-{ej_id}", "accion": inversa, "nombre": meta_inv.get("nombre", inversa),
@@ -497,6 +500,29 @@ class Motor:
 
     ESTADOS_ACUSE = {"ok": "confirmada", "aplicada": "confirmada", "confirmada": "confirmada",
                      "fallida": "fallida", "error": "fallida", "rechazada": "fallida"}
+    # Solo una orden entregada y aun sin confirmar puede recibir su acuse final:
+    # una ejecucion con error, omitida o ya confirmada no cambia por un acuse.
+    ESPERAN_ACUSE = ("ok", "simulada", "en_curso")
+
+    @staticmethod
+    def _acuse_ajeno(ej: dict, detalle: dict) -> str:
+        """Motivo para rechazar un acuse que no viene del equipo al que se mando la orden.
+
+        La integracion de Wazuh pone el agente que envio el acuse (agent.id y
+        agent.name de la alerta, que el script del equipo no puede elegir). Si
+        no coincide con el agente al que se entrego la orden o con el equipo
+        del objetivo, otro equipo esta intentando cerrar una ejecucion ajena.
+        """
+        enviado = str((ej.get("datos_deshacer") or {}).get("agente") or "")
+        recibido = str(detalle.get("agente_id") or "")
+        if enviado and recibido and enviado.zfill(3) != recibido.zfill(3):
+            return f"llega del agente {recibido} y la orden se entrego al {enviado}"
+        equipo = str((ej.get("objetivo") or {}).get("equipo.nombre") or "")
+        agente = str(detalle.get("agente") or "")
+        corto = lambda n: n.split(".")[0].lower()
+        if equipo and agente and corto(equipo) != corto(agente):
+            return f"llega del agente '{agente}' y el objetivo era '{equipo}'"
+        return ""
 
     def acuse(self, cliente_id: str, ej_id: str, estado: str, detalle: dict) -> dict:
         """Lo que el script del equipo dice que paso de verdad.
@@ -509,11 +535,23 @@ class Motor:
         ej = self.almacen.ejecucion(ej_id)
         if not ej or ej["cliente"] != cliente_id:
             raise AlertaRechazada("ejecucion no encontrada")
+        detalle = detalle if isinstance(detalle, dict) else {}
+        motivo = self._acuse_ajeno(ej, detalle)
+        if motivo:
+            self.almacen.auditar(cliente_id, "agente", "acuse.rechazado", {"ejecucion": ej_id, "motivo": motivo})
+            raise AlertaRechazada(f"acuse rechazado: {motivo}")
         nuevo = self.ESTADOS_ACUSE.get(str(estado).lower())
         if nuevo is None:
             self.almacen.auditar(cliente_id, "agente", "accion.progreso",
                                  {"ejecucion": ej_id, "estado": estado, "detalle": detalle})
             return {"ejecucion": ej_id, "estado": ej["estado"], "progreso": estado}
+        if ej["estado"] == nuevo:
+            # Reenvio del mismo acuse (cola de pendientes de la integracion): no cambia nada
+            return {"ejecucion": ej_id, "estado": nuevo, "repetido": True}
+        if ej["estado"] not in self.ESPERAN_ACUSE:
+            self.almacen.auditar(cliente_id, "agente", "acuse.rechazado",
+                                 {"ejecucion": ej_id, "motivo": f"transicion {ej['estado']} -> {nuevo}"})
+            raise AlertaRechazada(f"la ejecucion esta en '{ej['estado']}': un acuse no la pasa a '{nuevo}'")
         self.almacen.confirmar_ejecucion(ej_id, nuevo, detalle)
         self.almacen.auditar(cliente_id, "agente", "accion." + nuevo, {"ejecucion": ej_id, "detalle": detalle})
         salida = {"ejecucion": ej_id, "estado": nuevo}
