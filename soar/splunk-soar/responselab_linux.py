@@ -1,7 +1,7 @@
 """
 ResponseLab - Linux: Endpoint y servidor Linux
 
-Generado por ResponseLab (tools/compilar.py) desde el catalogo dfabd272f894.
+Generado por ResponseLab (tools/compilar.py) desde el catalogo 0fd8a3153d4f.
 Ejecuta el plan que deja responselab_enrutador para esta familia.
 """
 import json

@@ -201,6 +201,7 @@
       "ip:port",
       "ipv4",
       "md5_hash",
+      "sha1_hash",
       "sha256_hash",
       "url"
     ]
