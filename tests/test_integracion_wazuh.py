@@ -214,8 +214,19 @@ def test_acuse_de_active_response_va_a_acuses_con_el_token_de_agentes(wazuh):
     assert pet["cuerpo"] == {
         "ejecucion_id": "ej-77", "estado": "aplicada",
         "detalle": {"detalle": "equipo aislado con nftables", "accion": "aislar", "equipo": "pc-0042",
-                    "agente": "PC-0042", "alerta_wazuh": "1727776900.555",
+                    "agente": "PC-0042", "agente_id": "042", "alerta_wazuh": "1727776900.555",
                     "metodo": "nftables", "permitidos": ["10.0.30.2"]}}
+
+
+def test_los_datos_del_script_no_pisan_el_agente_que_envio_el_acuse(wazuh):
+    """Un equipo comprometido no puede hacerse pasar por otro metiendo "agente" en los datos."""
+    datos = json.dumps({"agente": "SRV-DC01", "agente_id": "001", "equipo": "SRV-DC01", "metodo": "nftables"})
+    with MotorFalso() as motor:
+        configurar(wazuh, motor.url)
+        assert integrar(wazuh, acuse(datos=datos)).returncode == 0
+    detalle = motor.peticiones[0]["cuerpo"]["detalle"]
+    assert detalle["agente"] == "PC-0042" and detalle["agente_id"] == "042" and detalle["equipo"] == "pc-0042"
+    assert detalle["metodo"] == "nftables"
 
 
 def test_acuse_con_datos_que_no_son_json(wazuh):
