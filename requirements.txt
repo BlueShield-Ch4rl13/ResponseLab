@@ -1,7 +1,7 @@
 # Dependencias del motor. Fijadas a version exacta: el CI afirma "lo generado ==
 # lo commiteado" y corre en 3.10/3.12, asi que una version flotante podria poner
 # el CI en rojo sin tocar codigo. Subelas con dependabot, no a mano.
-fastapi==0.142.2
+fastapi==0.146.0
 uvicorn==0.46.0
 httpx==0.28.1
 PyYAML==6.0.3
