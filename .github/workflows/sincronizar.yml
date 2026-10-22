@@ -8,8 +8,12 @@ name: Sincronizar con el ecosistema
 #   tools/sincronizar.py -> compilar -> validar -> pruebas -> escenarios
 #        |  (solo si TODO pasa)
 #        v
-#   commit en main -> los motores descargan el catalogo nuevo (RL_ACTUALIZACION_URL),
-#                     lo vuelven a validar y solo entonces lo usan
+#   PR "sincronizacion/auto" -> una persona revisa el diff y lo fusiona
+#        |  (y, si los motores usan RL_CATALOGO_CLAVE, firma el catalogo:
+#        |   python tools/firmar_catalogo.py)
+#        v
+#   main -> los motores descargan el catalogo nuevo (RL_ACTUALIZACION_URL),
+#           comprueban la firma, lo vuelven a validar y solo entonces lo usan
 #
 # Si un cambio aguas arriba rompe algo (una accion que ya no esta mapeada, un
 # contrato que cambia de formato, un ataque que deja de contenerse), este
@@ -29,7 +33,8 @@ on:
   workflow_dispatch:
 
 permissions:
-  contents: write
+  contents: write          # empujar la rama sincronizacion/auto (nunca main)
+  pull-requests: write     # abrir o actualizar el PR
 
 concurrency:
   group: sincronizar
@@ -64,15 +69,23 @@ jobs:
       - name: Escenarios de ataque
         run: python tools/simular.py
 
-      - name: Publicar si hay cambios
+      - name: Abrir o actualizar el PR de sincronizacion
+        env:
+          GH_TOKEN: ${{ github.token }}
         run: |
           if [ -z "$(git status --porcelain)" ]; then
             echo "El ecosistema no ha cambiado nada que ResponseLab consuma."
             exit 0
           fi
+          rama="sincronizacion/auto"
           git config user.name  "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git switch -C "$rama"
           git add -A ecosistema catalogo soar siem docs
           git commit -m "sincroniza con el ecosistema ($(date -u +%Y-%m-%d))"
-          git pull --rebase
-          git push
+          git push --force-with-lease origin "$rama"
+          if [ -z "$(gh pr list --head "$rama" --state open --json number -q '.[].number')" ]; then
+            gh pr create --head "$rama" --base main \
+              --title "Sincronizacion con el ecosistema" \
+              --body "Cambios traidos de DetectionLab y del resto del ecosistema. Compilado, validado, pruebas y escenarios en verde. Revisar el diff del catalogo antes de fusionar."
+          fi
