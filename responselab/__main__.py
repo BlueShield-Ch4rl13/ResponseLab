@@ -6,6 +6,7 @@ Linea de ordenes del motor.
     python -m responselab decidir --siem wazuh --cliente lab alerta.json
                                                        plan de una alerta sin ejecutar nada
     python -m responselab auditoria                    verifica la cadena de auditoria
+    python -m responselab copia --destino /copias      copia en caliente, verificada, con rotacion
 """
 from __future__ import annotations
 
@@ -33,6 +34,9 @@ def main(argv=None) -> int:
     d.add_argument("--cliente", default="lab")
     d.add_argument("fichero", type=Path)
     sub.add_parser("auditoria")
+    c = sub.add_parser("copia")
+    c.add_argument("--destino", type=Path, required=True)
+    c.add_argument("--conservar", type=int, default=14, help="copias que se guardan (las mas recientes)")
     args = ap.parse_args(argv)
 
     if args.orden == "servir":
@@ -65,6 +69,12 @@ def main(argv=None) -> int:
         r = Almacen(Config().base_datos).verificar_auditoria()
         print(json.dumps(r, indent=2))
         return 0 if r["integra"] else 1
+
+    if args.orden == "copia":
+        from .copias import hacer_copia
+        r = hacer_copia(Config().base_datos, args.destino, args.conservar)
+        print(json.dumps(r, indent=2, ensure_ascii=False))
+        return 0 if r["valida"] else 1
     return 1
 
 

@@ -1,0 +1,19 @@
+# Certificado de Let's Encrypt validado por DNS en Cloudflare.
+#
+# Para el laboratorio es lo mas comodo: el motor tiene un nombre de tu dominio
+# (p. ej. motor.lab.carlosvillalbalagos.com) que resuelve a su IP privada, y
+# Wazuh, Splunk y el navegador confian en el sin instalar ninguna CA. El motor
+# no se publica en internet: Let's Encrypt solo comprueba un registro TXT.
+#
+#   python tools/preparar_servidor.py --motor 10.0.30.20 \
+#       --dominio motor.lab.carlosvillalbalagos.com --tls cloudflare
+#   # CLOUDFLARE_API_TOKEN en .env: Zone > DNS > Edit, solo sobre tu zona
+#   docker compose up -d --build
+services:
+  proxy:
+    image: responselab-caddy-cloudflare:2.11.7
+    build: despliegue/caddy-cloudflare
+    environment:
+      CLOUDFLARE_API_TOKEN: ${CLOUDFLARE_API_TOKEN:?falta CLOUDFLARE_API_TOKEN en .env}
+    volumes:
+      - ./despliegue/Caddyfile.cloudflare:/etc/caddy/Caddyfile:ro

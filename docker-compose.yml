@@ -10,7 +10,7 @@ name: responselab
 services:
   motor:
     build: .
-    image: ghcr.io/blueshield-ch4rl13/responselab:latest
+    image: ${RL_IMAGEN:-ghcr.io/blueshield-ch4rl13/responselab:latest}
     restart: unless-stopped
     env_file: .env
     volumes:
@@ -28,13 +28,14 @@ services:
       - no-new-privileges:true
 
   proxy:
-    image: caddy:2
+    image: caddy:2.11.7-alpine
     restart: unless-stopped
     depends_on:
       motor:
         condition: service_healthy
     ports:
-      - "8443:8443"
+      # RL_BIND: la IP de la VM en la VLAN SOC. Vacia = todas las interfaces.
+      - "${RL_BIND:-0.0.0.0}:8443:8443"
     environment:
       RL_DOMINIO: ${RL_DOMINIO:-localhost}
       RL_TLS: ${RL_TLS:-internal}

@@ -1,0 +1,54 @@
+# Servidor del laboratorio: lo que el motor necesita ademas de docker-compose.yml.
+#
+#   python tools/preparar_servidor.py --motor 10.0.30.20   # .env y COMPOSE_FILE
+#   docker compose up -d                                   # usa este fichero solo
+#
+# - El motor resuelve los nombres de lab.yml (wazuh-manager, thehive), que en el
+#   laboratorio estan en otras VM de la VLAN SOC.
+# - Los registros de cada contenedor rotan: un motor que lleva meses encendido no
+#   llena el disco de la VM.
+# - "copias" hace una copia verificada del estado cada 6 horas y guarda las 14
+#   ultimas en RL_COPIAS_DIR (./copias), que es lo que se saca de la VM.
+services:
+  motor:
+    image: ${RL_IMAGEN:-ghcr.io/blueshield-ch4rl13/responselab:latest}
+    extra_hosts:
+      - "wazuh-manager:${RL_IP_WAZUH:-10.0.30.10}"
+      - "thehive:${RL_IP_SOAR:-10.0.30.11}"
+    logging: &registros
+      driver: json-file
+      options:
+        max-size: "10m"
+        max-file: "5"
+
+  proxy:
+    logging: *registros
+
+  copias:
+    image: ${RL_IMAGEN:-ghcr.io/blueshield-ch4rl13/responselab:latest}
+    restart: unless-stopped
+    depends_on:
+      motor:
+        condition: service_healthy
+    env_file: .env
+    volumes:
+      - datos:/var/lib/responselab
+      - ${RL_COPIAS_DIR:-./copias}:/copias
+    read_only: true
+    tmpfs:
+      - /tmp
+    cap_drop:
+      - ALL
+    security_opt:
+      - no-new-privileges:true
+    healthcheck:
+      disable: true
+    logging: *registros
+    command:
+      - sh
+      - -c
+      - |
+        while :; do
+          python -m responselab copia --destino /copias --conservar "$${RL_COPIAS_CONSERVAR:-14}" || echo "COPIA FALLIDA" >&2
+          sleep "$${RL_COPIAS_CADA_S:-21600}"
+        done
