@@ -434,7 +434,7 @@ tasks:
       id: f22f1303-b730-520f-971a-2c7566ab6b21
       version: -1
       name: 'Aprobar: Aislar el equipo en la red'
-      description: 'Radio equipo, reversible si, se deshace con endpoint.liberar. Origen: Aislar el endpoint en la red, unicamente para el borrado del registro de auditoria Por que: Es la unica regla de la familia con un adversario probable detras: borrar el registro no es deriva de configuracion, y el apagado ordenado que la explicaria se distingue porque va seguido del arranque. El resto de la familia no llega a este nivel de automatizacion ni deberia, y por eso la accion lleva la restriccion escrita en el alcance.'
+      description: 'Radio equipo, reversible si, se deshace con endpoint.liberar. Origen: Aislar el endpoint en la red, unicamente para el borrado del registro de auditoria Por que: Es la unica regla de la familia con un adversario probable detras: borrar el registro no es deriva de configuracion. La regla ya no salta con el apagado (1100) ni con el refresco de GPO (4719 de SYSTEM), que antes aislaban equipos sin motivo. El resto de la familia no llega a este nivel de automatizacion ni deberia, y por eso la accion lleva la restriccion escrita en el alcance.'
       type: condition
       iscommand: false
       brand: ''
@@ -506,7 +506,7 @@ tasks:
       id: 6fcdc02b-c465-5e43-acd5-4465f57bc4d5
       version: -1
       name: 'A mano: Aislar el equipo en la red'
-      description: 'ResponseLab la deja al analista (motivo en la War Room). Origen: Aislar el endpoint en la red, unicamente para el borrado del registro de auditoria Por que: Es la unica regla de la familia con un adversario probable detras: borrar el registro no es deriva de configuracion, y el apagado ordenado que la explicaria se distingue porque va seguido del arranque. El resto de la familia no llega a este nivel de automatizacion ni deberia, y por eso la accion lleva la restriccion escrita en el alcance.'
+      description: 'ResponseLab la deja al analista (motivo en la War Room). Origen: Aislar el endpoint en la red, unicamente para el borrado del registro de auditoria Por que: Es la unica regla de la familia con un adversario probable detras: borrar el registro no es deriva de configuracion. La regla ya no salta con el apagado (1100) ni con el refresco de GPO (4719 de SYSTEM), que antes aislaban equipos sin motivo. El resto de la familia no llega a este nivel de automatizacion ni deberia, y por eso la accion lleva la restriccion escrita en el alcance.'
       type: regular
       iscommand: false
       brand: ''
@@ -731,7 +731,7 @@ tasks:
 
         - La desviacion aparece en un unico activo y no en el resto de su grupo
 
-        - La alerta es borrado del registro de auditoria sin apagado ordenado posterior'
+        - La alerta es borrado del registro de auditoria o retirada de auditoria por una cuenta de usuario'
       type: regular
       iscommand: false
       brand: ''

@@ -2,12 +2,12 @@
 
 <!-- Generado por tools/compilar.py desde catalogo/catalogo.json - no editar a mano -->
 
-Catálogo `0fd8a3153d4f` · **235 reglas** · **16 familias** · **54 acciones ejecutables** · **7 secuencias de ataque**
+Catálogo `b3b130d94808` · **239 reglas** · **16 familias** · **54 acciones ejecutables** · **7 secuencias de ataque**
 
 | Origen | Reglas |
 |---|---:|
 | detectionlab | 207 |
-| infra-socanalyst | 7 |
+| infra-socanalyst | 11 |
 | splunklab | 21 |
 
 ## Qué sabe contestar la máquina
@@ -19,7 +19,6 @@ quedan como tarea del analista. Ninguna se contesta por defecto.
 
 | Familia | Reglas | Triaje automático | Cierre automático | Contención mapeada |
 |---|---:|---:|---:|---:|
-| `_generico` | 1 | 0/0 | 0/0 | 0/0 |
 | `ad` | 20 | 2/5 | 0/0 | 4/4 |
 | `cloud` | 11 | 3/6 | 0/2 | 4/4 |
 | `contenedores` | 10 | 3/6 | 0/1 | 4/4 |
@@ -29,13 +28,13 @@ quedan como tarea del analista. Ninguna se contesta por defecto.
 | `endpoint` | 18 | 5/6 | 1/2 | 5/5 |
 | `exfiltracion` | 8 | 3/6 | 0/0 | 4/4 |
 | `inteligencia` | 7 | 4/4 | 2/2 | 4/4 |
-| `linux` | 19 | 5/6 | 1/1 | 4/4 |
+| `linux` | 24 | 5/6 | 1/1 | 4/4 |
 | `macos` | 8 | 4/5 | 1/1 | 4/4 |
 | `red` | 6 | 4/5 | 1/2 | 4/4 |
 | `web` | 20 | 6/6 | 0/2 | 4/4 |
 | `xdr` | 10 | 3/6 | 0/0 | 4/4 |
 | `zta` | 68 | 4/5 | 3/3 | 2/2 |
-| **Total** | **235** | **55/79** | **10/20** | **55/55** |
+| **Total** | **239** | **55/79** | **10/20** | **55/55** |
 
 ## Qué se ejecuta sin persona en una alerta crítica
 
@@ -55,7 +54,7 @@ cifras, nunca subirlas.
 | `endpoint` | 90 | 18 | 0 | 0 |
 | `exfiltracion` | 32 | 8 | 0 | 0 |
 | `inteligencia` | 21 | 7 | 0 | 0 |
-| `linux` | 76 | 19 | 0 | 0 |
+| `linux` | 96 | 24 | 0 | 0 |
 | `macos` | 32 | 8 | 0 | 0 |
 | `red` | 24 | 6 | 0 | 0 |
 | `web` | 80 | 20 | 0 | 0 |

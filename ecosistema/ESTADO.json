@@ -1,27 +1,27 @@
 {
   "detectionlab": {
-    "commit": "d59b9cc52158e84a4be12f0ce753dabfaddb7613",
-    "contenido_sha256": "a1f4ac2c77ad7116a0a02cedc0c3d03d821623765f58d4abcff5e49ac10a5a71",
-    "fecha_commit": "2026-10-01T12:10:21+00:00",
+    "commit": "5044208518ec0fff2d93848e3422e5f519a8b6a2",
+    "contenido_sha256": "2329236d8441e01fdbced51c8bc1de311af23a9b67db9de0b2dae4c783414fad",
+    "fecha_commit": "2026-10-24T10:03:45+00:00",
     "rama": "main",
     "repo": "https://github.com/BlueShield-Ch4rl13/DetectionLab.git",
-    "sincronizado": "2026-10-01T18:36:52Z"
+    "sincronizado": "2026-10-24T23:25:06Z"
   },
   "ftriagedfir": {
-    "commit": "8c282e162f99320cb567650c0998eb80bd4b5e54",
-    "contenido_sha256": "6bfbeb96f462f25e8eda194db0a164a5261ff26c1ea3ae395d0c0c8023e4eba2",
-    "fecha_commit": "2026-08-10T10:37:36+02:00",
+    "commit": "756c69e5523ba4303272bed4c27527137570c49c",
+    "contenido_sha256": "168bf1f22d428126bf2feb9f4b8786d67caaf0ad6d04128a17c501008f3d8455",
+    "fecha_commit": "2026-10-22T23:55:38+02:00",
     "rama": "main",
     "repo": "https://github.com/BlueShield-Ch4rl13/FtriageDFIR.git",
-    "sincronizado": "2026-10-01T18:36:22Z"
+    "sincronizado": "2026-10-24T23:25:06Z"
   },
   "infra-socanalyst": {
-    "commit": "e4c0e499ee0650944ebd12e85c629e85515829e1",
-    "contenido_sha256": "c1e509d6606b36b129a3caf6c89b9e2ecfb8d0b30052e1a97ed8243d73679488",
-    "fecha_commit": "2026-07-20T09:49:49+02:00",
+    "commit": "4968609f43041fc256ffb8f180f5c5c9b12bb8e8",
+    "contenido_sha256": "4c7bab908ad581e8fb459def02bd6973191663f445c4c1cbe81c250cd579c6c6",
+    "fecha_commit": "2026-10-22T23:56:40+02:00",
     "rama": "main",
     "repo": "https://github.com/BlueShield-Ch4rl13/Infra-SocAnalyst.git",
-    "sincronizado": "2026-10-01T18:36:22Z"
+    "sincronizado": "2026-10-24T23:25:06Z"
   },
   "malpipe": {
     "commit": "7546aa8a7c74da08567acdeed1ef6d7e576ca7da",
@@ -32,12 +32,12 @@
     "sincronizado": "2026-10-01T18:36:22Z"
   },
   "newscti": {
-    "commit": "2ee4f2a6ee486b99203cc2436939c469e2cdf143",
-    "contenido_sha256": "9a590648ef89e26c594849219d089df400326bbcfb42d345a4e1cc693de7ecde",
-    "fecha_commit": "2026-10-22T11:41:37Z",
+    "commit": "26a3ebcc454fe8441d463aa3923c29a9f0d4260b",
+    "contenido_sha256": "07b193b0f58bc53d8a18bc371789ec2208385f7c4d252fe6318c514aacbb3579",
+    "fecha_commit": "2026-10-24T20:42:54+00:00",
     "rama": "main",
     "repo": "https://github.com/BlueShield-Ch4rl13/ScriptNewsCTI.git",
-    "sincronizado": "2026-10-22T12:10:55Z"
+    "sincronizado": "2026-10-24T23:25:06Z"
   },
   "splunklab": {
     "commit": "5e3c1b6fc80a062e39129d2583772fa9ab9284e4",

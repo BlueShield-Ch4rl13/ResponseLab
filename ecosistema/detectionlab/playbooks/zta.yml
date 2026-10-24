@@ -67,7 +67,7 @@ triaje:
     fuente: historico_siem
     si_afirmativo: subir_severidad
     nota: La deriva de arquitectura es colectiva. Un solo activo desviado se parece mas a una accion deliberada que a una herencia de configuracion.
-  - pregunta: La alerta es borrado del registro de auditoria sin apagado ordenado posterior
+  - pregunta: La alerta es borrado del registro de auditoria o retirada de auditoria por una cuenta de usuario
     fuente: evento
     si_afirmativo: subir_severidad
     nota: Es la unica regla de la familia que se tria como incidente y no como desviacion.
@@ -128,14 +128,17 @@ contencion:
         exactamente igual el trimestre siguiente, disparando la misma regla.
         Encolar es barato y es lo unico que corrige algo.
   - accion: Aislar el endpoint en la red, unicamente para el borrado del registro de auditoria
-    alcance: El equipo afectado, y solo en el caso de zta_vis_001. No aplica al resto de reglas de la familia.
-    radio: objeto
+    alcance: El equipo afectado, y solo en el caso de zta_vis_001 (registro borrado, o auditoria retirada por una cuenta que no es SYSTEM). No aplica al resto de reglas de la familia.
+    # Radio equipo: aislar deja sin red a todo el equipo. Antes se declaraba
+    # "objeto", que no es lo que hace y evitaba las comprobaciones del radio.
+    radio: equipo
     reversible: "si"
     requiere_aprobacion: "no"
     justificacion: |
         Es la unica regla de la familia con un adversario probable detras:
-        borrar el registro no es deriva de configuracion, y el apagado ordenado
-        que la explicaria se distingue porque va seguido del arranque. El resto
+        borrar el registro no es deriva de configuracion. La regla ya no salta
+        con el apagado (1100) ni con el refresco de GPO (4719 de SYSTEM), que
+        antes aislaban equipos sin motivo. El resto
         de la familia no llega a este nivel de automatizacion ni deberia, y por
         eso la accion lleva la restriccion escrita en el alcance.
     excepcion: |

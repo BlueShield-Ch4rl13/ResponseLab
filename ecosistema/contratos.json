@@ -42,11 +42,9 @@
         }
       ],
       "host": {
-        "architecture": "str",
         "hostname": "str",
-        "os": "str",
-        "os_version": "str",
-        "python": "str"
+        "origen": "str",
+        "os": "str"
       },
       "iocs": [
         {
@@ -60,6 +58,7 @@
       ]
     },
     "opciones_triage": [
+      "--allow-same-volume",
       "--artifacts",
       "--case",
       "--collect-only",
@@ -67,6 +66,7 @@
       "--examiner",
       "--ez-tools",
       "--no-iocs",
+      "--no-volatiles",
       "--output",
       "--parse-only",
       "--root",
@@ -176,6 +176,7 @@
       "threat",
       "type",
       "value",
+      "variants",
       "vt_detections"
     ],
     "claves_kev": [
@@ -188,21 +189,15 @@
     ],
     "niveles": [
       "alta",
-      "baja",
       "media"
     ],
     "tipos_ioc": [
-      "cve",
       "domain",
       "filehash-md5",
       "filehash-sha1",
       "filehash-sha256",
-      "hostname",
       "ip:port",
       "ipv4",
-      "md5_hash",
-      "sha1_hash",
-      "sha256_hash",
       "url"
     ]
   }

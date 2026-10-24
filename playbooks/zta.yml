@@ -11,10 +11,10 @@ triaje:
   - pregunta: La desviacion aparece en un unico activo y no en el resto de su grupo
     evaluador:
       correlacion.unico_equipo: {horas: 168}
-  - pregunta: La alerta es borrado del registro de auditoria sin apagado ordenado posterior
+  - pregunta: La alerta es borrado del registro de auditoria o retirada de auditoria por una cuenta de usuario
     evaluador:
       evento.regla_en: [zta_vis_001_borrado_registro_auditoria, DET-WIN-003]
-    nota: El apagado ordenado posterior lo comprueba el analista.
+    nota: La regla ya descarta el apagado (1100) y el refresco de GPO (4719 de SYSTEM); la cuenta que retira la auditoria la confirma el analista.
 
 cierre:
   - empieza: Protocolo en claro (zta_net_001) hacia un activo que figura en el inventario de sistemas heredados
