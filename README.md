@@ -119,7 +119,7 @@ revisó (`tools/firmar_catalogo.py`).
 
 | | |
 |---|---|
-| **Reglas** | 235: 207 de DetectionLab (Sigma y Wazuh), 7 de Infra-SocAnalyst, 21 de SplunkLab |
+| **Reglas** | 239: 207 de DetectionLab (Sigma y Wazuh), 11 de Infra-SocAnalyst, 21 de SplunkLab |
 | **Familias de playbook** | 16: AD, cloud, contenedores, correo, credenciales, cumplimiento, endpoint, exfiltración, inteligencia, Linux, macOS, red, web, XDR, Zero Trust y genérica |
 | **Acciones ejecutables** | 54, cada una con radio, reversibilidad, capacidad e inversa |
 | **SIEM de entrada** | Wazuh (integración y active response), Splunk (alerta webhook), Microsoft Sentinel (regla de automatización), Elastic Security (conector webhook) |
