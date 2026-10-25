@@ -41,8 +41,21 @@ services:
       - ALL
     security_opt:
       - no-new-privileges:true
+    # Sano si la ultima copia valida no tiene mas de dos intervalos: un servicio
+    # de copias que deja de copiar se ve en "docker compose ps" (y en --wait).
     healthcheck:
-      disable: true
+      test:
+        - CMD
+        - python
+        - -c
+        - >-
+          import glob, os, sys, time;
+          c = sorted(glob.glob('/copias/responselab-*.db'));
+          sys.exit(0 if c and time.time() - os.path.getmtime(c[-1]) < 2 * int(os.environ.get('RL_COPIAS_CADA_S', '21600')) + 600 else 1)
+      interval: 5m
+      timeout: 10s
+      start_period: 2m
+      start_interval: 5s
     logging: *registros
     command:
       - sh
