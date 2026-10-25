@@ -83,14 +83,45 @@
         "source",
         "tactic"
       ],
+      "CtiCheck": [
+        "checked",
+        "error",
+        "generated",
+        "indicators",
+        "matches",
+        "source"
+      ],
+      "CtiMatch": [
+        "first_seen",
+        "level",
+        "matched",
+        "reference",
+        "score",
+        "sources",
+        "threat",
+        "type",
+        "value"
+      ],
       "DynamicResult": [
         "analyzed",
+        "domains",
         "engine",
         "error",
         "family",
+        "hosts",
         "sandbox_url",
         "score",
-        "signatures"
+        "signatures",
+        "ttps",
+        "urls"
+      ],
+      "FamilyConfig": [
+        "c2",
+        "confidence",
+        "extractor",
+        "family",
+        "source",
+        "values"
       ],
       "Hashes": [
         "imphash",
@@ -124,8 +155,11 @@
       ],
       "Report": [
         "attack",
+        "configs",
+        "cti",
         "dynamic",
         "generated_at",
+        "reasons",
         "score",
         "static",
         "tool",

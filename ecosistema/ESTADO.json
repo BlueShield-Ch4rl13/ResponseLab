@@ -24,12 +24,12 @@
     "sincronizado": "2026-10-24T23:25:06Z"
   },
   "malpipe": {
-    "commit": "7546aa8a7c74da08567acdeed1ef6d7e576ca7da",
-    "contenido_sha256": "355ecde5de36979b5078a96a77778443c0025a1852fc6ee703bbe5dfc7641ab6",
-    "fecha_commit": "2026-09-01T10:16:22+02:00",
+    "commit": "ff205e3077272b799c9ef1ab46ece5a56dc0ea69",
+    "contenido_sha256": "a4c81babb3b38209c23d64b2d85b3e577b4122821a927711f4a76618a9fa4f15",
+    "fecha_commit": "2026-10-25T00:21:13+00:00",
     "rama": "main",
     "repo": "https://github.com/BlueShield-Ch4rl13/Malpipe.git",
-    "sincronizado": "2026-10-01T18:36:22Z"
+    "sincronizado": "2026-10-25T00:21:54Z"
   },
   "newscti": {
     "commit": "26a3ebcc454fe8441d463aa3923c29a9f0d4260b",

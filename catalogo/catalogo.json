@@ -5185,8 +5185,8 @@
       "contenido_sha256": "4c7bab908ad581e8fb459def02bd6973191663f445c4c1cbe81c250cd579c6c6"
     },
     "malpipe": {
-      "commit": "7546aa8a7c74da08567acdeed1ef6d7e576ca7da",
-      "contenido_sha256": "355ecde5de36979b5078a96a77778443c0025a1852fc6ee703bbe5dfc7641ab6"
+      "commit": "ff205e3077272b799c9ef1ab46ece5a56dc0ea69",
+      "contenido_sha256": "a4c81babb3b38209c23d64b2d85b3e577b4122821a927711f4a76618a9fa4f15"
     },
     "newscti": {
       "commit": "26a3ebcc454fe8441d463aa3923c29a9f0d4260b",
@@ -10947,5 +10947,5 @@
       "ventana_min": 1440
     }
   ],
-  "version": "b3b130d94808"
+  "version": "116a3c67e811"
 }
