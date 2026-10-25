@@ -27,7 +27,8 @@ def main(argv=None) -> int:
     sub = ap.add_subparsers(dest="orden", required=True)
     s = sub.add_parser("servir")
     s.add_argument("--puerto", type=int, default=8080)
-    s.add_argument("--host", default="0.0.0.0")
+    s.add_argument("--host", default="127.0.0.1",
+                   help="0.0.0.0 solo dentro del contenedor (lo pone el Dockerfile); fuera, el motor no se abre a la red")
     sub.add_parser("token")
     d = sub.add_parser("decidir")
     d.add_argument("--siem", default="generico")

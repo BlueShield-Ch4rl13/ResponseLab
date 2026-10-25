@@ -34,8 +34,9 @@ services:
       motor:
         condition: service_healthy
     ports:
-      # RL_BIND: la IP de la VM en la VLAN SOC. Vacia = todas las interfaces.
-      - "${RL_BIND:-0.0.0.0}:8443:8443"
+      # RL_BIND: la IP de la VM en la VLAN SOC (la pone preparar_servidor.py).
+      # Vacia = solo este equipo: en un portatil el motor no queda abierto a la red.
+      - "${RL_BIND:-127.0.0.1}:8443:8443"
     environment:
       RL_DOMINIO: ${RL_DOMINIO:-localhost}
       RL_TLS: ${RL_TLS:-internal}
