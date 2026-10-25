@@ -172,8 +172,17 @@ jobs:
 
       - name: Levantar motor, proxy y copias
         run: |
-          if ! docker compose up -d --wait --wait-timeout 180; then
-            docker compose ps -a --format '{{.Service}} {{.State}} {{.Status}}' | sed 's/^/::error title=estado::/'
+          set +e
+          docker compose up -d --wait --wait-timeout 180 > up.log 2>&1
+          codigo=$?
+          cat up.log
+          if [ "$codigo" != 0 ]; then
+            grep -v '^\s*$' up.log | tail -6 | cut -c1-300 | sed 's/^/::error title=up::/'
+            sleep 10
+            for c in $(docker compose ps -aq); do
+              docker inspect -f '{{.Name}} estado={{.State.Status}} salida={{.State.ExitCode}} reinicios={{.RestartCount}} error={{.State.Error}}' "$c" \
+                | sed 's/^/::error title=contenedor::/'
+            done
             exit 1
           fi
 
