@@ -1,7 +1,7 @@
 """
 ResponseLab - Web: Ataques contra aplicaciones web
 
-Generado por ResponseLab (tools/compilar.py) desde el catalogo 116a3c67e811.
+Generado por ResponseLab (tools/compilar.py) desde el catalogo 41a14c6a6c1a.
 Ejecuta el plan que deja responselab_enrutador para esta familia.
 """
 import json
