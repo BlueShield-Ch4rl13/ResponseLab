@@ -42,11 +42,9 @@
         }
       ],
       "host": {
-        "architecture": "str",
         "hostname": "str",
-        "os": "str",
-        "os_version": "str",
-        "python": "str"
+        "origen": "str",
+        "os": "str"
       },
       "iocs": [
         {
@@ -60,6 +58,7 @@
       ]
     },
     "opciones_triage": [
+      "--allow-same-volume",
       "--artifacts",
       "--case",
       "--collect-only",
@@ -67,6 +66,7 @@
       "--examiner",
       "--ez-tools",
       "--no-iocs",
+      "--no-volatiles",
       "--output",
       "--parse-only",
       "--root",
@@ -83,14 +83,45 @@
         "source",
         "tactic"
       ],
+      "CtiCheck": [
+        "checked",
+        "error",
+        "generated",
+        "indicators",
+        "matches",
+        "source"
+      ],
+      "CtiMatch": [
+        "first_seen",
+        "level",
+        "matched",
+        "reference",
+        "score",
+        "sources",
+        "threat",
+        "type",
+        "value"
+      ],
       "DynamicResult": [
         "analyzed",
+        "domains",
         "engine",
         "error",
         "family",
+        "hosts",
         "sandbox_url",
         "score",
-        "signatures"
+        "signatures",
+        "ttps",
+        "urls"
+      ],
+      "FamilyConfig": [
+        "c2",
+        "confidence",
+        "extractor",
+        "family",
+        "source",
+        "values"
       ],
       "Hashes": [
         "imphash",
@@ -124,8 +155,11 @@
       ],
       "Report": [
         "attack",
+        "configs",
+        "cti",
         "dynamic",
         "generated_at",
+        "reasons",
         "score",
         "static",
         "tool",
@@ -176,6 +210,7 @@
       "threat",
       "type",
       "value",
+      "variants",
       "vt_detections"
     ],
     "claves_kev": [
@@ -192,17 +227,12 @@
       "media"
     ],
     "tipos_ioc": [
-      "cve",
       "domain",
       "filehash-md5",
       "filehash-sha1",
       "filehash-sha256",
-      "hostname",
       "ip:port",
       "ipv4",
-      "md5_hash",
-      "sha1_hash",
-      "sha256_hash",
       "url"
     ]
   }

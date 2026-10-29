@@ -8,6 +8,7 @@ name: CI
 on:
   push:
     branches: [main]
+    tags: ['v*']
   pull_request:
   workflow_dispatch:
 
@@ -25,7 +26,7 @@ jobs:
     steps:
       - uses: actions/checkout@v7
 
-      - uses: actions/setup-python@v6
+      - uses: actions/setup-python@v7
         with:
           python-version: ${{ matrix.python }}
           cache: pip
@@ -113,21 +114,113 @@ jobs:
       - name: Nombre de la imagen (GHCR exige minusculas)
         run: echo "IMAGEN=ghcr.io/${GITHUB_REPOSITORY,,}" >> "$GITHUB_ENV"
 
-      - uses: docker/setup-buildx-action@v3
+      - uses: docker/setup-buildx-action@f87e5991a6d7451dcb8d9637bfbc97413f497069 # v4.4.1
 
-      - uses: docker/login-action@v3
-        if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+      - name: Version (en una etiqueta vX.Y.Z, tambien X.Y.Z)
+        if: startsWith(github.ref, 'refs/tags/v')
+        run: echo "VERSION=${GITHUB_REF_NAME#v}" >> "$GITHUB_ENV"
+
+      - uses: docker/login-action@81c6f93d4bc991e510b342a00b419b3bb4efc5c6 # v4.7.0
+        if: github.event_name == 'push'
         with:
           registry: ghcr.io
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
 
-      - uses: docker/build-push-action@v6
+      - uses: docker/build-push-action@c3c9e263c25d99ce0380d002d59b67737d91b0dc # v7.4.0
         with:
           context: .
-          push: ${{ github.event_name == 'push' && github.ref == 'refs/heads/main' }}
+          push: ${{ github.event_name == 'push' }}
+          # main publica latest y el commit; una etiqueta vX.Y.Z publica X.Y.Z,
+          # que es la que se fija en el servidor (RL_IMAGEN).
           tags: |
-            ${{ env.IMAGEN }}:latest
+            ${{ env.VERSION && format('{0}:{1}', env.IMAGEN, env.VERSION) || format('{0}:latest', env.IMAGEN) }}
             ${{ env.IMAGEN }}:${{ github.sha }}
           cache-from: type=gha
           cache-to: type=gha,mode=max
+
+  servidor:
+    name: Despliegue de servidor (compose, TLS y copias)
+    needs: [pruebas]
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+
+      - uses: actions/setup-python@v7
+        with:
+          python-version: '3.12'
+          cache: pip
+
+      - name: Dependencias de las herramientas
+        run: pip install -r requirements.txt
+
+      # Lo mismo que se hace en el servidor, con localhost en vez de 10.0.30.20
+      - name: Preparar como en el servidor
+        run: |
+          python tools/preparar_servidor.py --motor 127.0.0.1 --dominio localhost
+          sed -i 's|^RL_IMAGEN=.*|RL_IMAGEN=responselab:ci|' .env
+          sudo chown 10001:10001 copias
+
+      - name: Los ficheros de compose son validos (tambien el de Cloudflare)
+        run: |
+          docker compose config --quiet
+          CLOUDFLARE_API_TOKEN=prueba docker compose -f docker-compose.yml -f docker-compose.servidor.yml \
+            -f docker-compose.cloudflare.yml config --quiet
+
+      - name: Construir la imagen del motor
+        run: docker compose build motor
+
+      - name: Levantar motor, proxy y copias
+        run: |
+          set +e
+          docker compose up -d --wait --wait-timeout 180 > up.log 2>&1
+          codigo=$?
+          cat up.log
+          if [ "$codigo" != 0 ]; then
+            grep -v '^\s*$' up.log | tail -6 | cut -c1-300 | sed 's/^/::error title=up::/'
+            sleep 10
+            for c in $(docker compose ps -aq); do
+              docker inspect -f '{{.Name}} estado={{.State.Status}} salida={{.State.ExitCode}} reinicios={{.RestartCount}} error={{.State.Error}}' "$c" \
+                | sed 's/^/::error title=contenedor::/'
+            done
+            exit 1
+          fi
+
+      - name: CA del proxy
+        run: |
+          for i in $(seq 1 30); do
+            docker compose cp proxy:/data/caddy/pki/authorities/local/root.crt ca.pem 2>/dev/null && break
+            sleep 2
+          done
+          test -s ca.pem
+
+      - name: Comprobar el despliegue por HTTPS, con los escenarios
+        run: python tools/comprobar_despliegue.py --url https://localhost:8443 --ca ca.pem --escenarios
+
+      - name: Copia del estado verificada
+        run: |
+          docker compose exec -T copias python -m responselab copia --destino /copias --conservar 3
+          sudo sh -c 'ls -l copias; test "$(ls copias/responselab-*.db | wc -l)" -ge 1'
+
+      - name: Restaurar la copia y comprobar que el motor arranca integro
+        run: |
+          COPIA=$(sudo sh -c 'ls copias/responselab-*.db' | tail -1 | xargs basename)
+          make restaurar COPIA="$COPIA"
+          python tools/comprobar_despliegue.py --url https://localhost:8443 --ca ca.pem
+
+      - name: Caddy con el modulo de DNS de Cloudflare compila
+        run: docker build -q -t responselab-caddy-cloudflare:ci despliegue/caddy-cloudflare
+
+      - name: Registros si algo ha fallado
+        if: failure()
+        run: |
+          docker compose ps -a
+          docker compose logs --no-color --tail 200
+          # Las ultimas lineas de cada contenedor, tambien como anotaciones del job
+          for s in motor proxy copias; do
+            docker compose logs --no-color --no-log-prefix --tail 8 "$s" 2>&1 | cut -c1-400 | sed "s/^/::warning title=$s::/"
+          done
+
+      - name: Parar
+        if: always()
+        run: docker compose down -v

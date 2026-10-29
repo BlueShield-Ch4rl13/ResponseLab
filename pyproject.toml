@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "responselab"
-version = "1.0.0"
+version = "1.1.0"
 description = "Respuesta a incidentes como codigo: un motor de decision multi-cliente que traduce los playbooks de DetectionLab a acciones en cualquier SIEM, SOAR y herramienta de contencion."
 readme = "README.md"
 license = { text = "MIT" }
@@ -20,7 +20,7 @@ classifiers = [
   "Topic :: Security",
 ]
 dependencies = [
-  "fastapi==0.142.2",
+  "fastapi==0.162.0",
   "uvicorn==0.46.0",
   "httpx==0.28.1",
   "PyYAML==6.0.3",
@@ -30,7 +30,7 @@ dependencies = [
 [project.optional-dependencies]
 dev = [
   "pytest==9.1.1",
-  "pytest-asyncio==1.4.0",
+  "pytest-asyncio==1.4.1",
   "ruff==0.17.2",
 ]
 
