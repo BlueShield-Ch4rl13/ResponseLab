@@ -3,7 +3,7 @@
   "contentVersion": "1.0.0.0",
   "metadata": {
     "descripcion": "ResponseLab: playbooks de respuesta para Microsoft Sentinel. Generado por tools/compilar.py; no editar a mano.",
-    "version_catalogo": "0fd8a3153d4f",
+    "version_catalogo": "116a3c67e811",
     "reglas_reconocidas": 127,
     "familias": [
       "ad",
@@ -2449,8 +2449,8 @@
                       "d": "Fuente: historico_siem. La deriva de arquitectura es colectiva. Un solo activo desviado se parece mas a una accion deliberada que a una herencia de configuracion."
                     },
                     {
-                      "t": "Triaje: La alerta es borrado del registro de auditoria sin apagado ordenado posterior",
-                      "d": "Fuente: evento. Es la unica regla de la familia que se tria como incidente y no como desviacion. El apagado ordenado posterior lo comprueba el analista."
+                      "t": "Triaje: La alerta es borrado del registro de auditoria o retirada de auditoria por una cuenta de usuario",
+                      "d": "Fuente: evento. Es la unica regla de la familia que se tria como incidente y no como desviacion. La regla ya descarta el apagado (1100) y el refresco de GPO (4719 de SYSTEM); la cuenta que retira la auditoria la confirma el analista."
                     },
                     {
                       "t": "Contencion: Abrir o actualizar la tarea de desviacion contra el propietario del activo, con la evidencia y el plazo del plan",
@@ -2458,7 +2458,7 @@
                     },
                     {
                       "t": "Contencion: Aislar el endpoint en la red, unicamente para el borrado del registro de auditoria",
-                      "d": "Radio objeto, reversible si. Si se aprueba: ejecutar el playbook RL-Aislar-equipo desde el incidente. Excepcion: Si el inventario marca el equipo como servidor de produccion, NO se aisla: se prepara la accion y se pide aprobacion."
+                      "d": "Radio equipo, reversible si. Si se aprueba: ejecutar el playbook RL-Aislar-equipo desde el incidente. Excepcion: Si el inventario marca el equipo como servidor de produccion, NO se aisla: se prepara la accion y se pide aprobacion."
                     },
                     {
                       "t": "Cierre: Protocolo en claro (zta_net_001) hacia un activo que figura en el inventario de sistemas heredados con excepcion aprobada, en vigor y con fe",

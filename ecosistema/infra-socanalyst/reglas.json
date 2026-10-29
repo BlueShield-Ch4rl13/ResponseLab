@@ -4,7 +4,7 @@
     {
       "clase": "auto_cierre",
       "clave": "infra:110000",
-      "familia": "_generico",
+      "familia": "linux",
       "fichero": "wazuh/soc_rules.xml",
       "logsource": "wazuh",
       "nivel": "informational",
@@ -14,9 +14,45 @@
       "tacticas": [],
       "tecnicas": [],
       "tipo": "wazuh",
-      "titulo": "SOC: evento de sensor recibido",
+      "titulo": "SOC/Falco: evento de sensor recibido",
       "wazuh_ids": [
         "110000"
+      ]
+    },
+    {
+      "clase": "auto_cierre",
+      "clave": "infra:110001",
+      "familia": "linux",
+      "fichero": "wazuh/soc_rules.xml",
+      "logsource": "wazuh",
+      "nivel": "informational",
+      "origen": "infra-socanalyst",
+      "sigma_id": "",
+      "splunk": "",
+      "tacticas": [],
+      "tecnicas": [],
+      "tipo": "wazuh",
+      "titulo": "SOC/Tetragon: politica $(process_kprobe.policy_name)",
+      "wazuh_ids": [
+        "110001"
+      ]
+    },
+    {
+      "clase": "auto_cierre",
+      "clave": "infra:110002",
+      "familia": "linux",
+      "fichero": "wazuh/soc_rules.xml",
+      "logsource": "wazuh",
+      "nivel": "informational",
+      "origen": "infra-socanalyst",
+      "sigma_id": "",
+      "splunk": "",
+      "tacticas": [],
+      "tecnicas": [],
+      "tipo": "wazuh",
+      "titulo": "SOC/Tetragon: ejecucion de proceso",
+      "wazuh_ids": [
+        "110002"
       ]
     },
     {
@@ -54,9 +90,29 @@
         "T1003.008"
       ],
       "tipo": "wazuh",
-      "titulo": "SOC: acceso a /etc/shadow (volcado de credenciales)",
+      "titulo": "SOC/Falco: acceso a /etc/shadow (volcado de credenciales)",
       "wazuh_ids": [
         "110020"
+      ]
+    },
+    {
+      "clase": "auto_analisis",
+      "clave": "infra:110021",
+      "familia": "linux",
+      "fichero": "wazuh/soc_rules.xml",
+      "logsource": "wazuh",
+      "nivel": "high",
+      "origen": "infra-socanalyst",
+      "sigma_id": "",
+      "splunk": "",
+      "tacticas": [],
+      "tecnicas": [
+        "T1003.008"
+      ],
+      "tipo": "wazuh",
+      "titulo": "SOC/Tetragon: proceso $(process_kprobe.process.binary) terminado al abrir /etc/shadow",
+      "wazuh_ids": [
+        "110021"
       ]
     },
     {
@@ -112,9 +168,29 @@
         "T1053.003"
       ],
       "tipo": "wazuh",
-      "titulo": "SOC/Tetragon: modificación de tareas cron (persistencia)",
+      "titulo": "SOC/Falco: modificación de tareas cron (persistencia)",
       "wazuh_ids": [
         "110050"
+      ]
+    },
+    {
+      "clase": "auto_analisis",
+      "clave": "infra:110051",
+      "familia": "linux",
+      "fichero": "wazuh/soc_rules.xml",
+      "logsource": "wazuh",
+      "nivel": "medium",
+      "origen": "infra-socanalyst",
+      "sigma_id": "",
+      "splunk": "",
+      "tacticas": [],
+      "tecnicas": [
+        "T1053.003"
+      ],
+      "tipo": "wazuh",
+      "titulo": "SOC/Tetragon: ejecucion de crontab (persistencia)",
+      "wazuh_ids": [
+        "110051"
       ]
     },
     {

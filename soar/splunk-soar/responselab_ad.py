@@ -1,7 +1,7 @@
 """
 ResponseLab - AD: Active Directory y movimiento lateral en dominio
 
-Generado por ResponseLab (tools/compilar.py) desde el catalogo 0fd8a3153d4f.
+Generado por ResponseLab (tools/compilar.py) desde el catalogo 116a3c67e811.
 Ejecuta el plan que deja responselab_enrutador para esta familia.
 """
 import json

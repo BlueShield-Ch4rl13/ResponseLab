@@ -639,11 +639,10 @@
       "sigma_id": "615a5461-b233-5af9-8142-3107cbf4ad2f",
       "splunk": "DL - Impresion o captura masiva de documentos",
       "tacticas": [
-        "collection",
-        "exfiltration"
+        "collection"
       ],
       "tecnicas": [
-        "T1052",
+        "T1005",
         "T1113"
       ],
       "tipo": "sigma",
@@ -880,7 +879,9 @@
         "Persistencia por cron"
       ],
       "wazuh_ids": [
-        "101052"
+        "101052",
+        "101260",
+        "101261"
       ]
     },
     {
@@ -1002,7 +1003,9 @@
         "Shell inversa (bash /dev/tcp)"
       ],
       "wazuh_ids": [
-        "101057"
+        "101057",
+        "101262",
+        "101263"
       ]
     },
     {
@@ -1074,11 +1077,7 @@
       "titulos": [
         "Borrado de registros del sistema en macOS"
       ],
-      "wazuh_ids": [
-        "101060",
-        "101061",
-        "101062"
-      ]
+      "wazuh_ids": []
     },
     {
       "clave": "dl:mac_descarga_y_ejecucion",
@@ -1102,9 +1101,7 @@
       "titulos": [
         "Descarga y ejecucion directa en macOS"
       ],
-      "wazuh_ids": [
-        "101063"
-      ]
+      "wazuh_ids": []
     },
     {
       "clave": "dl:mac_gatekeeper_deshabilitado",
@@ -1127,11 +1124,7 @@
       "titulos": [
         "Gatekeeper deshabilitado o cuarentena eliminada"
       ],
-      "wazuh_ids": [
-        "101064",
-        "101065",
-        "101066"
-      ]
+      "wazuh_ids": []
     },
     {
       "clave": "dl:mac_osascript_sospechoso",
@@ -1153,11 +1146,7 @@
       "titulos": [
         "AppleScript ejecutando shell o descargando codigo"
       ],
-      "wazuh_ids": [
-        "101067",
-        "101068",
-        "101069"
-      ]
+      "wazuh_ids": []
     },
     {
       "clave": "dl:mac_persistencia_launchagent",
@@ -1181,9 +1170,7 @@
       "titulos": [
         "Persistencia por LaunchAgent o LaunchDaemon"
       ],
-      "wazuh_ids": [
-        "101070"
-      ]
+      "wazuh_ids": []
     },
     {
       "clave": "dl:mac_tcc_manipulacion",
@@ -1206,10 +1193,7 @@
       "titulos": [
         "Manipulacion de la base de datos TCC"
       ],
-      "wazuh_ids": [
-        "101071",
-        "101072"
-      ]
+      "wazuh_ids": []
     },
     {
       "clave": "dl:mac_usuario_oculto_creado",
@@ -1231,11 +1215,7 @@
       "titulos": [
         "Creacion de usuario local u oculto en macOS"
       ],
-      "wazuh_ids": [
-        "101073",
-        "101074",
-        "101075"
-      ]
+      "wazuh_ids": []
     },
     {
       "clave": "dl:mac_volcado_llavero",
@@ -1257,10 +1237,7 @@
       "titulos": [
         "Acceso o volcado del llavero de macOS"
       ],
-      "wazuh_ids": [
-        "101076",
-        "101077"
-      ]
+      "wazuh_ids": []
     },
     {
       "clave": "dl:net_rare_process_external_conn",
@@ -1700,11 +1677,10 @@
       "sigma_id": "95f7a7fa-56a0-5b5e-9dca-02cbde4b8404",
       "splunk": "DL - Consentimiento concedido a una aplicacion no verificada",
       "tacticas": [
-        "credential-access",
-        "persistence"
+        "credential-access"
       ],
       "tecnicas": [
-        "T1550.001"
+        "T1528"
       ],
       "tipo": "sigma",
       "titulo": "Consentimiento concedido a una aplicacion no verificada",
@@ -2458,17 +2434,18 @@
       "nivel": "medium",
       "origen": "detectionlab",
       "sigma_id": "8c852761-72ca-5d2e-80f2-27713e6f14cd",
-      "splunk": "DL - Patron de beaconing hacia un destino externo",
+      "splunk": "DL - Peticion a un destino sin categoria o recien registrado",
       "tacticas": [
         "command-and-control"
       ],
       "tecnicas": [
         "T1071.001"
       ],
-      "tipo": "sigma",
+      "tipo": "sigma_correlacion",
       "titulo": "Patron de beaconing hacia un destino externo",
       "titulos": [
-        "Patron de beaconing hacia un destino externo"
+        "Patron de beaconing hacia un destino externo",
+        "Peticion a un destino sin categoria o recien registrado"
       ],
       "wazuh_ids": [
         "101078"
@@ -2571,9 +2548,7 @@
       "titulos": [
         "Volumen de subida anomalo hacia el exterior"
       ],
-      "wazuh_ids": [
-        "101085"
-      ]
+      "wazuh_ids": []
     },
     {
       "clave": "dl:web_001_inyeccion_sql",
@@ -3184,11 +3159,10 @@
       "sigma_id": "047df04a-271b-59d0-af0b-69f1039cf53a",
       "splunk": "DL - Protocolo en claro hacia un recurso que exige cifrado",
       "tacticas": [
-        "collection",
-        "credential-access"
+        "lateral-movement"
       ],
       "tecnicas": [
-        "T1040"
+        "T1021"
       ],
       "tipo": "sigma",
       "titulo": "Protocolo en claro hacia un recurso que exige cifrado",
@@ -3250,7 +3224,9 @@
       ],
       "wazuh_ids": [
         "101255",
-        "101256"
+        "101256",
+        "101264",
+        "101265"
       ]
     },
     {
@@ -3709,7 +3685,7 @@
         "T1190"
       ],
       "tipo": "wazuh",
-      "titulo": "ZTA-DEV-005: Vulnerabilidad critica $(data.vulnerability.cve) en $(hostname). La postura del equipo deja de cumplir la politica de acceso.",
+      "titulo": "ZTA-DEV-005: Vulnerabilidad critica $(vulnerability.cve) en $(hostname). La postura del equipo deja de cumplir la politica de acceso.",
       "wazuh_ids": [
         "100206"
       ]
@@ -3769,7 +3745,7 @@
         "T1021"
       ],
       "tipo": "wazuh",
-      "titulo": "ZTA-NET-001: Trafico este-oeste desde $(data.src_ip) hacia el segmento protegido $(data.dest_ip). Verificar la politica de microsegmentacion.",
+      "titulo": "ZTA-NET-001: Trafico este-oeste desde $(src_ip) hacia el segmento protegido $(dest_ip). Verificar la politica de microsegmentacion.",
       "wazuh_ids": [
         "100300"
       ]
@@ -3789,7 +3765,7 @@
         "T1090"
       ],
       "tipo": "wazuh",
-      "titulo": "ZTA-NET-002: Salida directa a Internet desde $(data.src_ip) sin pasar por un proxy aprobado.",
+      "titulo": "ZTA-NET-002: Salida directa a Internet desde $(src_ip) sin pasar por un proxy aprobado.",
       "wazuh_ids": [
         "100301"
       ]
@@ -3827,7 +3803,7 @@
         "T1071.004"
       ],
       "tipo": "wazuh",
-      "titulo": "ZTA-NET-003: Volumen anomalo de consultas DNS TXT/NULL desde $(data.src_ip). Posible tunel DNS o canal C2.",
+      "titulo": "ZTA-NET-003: Volumen anomalo de consultas DNS TXT/NULL desde $(src_ip). Posible tunel DNS o canal C2.",
       "wazuh_ids": [
         "100303"
       ]
@@ -3847,7 +3823,7 @@
         "T1071.004"
       ],
       "tipo": "wazuh",
-      "titulo": "ZTA-NET-003: Consulta DNS con etiqueta anormalmente larga desde $(data.src_ip). Posible exfiltracion por DNS.",
+      "titulo": "ZTA-NET-003: Consulta DNS con etiqueta anormalmente larga desde $(src_ip). Posible exfiltracion por DNS.",
       "wazuh_ids": [
         "100304"
       ]
@@ -3867,7 +3843,7 @@
         "T1040"
       ],
       "tipo": "wazuh",
-      "titulo": "ZTA-NET-004: Conexion sin cifrar hacia el recurso protegido $(data.dest_ip):$(data.dest_port). Incumple el cifrado obligatorio en transito.",
+      "titulo": "ZTA-NET-004: Conexion sin cifrar hacia el recurso protegido $(dest_ip):$(dest_port). Incumple el cifrado obligatorio en transito.",
       "wazuh_ids": [
         "100305"
       ]
@@ -3905,7 +3881,7 @@
         "T1046"
       ],
       "tipo": "wazuh",
-      "titulo": "ZTA-NET-005: $(data.src_ip) ha contactado con un numero anomalo de destinos internos en 2 minutos. Posible reconocimiento lateral.",
+      "titulo": "ZTA-NET-005: $(src_ip) ha contactado con un numero anomalo de destinos internos en 2 minutos. Posible reconocimiento lateral.",
       "wazuh_ids": [
         "100307"
       ]
@@ -3925,7 +3901,7 @@
         "T1071"
       ],
       "tipo": "wazuh",
-      "titulo": "ZTA-NET-006: $(data.src_ip) ha contactado con el indicador de amenaza conocido $(data.dest_ip).",
+      "titulo": "ZTA-NET-006: $(src_ip) ha contactado con el indicador de amenaza conocido $(dest_ip).",
       "wazuh_ids": [
         "100308"
       ]
@@ -3965,7 +3941,7 @@
         "T1190"
       ],
       "tipo": "wazuh",
-      "titulo": "ZTA-APP-002: Intento de explotacion web contra $(data.dest_ip): $(data.alert.signature)",
+      "titulo": "ZTA-APP-002: Intento de explotacion web contra $(dest_ip): $(alert.signature)",
       "wazuh_ids": [
         "100401"
       ]
@@ -4103,7 +4079,7 @@
         "T1567"
       ],
       "tipo": "wazuh",
-      "titulo": "ZTA-DAT-002: Transferencia saliente superior a 100 MB desde $(data.src_ip) hacia $(data.dest_ip). Posible exfiltracion.",
+      "titulo": "ZTA-DAT-002: Transferencia saliente superior a 100 MB desde $(src_ip) hacia $(dest_ip). Posible exfiltracion.",
       "wazuh_ids": [
         "100452"
       ]
@@ -4323,7 +4299,7 @@
         "T1195"
       ],
       "tipo": "wazuh",
-      "titulo": "ZTA-SUP-004: Componente de terceros vulnerable en $(hostname): $(data.vulnerability.package.name) - $(data.vulnerability.cve)",
+      "titulo": "ZTA-SUP-004: Componente de terceros vulnerable en $(hostname): $(vulnerability.package.name) - $(vulnerability.cve)",
       "wazuh_ids": [
         "100508"
       ]
@@ -4383,7 +4359,7 @@
         "T1610"
       ],
       "tipo": "wazuh",
-      "titulo": "ZTA-SUP-006: Descarga de la imagen $(data.Actor.ID) desde un registro no aprobado.",
+      "titulo": "ZTA-SUP-006: Descarga de la imagen $(Actor.ID) desde un registro no aprobado.",
       "wazuh_ids": [
         "100511"
       ]
@@ -4667,7 +4643,7 @@
       "tacticas": [],
       "tecnicas": [],
       "tipo": "wazuh",
-      "titulo": "CMP-RGP-002: Transferencia saliente relevante desde un sistema con datos personales ($(data.src_ip)) hacia $(data.dest_ip). Verificar base juridica de la transferencia internacional.",
+      "titulo": "CMP-RGP-002: Transferencia saliente relevante desde un sistema con datos personales ($(src_ip)) hacia $(dest_ip). Verificar base juridica de la transferencia internacional.",
       "wazuh_ids": [
         "100763"
       ]

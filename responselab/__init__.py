@@ -9,4 +9,4 @@ El paquete tiene dos mitades que conviene no mezclar:
   guarda estado, pide aprobaciones y habla con las herramientas del cliente.
 """
 
-__version__ = "1.0.0"
+__version__ = "1.1.0"
