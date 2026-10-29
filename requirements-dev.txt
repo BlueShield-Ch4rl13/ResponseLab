@@ -3,5 +3,5 @@
 # version nueva no debe cambiar el resultado sin pasar por un PR de dependabot.
 -r requirements.txt
 pytest==9.1.1
-pytest-asyncio==1.4.0
+pytest-asyncio==1.4.1
 ruff==0.16.10
