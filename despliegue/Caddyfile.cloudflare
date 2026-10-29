@@ -1,0 +1,20 @@
+# Proxy TLS delante del motor con certificado de Let's Encrypt por DNS-01 en
+# Cloudflare (docker-compose.cloudflare.yml). Igual que despliegue/Caddyfile
+# salvo el bloque tls.
+{$RL_DOMINIO}:8443 {
+	tls {
+		dns cloudflare {env.CLOUDFLARE_API_TOKEN}
+	}
+	encode zstd gzip
+	reverse_proxy motor:8080
+	header {
+		Strict-Transport-Security "max-age=31536000"
+		X-Content-Type-Options "nosniff"
+		Referrer-Policy "no-referrer"
+		-Server
+	}
+	log {
+		output stdout
+		format json
+	}
+}

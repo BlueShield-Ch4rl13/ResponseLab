@@ -115,10 +115,18 @@ async def enviar(api, motor, cliente: str, siem: str, carga, cabeceras=ING) -> h
 # Salud y panel
 # ====================================================================
 
-async def test_salud_responde_sin_autenticacion(api):
+async def test_salud_responde_sin_autenticacion_pero_sin_detalle(api):
     r = await api.get("/salud")
     assert r.status_code == 200
     s = r.json()
+    assert s["estado"] == "ok" and s["cola"] == 0
+    assert "clientes" not in s and "perfiles_con_error" not in s and "catalogo" not in s, \
+        "sin token no se publican los clientes ni el origen del catalogo"
+    assert (await api.get("/salud", headers=APR)).json().keys() == s.keys(), "un aprobador tampoco ve el detalle"
+
+
+async def test_salud_con_token_de_administracion_da_el_detalle(api):
+    s = (await api.get("/salud", headers=ADM)).json()
     assert s["estado"] == "ok" and s["catalogo"]["version"]
     assert s["clientes"] == 3 and s["perfiles_con_error"] == []
     assert s["simulacion_global"] is True and s["cola"] == 0
@@ -545,7 +553,7 @@ async def test_un_perfil_borrado_deja_sin_valor_sus_tokens(api, motor, carpeta_c
     assert (await api.get("/v1/lab/edl/ip", headers=EDL)).status_code == 401
     assert (await api.get("/v1/lab/aprobaciones", headers=APR)).status_code == 401
     assert (await api.post("/v1/lab/acuses", headers=AGE, json={})).status_code == 401
-    assert (await api.get("/salud")).json()["clientes"] == 2
+    assert (await api.get("/salud", headers=ADM)).json()["clientes"] == 2
 
 
 async def test_un_perfil_con_errores_se_ve_en_salud_y_sigue_el_anterior(api, motor, carpeta_clientes):
@@ -554,7 +562,7 @@ async def test_un_perfil_con_errores_se_ve_en_salud_y_sigue_el_anterior(api, mot
     datos["conectores"]["thehive"]["api_key"] = "clave-en-claro"
     escribir_perfil(ruta, datos)
     motor.clientes.recargar()
-    salud = (await api.get("/salud")).json()
+    salud = (await api.get("/salud", headers=ADM)).json()
     assert salud["perfiles_con_error"] == ["lab.yml"] and salud["clientes"] == 3
     r = await enviar(api, motor, "lab", "wazuh", alerta_local())
     assert r.status_code == 202, "los tokens del perfil anterior siguen valiendo"

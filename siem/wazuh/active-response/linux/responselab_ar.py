@@ -33,6 +33,7 @@ import signal
 import socket
 import subprocess
 import sys
+import tempfile
 import time
 import urllib.request
 from datetime import datetime, timedelta, timezone
@@ -45,8 +46,15 @@ ESTADO = WAZUH / "var" / "responselab"
 CUSTODIA = ESTADO / "custodia"
 REGISTRO = WAZUH / "logs" / "active-responses.log"
 CONFIGURACIONES = [WAZUH / "etc" / "shared" / "responselab.conf", WAZUH / "etc" / "responselab.conf"]
-SIMULACION = os.environ.get("RL_AR_SIMULACION") == "1"        # pruebas: registra comandos, no los ejecuta
+# Pruebas: los comandos externos (nft, iptables, systemctl, kill) se registran y
+# no se ejecutan. Las operaciones con ficheros SI se hacen, asi que en simulacion
+# solo se aceptan rutas bajo el directorio temporal (o RL_AR_RAIZ_SIMULACION):
+# activarla por error en un equipo real no puede borrar nada del sistema.
+SIMULACION = os.environ.get("RL_AR_SIMULACION") == "1"
+RAIZ_SIMULACION = os.path.realpath(os.environ.get("RL_AR_RAIZ_SIMULACION") or tempfile.gettempdir())
 MAX_ACUSE = 6000                                               # una linea de log razonable para Wazuh
+MIN_PATRON_LINEA = 8                                           # patron minimo para retirar lineas de cron
+MAX_LINEAS_RETIRADAS = 3                                       # mas lineas que esto: demasiado amplio
 
 TABLA_AISLAR = "responselab_aislamiento"
 TABLA_DESTINOS = "responselab_destinos"
@@ -178,19 +186,89 @@ def almacen_credenciales(ruta) -> bool:
     return any(RE_CREDENCIALES.match(r) for r in _formas(ruta))
 
 
-def paquete_de(ruta) -> str:
-    """El paquete del sistema que instalo el fichero, o "" si no es de ninguno."""
-    for orden in (["dpkg", "-S"], ["rpm", "-qf"]):
-        if not hay(orden[0]):
-            continue
+def ruta_objetivo(ruta_txt: str) -> Path:
+    """La ruta que llega en la alerta, ya resuelta, o Fallo.
+
+    Corre como root: "/etc/cron.d/../ssh/sshd_config" empieza por /etc/cron
+    como texto, pero apunta a la configuracion de SSH. Se rechaza cualquier
+    componente "..", y todas las comprobaciones (cron, systemd, sistema) se
+    hacen sobre la ruta real, no sobre el texto recibido.
+    """
+    if not ruta_txt:
+        raise Fallo("sin ruta")
+    if not os.path.isabs(ruta_txt):
+        raise Fallo("ruta relativa: %s" % ruta_txt)
+    if ".." in Path(ruta_txt).parts:
+        raise Fallo("ruta con '..': %s" % ruta_txt)
+    real = Path(os.path.realpath(ruta_txt))
+    permitida_en_simulacion(real)
+    return real
+
+
+def permitida_en_simulacion(ruta) -> None:
+    """En simulacion solo se tocan ficheros de prueba (ver SIMULACION)."""
+    if not SIMULACION:
+        return
+    real = os.path.realpath(str(ruta))
+    if os.path.commonpath([real, RAIZ_SIMULACION]) != RAIZ_SIMULACION:
+        raise Fallo("en simulacion solo se tocan ficheros bajo %s, no %s" % (RAIZ_SIMULACION, real))
+
+
+# Gestores de paquetes: (binario, orden para preguntar de quien es un fichero)
+GESTORES_PAQUETES = (("dpkg", ["dpkg", "-S"]), ("rpm", ["rpm", "-qf"]),
+                     ("apk", ["apk", "info", "--who-owns"]), ("pacman", ["pacman", "-Qqo"]))
+
+
+def paquete_de(ruta):
+    """El paquete del sistema que instalo el fichero, "" si no es de ninguno,
+    o None si en este equipo no hay ningun gestor de paquetes que lo sepa.
+
+    None importa: sin gestor no se puede saber si el fichero es del sistema, y
+    quien llama no debe tratarlo como "no es de ningun paquete".
+    """
+    disponibles = [orden for binario, orden in GESTORES_PAQUETES if hay(binario)]
+    if not disponibles:
+        return None
+    if SIMULACION:
+        # pruebas: RL_AR_PAQUETES = {"ruta": "paquete"}; no se lanza ningun gestor real
+        try:
+            return json.loads(os.environ.get("RL_AR_PAQUETES") or "{}").get(str(ruta), "")
+        except ValueError:
+            return ""
+    for orden in disponibles:
         try:
             r = subprocess.run(orden + [str(ruta)], stdout=subprocess.PIPE, stderr=subprocess.DEVNULL,
                                universal_newlines=True, timeout=20)
         except (OSError, subprocess.SubprocessError):
             continue
-        if r.returncode == 0 and r.stdout.strip():
-            return r.stdout.strip().split(":")[0].split()[0]
+        salida = r.stdout.strip()
+        if r.returncode == 0 and salida:
+            if orden[0] == "apk":                       # "/ruta is owned by paquete-1.0-r0"
+                return salida.rsplit(" ", 1)[-1]
+            if orden[0] == "pacman":                    # -q: solo el nombre
+                return salida.split()[0]
+            return salida.split(":")[0].split()[0]
     return ""
+
+
+def lineas_que_casan(lineas: list, patron: str, ruta) -> list:
+    """Las lineas de un fichero de cron o de ld.so.preload que se retiran.
+
+    Un patron corto ("a") casaria con media /etc/crontab: se exige un minimo de
+    caracteres, no se tocan comentarios y, si casan demasiadas lineas, el patron
+    es demasiado amplio y lo decide una persona.
+    """
+    patron = patron.strip()
+    if len(patron) < MIN_PATRON_LINEA:
+        raise Fallo("patron %r demasiado corto para retirar lineas de %s (minimo %d caracteres)"
+                    % (patron, ruta, MIN_PATRON_LINEA))
+    quitadas = [l for l in lineas if patron in l and not l.lstrip().startswith("#")]
+    if not quitadas:
+        raise Fallo("ninguna linea de %s contiene %r" % (ruta, patron))
+    if len(quitadas) > MAX_LINEAS_RETIRADAS:
+        raise Fallo("%r casa con %d lineas de %s: demasiado amplio, lo decide una persona"
+                    % (patron, len(quitadas), ruta))
+    return quitadas
 
 
 def ips_validas(valores) -> list:
@@ -380,8 +458,11 @@ def _fichero_objetivo(ruta_txt: str, sha_esperado: str) -> tuple:
     ruta = Path(ruta_txt)
     if not ruta.is_absolute():
         raise Fallo("ruta relativa: %s" % ruta_txt)
+    if ".." in ruta.parts:
+        raise Fallo("ruta con '..': %s" % ruta_txt)
     if ruta_sistema(ruta):
         raise Fallo("%s es del sistema operativo: no se toca sin una persona" % ruta)
+    permitida_en_simulacion(ruta)
     if ruta.is_symlink() or not ruta.is_file():
         raise Fallo("%s no es un fichero regular (o ya no esta)" % ruta)
     sha = sha256(ruta)
@@ -438,6 +519,7 @@ def restaurar(p: dict) -> tuple:
         if (carpeta / "fichero").is_file():
             meta = json.loads((carpeta / "meta.json").read_text(encoding="utf-8"))
             original = Path(meta["ruta"])
+            permitida_en_simulacion(original)
             if original.exists():
                 raise Fallo("ya hay un fichero en %s: no se sobrescribe" % original)
             original.parent.mkdir(parents=True, exist_ok=True)
@@ -482,50 +564,56 @@ def persistencia(p: dict) -> tuple:
                 break
     if not ruta_txt:
         raise Fallo("sin ruta del elemento de persistencia")
-    ruta = Path(ruta_txt)
-    if not ruta.is_absolute():
-        raise Fallo("ruta relativa: %s" % ruta_txt)
-    if ruta.is_symlink() or not ruta.is_file():
+    if os.path.isabs(ruta_txt) and os.path.islink(os.path.normpath(ruta_txt)):
+        raise Fallo("%s no es un fichero regular" % ruta_txt)
+    ruta = ruta_objetivo(ruta_txt)          # resuelta: lo que se comprueba es lo que se toca
+    real = str(ruta)
+    if not ruta.is_file():
         raise Fallo("%s no es un fichero regular" % ruta)
     if ruta_sistema(ruta):
         raise Fallo("%s es del sistema operativo: no se toca sin una persona" % ruta)
-    linea_a_linea = ruta_txt.startswith(DIRS_CRON) or str(ruta) == "/etc/ld.so.preload"
+    es_cron = real.startswith(DIRS_CRON)
+    es_preload = real == "/etc/ld.so.preload"
+    linea_a_linea = es_cron or es_preload
     if linea_a_linea and not nombre:
         # /etc/crontab, /etc/cron.d/* o ld.so.preload enteros llevan tareas
         # legitimas: sin el patron de la linea maliciosa no se retira nada.
         raise Fallo("%s se limpia linea a linea y la alerta no dice cual: lo decide una persona" % ruta)
     if not linea_a_linea:
         paquete = paquete_de(ruta)
+        if paquete is None:
+            raise Fallo("no hay gestor de paquetes (dpkg, rpm, apk, pacman) para saber si %s es del sistema:"
+                        " lo decide una persona" % ruta)
         if paquete:
             raise Fallo("%s es del paquete %s: retirarlo romperia el sistema, lo decide una persona" % (ruta, paquete))
-    destino = CUSTODIA / "persistencia" / hashlib.sha256(str(ruta).encode()).hexdigest()[:24]
+    lineas = ruta.read_text(encoding="utf-8", errors="replace").splitlines(True) if linea_a_linea else []
+    if es_cron:
+        # crontab (de usuario, /etc/crontab o /etc/cron.d): solo las lineas que
+        # casan, no todas las tareas del equipo o del usuario
+        quitadas = lineas_que_casan(lineas, nombre, ruta)
+    elif es_preload:
+        # ld.so.preload: una biblioteca por entrada; se retira la entrada exacta
+        quitadas = [l for l in lineas if nombre.strip() in l.split()]
+        if not quitadas:
+            raise Fallo("ninguna entrada de %s es %r" % (ruta, nombre))
+    destino = CUSTODIA / "persistencia" / hashlib.sha256(real.encode()).hexdigest()[:24]
     destino.mkdir(parents=True, exist_ok=True)
     st = ruta.stat()
-    meta = {"ruta": str(ruta), "modo": st.st_mode & 0o7777, "uid": st.st_uid, "gid": st.st_gid,
+    meta = {"ruta": real, "modo": st.st_mode & 0o7777, "uid": st.st_uid, "gid": st.st_gid,
             "sha256": sha256(ruta), "momento": ahora(), "ejecucion": p.get("ejecucion_id", "")}
-    shutil.copy2(str(ruta), str(destino / "original"))
-    if ruta_txt.startswith(DIRS_SYSTEMD) and ruta.suffix in (".service", ".timer", ".socket", ".path"):
+    shutil.copy2(real, str(destino / "original"))
+    if real.startswith(DIRS_SYSTEMD) and ruta.suffix in (".service", ".timer", ".socket", ".path"):
         meta["tipo"] = "systemd"
         ejecutar(["systemctl", "disable", "--now", ruta.name], comprobar=False)
         ruta.unlink()
         ejecutar(["systemctl", "daemon-reload"], comprobar=False)
         detalle = "unidad %s parada, deshabilitada y retirada" % ruta.name
-    elif ruta_txt.startswith(DIRS_CRON):
-        # crontab (de usuario, /etc/crontab o /etc/cron.d): solo las lineas que
-        # casan, no todas las tareas del equipo o del usuario
-        lineas = ruta.read_text(encoding="utf-8", errors="replace").splitlines(True)
-        quitadas = [l for l in lineas if nombre in l]
-        if not quitadas:
-            raise Fallo("ninguna linea de %s contiene %r" % (ruta, nombre))
-        ruta.write_text("".join(l for l in lineas if nombre not in l), encoding="utf-8")
+    elif es_cron:
+        ruta.write_text("".join(l for l in lineas if l not in quitadas), encoding="utf-8")
         meta.update(tipo="crontab", lineas=quitadas)
         detalle = "%d linea(s) retiradas de %s" % (len(quitadas), ruta)
-    elif str(ruta) == "/etc/ld.so.preload" and nombre:
-        lineas = ruta.read_text(encoding="utf-8", errors="replace").splitlines(True)
-        quitadas = [l for l in lineas if nombre in l]
-        if not quitadas:
-            raise Fallo("ninguna linea de %s contiene %r" % (ruta, nombre))
-        ruta.write_text("".join(l for l in lineas if nombre not in l), encoding="utf-8")
+    elif es_preload:
+        ruta.write_text("".join(l for l in lineas if l not in quitadas), encoding="utf-8")
         meta.update(tipo="ld_preload", lineas=quitadas)
         detalle = "entrada %s retirada de /etc/ld.so.preload" % nombre
     else:
@@ -537,7 +625,7 @@ def persistencia(p: dict) -> tuple:
 
 
 def persistencia_restaurar(p: dict) -> tuple:
-    ruta = Path(str(p.get("ruta") or ""))
+    ruta = ruta_objetivo(str(p.get("ruta") or ""))
     destino = CUSTODIA / "persistencia" / hashlib.sha256(str(ruta).encode()).hexdigest()[:24]
     try:
         meta = json.loads((destino / "meta.json").read_text(encoding="utf-8"))
@@ -633,13 +721,20 @@ def desbloquear_destino(p: dict) -> tuple:
 # ═══ Claves SSH ══════════════════════════════════════════════════════════════
 
 def _authorized_keys(p: dict) -> Path:
+    """Solo ficheros authorized_keys: la ruta viene de la alerta y el script
+    corre como root, asi que no se reescribe cualquier fichero que la alerta diga."""
     if p.get("ruta"):
-        return Path(str(p["ruta"]))
+        ruta = ruta_objetivo(str(p["ruta"]))
+        if ruta.name not in ("authorized_keys", "authorized_keys2"):
+            raise Fallo("%s no es un fichero authorized_keys" % ruta)
+        return ruta
     import pwd
     try:
-        return Path(pwd.getpwnam(str(p.get("usuario") or "")).pw_dir) / ".ssh" / "authorized_keys"
+        ruta = Path(pwd.getpwnam(str(p.get("usuario") or "")).pw_dir) / ".ssh" / "authorized_keys"
     except KeyError:
         raise Fallo("usuario desconocido: %r" % p.get("usuario")) from None
+    permitida_en_simulacion(ruta)
+    return ruta
 
 
 def ssh_clave(p: dict) -> tuple:

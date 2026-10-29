@@ -4992,7 +4992,7 @@
         },
         {
           "accion": "endpoint.aislar",
-          "alcance": "El equipo afectado, y solo en el caso de zta_vis_001. No aplica al resto de reglas de la familia.",
+          "alcance": "El equipo afectado, y solo en el caso de zta_vis_001 (registro borrado, o auditoria retirada por una cuenta que no es SYSTEM). No aplica al resto de reglas de la familia.",
           "excepcion": "Si el inventario marca el equipo como servidor de produccion, NO se\naisla: se prepara la accion y se pide aprobacion.\n",
           "excepciones": [
             {
@@ -5003,9 +5003,9 @@
               }
             }
           ],
-          "justificacion": "Es la unica regla de la familia con un adversario probable detras:\nborrar el registro no es deriva de configuracion, y el apagado ordenado\nque la explicaria se distingue porque va seguido del arranque. El resto\nde la familia no llega a este nivel de automatizacion ni deberia, y por\neso la accion lleva la restriccion escrita en el alcance.\n",
+          "justificacion": "Es la unica regla de la familia con un adversario probable detras:\nborrar el registro no es deriva de configuracion. La regla ya no salta\ncon el apagado (1100) ni con el refresco de GPO (4719 de SYSTEM), que\nantes aislaban equipos sin motivo. El resto\nde la familia no llega a este nivel de automatizacion ni deberia, y por\neso la accion lleva la restriccion escrita en el alcance.\n",
           "parametros": {},
-          "radio": "objeto",
+          "radio": "equipo",
           "requiere_aprobacion": "no",
           "reversible": "si",
           "solo_reglas": [
@@ -5164,8 +5164,8 @@
             ]
           },
           "fuente": "evento",
-          "nota": "Es la unica regla de la familia que se tria como incidente y no como desviacion. El apagado ordenado posterior lo comprueba el analista.",
-          "pregunta": "La alerta es borrado del registro de auditoria sin apagado ordenado posterior"
+          "nota": "Es la unica regla de la familia que se tria como incidente y no como desviacion. La regla ya descarta el apagado (1100) y el refresco de GPO (4719 de SYSTEM); la cuenta que retira la auditoria la confirma el analista.",
+          "pregunta": "La alerta es borrado del registro de auditoria o retirada de auditoria por una cuenta de usuario"
         }
       ]
     }
@@ -5173,24 +5173,24 @@
   "formato": 1,
   "fuentes": {
     "detectionlab": {
-      "commit": "d59b9cc52158e84a4be12f0ce753dabfaddb7613",
-      "contenido_sha256": "a1f4ac2c77ad7116a0a02cedc0c3d03d821623765f58d4abcff5e49ac10a5a71"
+      "commit": "5044208518ec0fff2d93848e3422e5f519a8b6a2",
+      "contenido_sha256": "2329236d8441e01fdbced51c8bc1de311af23a9b67db9de0b2dae4c783414fad"
     },
     "ftriagedfir": {
-      "commit": "8c282e162f99320cb567650c0998eb80bd4b5e54",
-      "contenido_sha256": "6bfbeb96f462f25e8eda194db0a164a5261ff26c1ea3ae395d0c0c8023e4eba2"
+      "commit": "756c69e5523ba4303272bed4c27527137570c49c",
+      "contenido_sha256": "168bf1f22d428126bf2feb9f4b8786d67caaf0ad6d04128a17c501008f3d8455"
     },
     "infra-socanalyst": {
-      "commit": "e4c0e499ee0650944ebd12e85c629e85515829e1",
-      "contenido_sha256": "c1e509d6606b36b129a3caf6c89b9e2ecfb8d0b30052e1a97ed8243d73679488"
+      "commit": "4968609f43041fc256ffb8f180f5c5c9b12bb8e8",
+      "contenido_sha256": "4c7bab908ad581e8fb459def02bd6973191663f445c4c1cbe81c250cd579c6c6"
     },
     "malpipe": {
-      "commit": "7546aa8a7c74da08567acdeed1ef6d7e576ca7da",
-      "contenido_sha256": "355ecde5de36979b5078a96a77778443c0025a1852fc6ee703bbe5dfc7641ab6"
+      "commit": "ff205e3077272b799c9ef1ab46ece5a56dc0ea69",
+      "contenido_sha256": "a4c81babb3b38209c23d64b2d85b3e577b4122821a927711f4a76618a9fa4f15"
     },
     "newscti": {
-      "commit": "2d692ded1cff859d379c3bf63dfc1f8df8add09d",
-      "contenido_sha256": "88e77c14a886632e4b16071070e215d603ddea98b486a93893a2d1dfb45575ec"
+      "commit": "26a3ebcc454fe8441d463aa3923c29a9f0d4260b",
+      "contenido_sha256": "07b193b0f58bc53d8a18bc371789ec2208385f7c4d252fe6318c514aacbb3579"
     },
     "splunklab": {
       "commit": "5e3c1b6fc80a062e39129d2583772fa9ab9284e4",
@@ -5860,11 +5860,10 @@
       "sigma_id": "615a5461-b233-5af9-8142-3107cbf4ad2f",
       "splunk": "DL - Impresion o captura masiva de documentos",
       "tacticas": [
-        "collection",
-        "exfiltration"
+        "collection"
       ],
       "tecnicas": [
-        "T1052",
+        "T1005",
         "T1113"
       ],
       "tipo": "sigma",
@@ -6110,7 +6109,9 @@
         "Persistencia por cron"
       ],
       "wazuh_ids": [
-        "101052"
+        "101052",
+        "101260",
+        "101261"
       ]
     },
     {
@@ -6237,7 +6238,9 @@
         "Shell inversa (bash /dev/tcp)"
       ],
       "wazuh_ids": [
-        "101057"
+        "101057",
+        "101262",
+        "101263"
       ]
     },
     {
@@ -6312,11 +6315,7 @@
       "titulos": [
         "Borrado de registros del sistema en macOS"
       ],
-      "wazuh_ids": [
-        "101060",
-        "101061",
-        "101062"
-      ]
+      "wazuh_ids": []
     },
     {
       "clase": "auto_analisis",
@@ -6341,9 +6340,7 @@
       "titulos": [
         "Descarga y ejecucion directa en macOS"
       ],
-      "wazuh_ids": [
-        "101063"
-      ]
+      "wazuh_ids": []
     },
     {
       "clase": "auto_analisis",
@@ -6367,11 +6364,7 @@
       "titulos": [
         "Gatekeeper deshabilitado o cuarentena eliminada"
       ],
-      "wazuh_ids": [
-        "101064",
-        "101065",
-        "101066"
-      ]
+      "wazuh_ids": []
     },
     {
       "clase": "auto_analisis",
@@ -6394,11 +6387,7 @@
       "titulos": [
         "AppleScript ejecutando shell o descargando codigo"
       ],
-      "wazuh_ids": [
-        "101067",
-        "101068",
-        "101069"
-      ]
+      "wazuh_ids": []
     },
     {
       "clase": "auto_analisis",
@@ -6423,9 +6412,7 @@
       "titulos": [
         "Persistencia por LaunchAgent o LaunchDaemon"
       ],
-      "wazuh_ids": [
-        "101070"
-      ]
+      "wazuh_ids": []
     },
     {
       "clase": "auto_analisis",
@@ -6449,10 +6436,7 @@
       "titulos": [
         "Manipulacion de la base de datos TCC"
       ],
-      "wazuh_ids": [
-        "101071",
-        "101072"
-      ]
+      "wazuh_ids": []
     },
     {
       "clase": "auto_analisis",
@@ -6475,11 +6459,7 @@
       "titulos": [
         "Creacion de usuario local u oculto en macOS"
       ],
-      "wazuh_ids": [
-        "101073",
-        "101074",
-        "101075"
-      ]
+      "wazuh_ids": []
     },
     {
       "clase": "auto_contener",
@@ -6502,10 +6482,7 @@
       "titulos": [
         "Acceso o volcado del llavero de macOS"
       ],
-      "wazuh_ids": [
-        "101076",
-        "101077"
-      ]
+      "wazuh_ids": []
     },
     {
       "clase": "auto_analisis",
@@ -6963,11 +6940,10 @@
       "sigma_id": "95f7a7fa-56a0-5b5e-9dca-02cbde4b8404",
       "splunk": "DL - Consentimiento concedido a una aplicacion no verificada",
       "tacticas": [
-        "credential-access",
-        "persistence"
+        "credential-access"
       ],
       "tecnicas": [
-        "T1550.001"
+        "T1528"
       ],
       "tipo": "sigma",
       "titulo": "Consentimiento concedido a una aplicacion no verificada",
@@ -7751,17 +7727,18 @@
       "nivel": "medium",
       "origen": "detectionlab",
       "sigma_id": "8c852761-72ca-5d2e-80f2-27713e6f14cd",
-      "splunk": "DL - Patron de beaconing hacia un destino externo",
+      "splunk": "DL - Peticion a un destino sin categoria o recien registrado",
       "tacticas": [
         "command-and-control"
       ],
       "tecnicas": [
         "T1071.001"
       ],
-      "tipo": "sigma",
+      "tipo": "sigma_correlacion",
       "titulo": "Patron de beaconing hacia un destino externo",
       "titulos": [
-        "Patron de beaconing hacia un destino externo"
+        "Patron de beaconing hacia un destino externo",
+        "Peticion a un destino sin categoria o recien registrado"
       ],
       "wazuh_ids": [
         "101078"
@@ -7868,9 +7845,7 @@
       "titulos": [
         "Volumen de subida anomalo hacia el exterior"
       ],
-      "wazuh_ids": [
-        "101085"
-      ]
+      "wazuh_ids": []
     },
     {
       "clase": "auto_analisis",
@@ -8504,11 +8479,10 @@
       "sigma_id": "047df04a-271b-59d0-af0b-69f1039cf53a",
       "splunk": "DL - Protocolo en claro hacia un recurso que exige cifrado",
       "tacticas": [
-        "collection",
-        "credential-access"
+        "lateral-movement"
       ],
       "tecnicas": [
-        "T1040"
+        "T1021"
       ],
       "tipo": "sigma",
       "titulo": "Protocolo en claro hacia un recurso que exige cifrado",
@@ -8572,7 +8546,9 @@
       ],
       "wazuh_ids": [
         "101255",
-        "101256"
+        "101256",
+        "101264",
+        "101265"
       ]
     },
     {
@@ -8631,7 +8607,7 @@
     {
       "clase": "auto_cierre",
       "clave": "infra:110000",
-      "familia": "_generico",
+      "familia": "linux",
       "fichero": "wazuh/soc_rules.xml",
       "logsource": "wazuh",
       "nivel": "informational",
@@ -8641,9 +8617,45 @@
       "tacticas": [],
       "tecnicas": [],
       "tipo": "wazuh",
-      "titulo": "SOC: evento de sensor recibido",
+      "titulo": "SOC/Falco: evento de sensor recibido",
       "wazuh_ids": [
         "110000"
+      ]
+    },
+    {
+      "clase": "auto_cierre",
+      "clave": "infra:110001",
+      "familia": "linux",
+      "fichero": "wazuh/soc_rules.xml",
+      "logsource": "wazuh",
+      "nivel": "informational",
+      "origen": "infra-socanalyst",
+      "sigma_id": "",
+      "splunk": "",
+      "tacticas": [],
+      "tecnicas": [],
+      "tipo": "wazuh",
+      "titulo": "SOC/Tetragon: politica $(process_kprobe.policy_name)",
+      "wazuh_ids": [
+        "110001"
+      ]
+    },
+    {
+      "clase": "auto_cierre",
+      "clave": "infra:110002",
+      "familia": "linux",
+      "fichero": "wazuh/soc_rules.xml",
+      "logsource": "wazuh",
+      "nivel": "informational",
+      "origen": "infra-socanalyst",
+      "sigma_id": "",
+      "splunk": "",
+      "tacticas": [],
+      "tecnicas": [],
+      "tipo": "wazuh",
+      "titulo": "SOC/Tetragon: ejecucion de proceso",
+      "wazuh_ids": [
+        "110002"
       ]
     },
     {
@@ -8681,9 +8693,29 @@
         "T1003.008"
       ],
       "tipo": "wazuh",
-      "titulo": "SOC: acceso a /etc/shadow (volcado de credenciales)",
+      "titulo": "SOC/Falco: acceso a /etc/shadow (volcado de credenciales)",
       "wazuh_ids": [
         "110020"
+      ]
+    },
+    {
+      "clase": "auto_analisis",
+      "clave": "infra:110021",
+      "familia": "linux",
+      "fichero": "wazuh/soc_rules.xml",
+      "logsource": "wazuh",
+      "nivel": "high",
+      "origen": "infra-socanalyst",
+      "sigma_id": "",
+      "splunk": "",
+      "tacticas": [],
+      "tecnicas": [
+        "T1003.008"
+      ],
+      "tipo": "wazuh",
+      "titulo": "SOC/Tetragon: proceso $(process_kprobe.process.binary) terminado al abrir /etc/shadow",
+      "wazuh_ids": [
+        "110021"
       ]
     },
     {
@@ -8739,9 +8771,29 @@
         "T1053.003"
       ],
       "tipo": "wazuh",
-      "titulo": "SOC/Tetragon: modificación de tareas cron (persistencia)",
+      "titulo": "SOC/Falco: modificación de tareas cron (persistencia)",
       "wazuh_ids": [
         "110050"
+      ]
+    },
+    {
+      "clase": "auto_analisis",
+      "clave": "infra:110051",
+      "familia": "linux",
+      "fichero": "wazuh/soc_rules.xml",
+      "logsource": "wazuh",
+      "nivel": "medium",
+      "origen": "infra-socanalyst",
+      "sigma_id": "",
+      "splunk": "",
+      "tacticas": [],
+      "tecnicas": [
+        "T1053.003"
+      ],
+      "tipo": "wazuh",
+      "titulo": "SOC/Tetragon: ejecucion de crontab (persistencia)",
+      "wazuh_ids": [
+        "110051"
       ]
     },
     {
@@ -9539,7 +9591,7 @@
         "T1190"
       ],
       "tipo": "wazuh",
-      "titulo": "ZTA-DEV-005: Vulnerabilidad critica $(data.vulnerability.cve) en $(hostname). La postura del equipo deja de cumplir la politica de acceso.",
+      "titulo": "ZTA-DEV-005: Vulnerabilidad critica $(vulnerability.cve) en $(hostname). La postura del equipo deja de cumplir la politica de acceso.",
       "wazuh_ids": [
         "100206"
       ]
@@ -9599,7 +9651,7 @@
         "T1021"
       ],
       "tipo": "wazuh",
-      "titulo": "ZTA-NET-001: Trafico este-oeste desde $(data.src_ip) hacia el segmento protegido $(data.dest_ip). Verificar la politica de microsegmentacion.",
+      "titulo": "ZTA-NET-001: Trafico este-oeste desde $(src_ip) hacia el segmento protegido $(dest_ip). Verificar la politica de microsegmentacion.",
       "wazuh_ids": [
         "100300"
       ]
@@ -9619,7 +9671,7 @@
         "T1090"
       ],
       "tipo": "wazuh",
-      "titulo": "ZTA-NET-002: Salida directa a Internet desde $(data.src_ip) sin pasar por un proxy aprobado.",
+      "titulo": "ZTA-NET-002: Salida directa a Internet desde $(src_ip) sin pasar por un proxy aprobado.",
       "wazuh_ids": [
         "100301"
       ]
@@ -9657,7 +9709,7 @@
         "T1071.004"
       ],
       "tipo": "wazuh",
-      "titulo": "ZTA-NET-003: Volumen anomalo de consultas DNS TXT/NULL desde $(data.src_ip). Posible tunel DNS o canal C2.",
+      "titulo": "ZTA-NET-003: Volumen anomalo de consultas DNS TXT/NULL desde $(src_ip). Posible tunel DNS o canal C2.",
       "wazuh_ids": [
         "100303"
       ]
@@ -9677,7 +9729,7 @@
         "T1071.004"
       ],
       "tipo": "wazuh",
-      "titulo": "ZTA-NET-003: Consulta DNS con etiqueta anormalmente larga desde $(data.src_ip). Posible exfiltracion por DNS.",
+      "titulo": "ZTA-NET-003: Consulta DNS con etiqueta anormalmente larga desde $(src_ip). Posible exfiltracion por DNS.",
       "wazuh_ids": [
         "100304"
       ]
@@ -9697,7 +9749,7 @@
         "T1040"
       ],
       "tipo": "wazuh",
-      "titulo": "ZTA-NET-004: Conexion sin cifrar hacia el recurso protegido $(data.dest_ip):$(data.dest_port). Incumple el cifrado obligatorio en transito.",
+      "titulo": "ZTA-NET-004: Conexion sin cifrar hacia el recurso protegido $(dest_ip):$(dest_port). Incumple el cifrado obligatorio en transito.",
       "wazuh_ids": [
         "100305"
       ]
@@ -9735,7 +9787,7 @@
         "T1046"
       ],
       "tipo": "wazuh",
-      "titulo": "ZTA-NET-005: $(data.src_ip) ha contactado con un numero anomalo de destinos internos en 2 minutos. Posible reconocimiento lateral.",
+      "titulo": "ZTA-NET-005: $(src_ip) ha contactado con un numero anomalo de destinos internos en 2 minutos. Posible reconocimiento lateral.",
       "wazuh_ids": [
         "100307"
       ]
@@ -9755,7 +9807,7 @@
         "T1071"
       ],
       "tipo": "wazuh",
-      "titulo": "ZTA-NET-006: $(data.src_ip) ha contactado con el indicador de amenaza conocido $(data.dest_ip).",
+      "titulo": "ZTA-NET-006: $(src_ip) ha contactado con el indicador de amenaza conocido $(dest_ip).",
       "wazuh_ids": [
         "100308"
       ]
@@ -9795,7 +9847,7 @@
         "T1190"
       ],
       "tipo": "wazuh",
-      "titulo": "ZTA-APP-002: Intento de explotacion web contra $(data.dest_ip): $(data.alert.signature)",
+      "titulo": "ZTA-APP-002: Intento de explotacion web contra $(dest_ip): $(alert.signature)",
       "wazuh_ids": [
         "100401"
       ]
@@ -9933,7 +9985,7 @@
         "T1567"
       ],
       "tipo": "wazuh",
-      "titulo": "ZTA-DAT-002: Transferencia saliente superior a 100 MB desde $(data.src_ip) hacia $(data.dest_ip). Posible exfiltracion.",
+      "titulo": "ZTA-DAT-002: Transferencia saliente superior a 100 MB desde $(src_ip) hacia $(dest_ip). Posible exfiltracion.",
       "wazuh_ids": [
         "100452"
       ]
@@ -10153,7 +10205,7 @@
         "T1195"
       ],
       "tipo": "wazuh",
-      "titulo": "ZTA-SUP-004: Componente de terceros vulnerable en $(hostname): $(data.vulnerability.package.name) - $(data.vulnerability.cve)",
+      "titulo": "ZTA-SUP-004: Componente de terceros vulnerable en $(hostname): $(vulnerability.package.name) - $(vulnerability.cve)",
       "wazuh_ids": [
         "100508"
       ]
@@ -10213,7 +10265,7 @@
         "T1610"
       ],
       "tipo": "wazuh",
-      "titulo": "ZTA-SUP-006: Descarga de la imagen $(data.Actor.ID) desde un registro no aprobado.",
+      "titulo": "ZTA-SUP-006: Descarga de la imagen $(Actor.ID) desde un registro no aprobado.",
       "wazuh_ids": [
         "100511"
       ]
@@ -10497,7 +10549,7 @@
       "tacticas": [],
       "tecnicas": [],
       "tipo": "wazuh",
-      "titulo": "CMP-RGP-002: Transferencia saliente relevante desde un sistema con datos personales ($(data.src_ip)) hacia $(data.dest_ip). Verificar base juridica de la transferencia internacional.",
+      "titulo": "CMP-RGP-002: Transferencia saliente relevante desde un sistema con datos personales ($(src_ip)) hacia $(dest_ip). Verificar base juridica de la transferencia internacional.",
       "wazuh_ids": [
         "100763"
       ]
@@ -10895,5 +10947,5 @@
       "ventana_min": 1440
     }
   ],
-  "version": "01bbe55923a1"
+  "version": "116a3c67e811"
 }

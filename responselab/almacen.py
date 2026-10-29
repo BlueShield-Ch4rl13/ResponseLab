@@ -15,11 +15,18 @@ Cada registro guarda la huella del anterior. Borrar o editar una fila rompe la
 cadena a partir de ese punto, y /v1/auditoria/verificar lo detecta. No impide
 manipular la base de datos; impide hacerlo sin que se note, que es lo que se
 le pide a un registro de lo que una maquina ha hecho sola.
+
+La huella es un HMAC-SHA256 con una clave que NO esta en la base de datos
+(RL_CLAVE_AUDITORIA, o un fichero aparte con permisos 0600). Con un SHA-256 sin
+clave, quien pudiera escribir en la BD podria reescribir la cadena entera y
+recalcular las huellas; sin la clave, no.
 """
 from __future__ import annotations
 
 import hashlib
+import hmac
 import json
+import os
 import sqlite3
 import threading
 import uuid
@@ -131,10 +138,32 @@ def _dj(texto, defecto=None):
         return defecto
 
 
+def clave_auditoria(ruta_bd: Path) -> bytes:
+    """La clave del HMAC de la auditoria: RL_CLAVE_AUDITORIA o, si no esta, un
+    fichero junto a la BD creado una sola vez con permisos 0600.
+
+    En produccion la clave debe venir de un gestor de secretos (variable de
+    entorno): el fichero es solo para que el laboratorio funcione sin configurar.
+    """
+    entorno = os.environ.get("RL_CLAVE_AUDITORIA", "")
+    if entorno:
+        return entorno.encode("utf-8")
+    fichero = ruta_bd.with_name(ruta_bd.name + ".clave-auditoria")
+    try:
+        return fichero.read_bytes().strip()
+    except FileNotFoundError:
+        clave = os.urandom(32).hex().encode("ascii")
+        fd = os.open(str(fichero), os.O_WRONLY | os.O_CREAT | os.O_EXCL, 0o600)
+        with os.fdopen(fd, "wb") as f:
+            f.write(clave)
+        return clave
+
+
 class Almacen:
-    def __init__(self, ruta: Path):
+    def __init__(self, ruta: Path, clave: bytes | None = None):
         ruta.parent.mkdir(parents=True, exist_ok=True)
         self.ruta = ruta
+        self._clave = clave or clave_auditoria(ruta)
         self._cerrojo = threading.RLock()
         self.db = sqlite3.connect(str(ruta), check_same_thread=False, isolation_level=None, timeout=30)
         self.db.row_factory = sqlite3.Row
@@ -162,6 +191,9 @@ class Almacen:
             self.db.close()
 
     # ── auditoria ──
+    def _huella(self, cuerpo: str) -> str:
+        return hmac.new(self._clave, cuerpo.encode("utf-8"), hashlib.sha256).hexdigest()
+
     def auditar(self, cliente: str, actor: str, evento: str, detalle: dict) -> str:
         with self._cerrojo:
             fila = self.db.execute("SELECT huella FROM auditoria ORDER BY n DESC LIMIT 1").fetchone()
@@ -169,7 +201,7 @@ class Almacen:
             momento = iso()
             cuerpo = _j({"momento": momento, "cliente": cliente, "actor": actor, "evento": evento,
                          "detalle": detalle, "previo": previo})
-            huella = hashlib.sha256(cuerpo.encode("utf-8")).hexdigest()
+            huella = self._huella(cuerpo)
             self.db.execute("INSERT INTO auditoria (momento, cliente, actor, evento, detalle, previo, huella) "
                             "VALUES (?,?,?,?,?,?,?)", (momento, cliente, actor, evento, _j(detalle), previo, huella))
         return huella
@@ -180,7 +212,7 @@ class Almacen:
         for f in self._todos("SELECT * FROM auditoria ORDER BY n"):
             cuerpo = _j({"momento": f["momento"], "cliente": f["cliente"], "actor": f["actor"],
                          "evento": f["evento"], "detalle": _dj(f["detalle"], {}), "previo": f["previo"]})
-            if f["previo"] != previo or hashlib.sha256(cuerpo.encode("utf-8")).hexdigest() != f["huella"]:
+            if f["previo"] != previo or not hmac.compare_digest(self._huella(cuerpo), f["huella"] or ""):
                 return {"integra": False, "registros": n, "rota_en": f["n"]}
             previo = f["huella"]
             n += 1

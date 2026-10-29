@@ -122,7 +122,39 @@ def test_auditoria_recalcular_la_huella_de_la_fila_no_basta(almacen):
     manipular(almacen, "UPDATE auditoria SET detalle=?, huella=? WHERE n=2", (_j(detalle), huella))
     v = almacen.verificar_auditoria()
     assert v["integra"] is False
-    assert v["rota_en"] == 3
+    assert v["rota_en"] == 2, "sin la clave del HMAC, la huella recalculada ya no vale en la propia fila"
+
+
+def test_auditoria_reescribir_toda_la_cadena_sin_la_clave_se_detecta(almacen):
+    """Con SHA-256 sin clave, quien escribe en la BD podia rehacer la cadena entera.
+    Con HMAC y la clave fuera de la BD, no."""
+    for i in range(3):
+        almacen.auditar("lab", "sistema", "accion.simulada", {"n": i})
+    con = sqlite3.connect(str(almacen.ruta))
+    filas = con.execute("SELECT n, momento, cliente, actor, evento FROM auditoria ORDER BY n").fetchall()
+    con.close()
+    previo = "0" * 64
+    for n, momento, cliente, actor, evento in filas:
+        detalle = {"n": n, "falsificado": True}
+        cuerpo = _j({"momento": momento, "cliente": cliente, "actor": actor, "evento": evento,
+                     "detalle": detalle, "previo": previo})
+        huella = hashlib.sha256(cuerpo.encode("utf-8")).hexdigest()
+        manipular(almacen, "UPDATE auditoria SET detalle=?, previo=?, huella=? WHERE n=?", (_j(detalle), previo, huella, n))
+        previo = huella
+    assert almacen.verificar_auditoria()["integra"] is False
+
+
+def test_auditoria_la_clave_no_esta_en_la_base_de_datos(tmp_path, monkeypatch):
+    monkeypatch.delenv("RL_CLAVE_AUDITORIA", raising=False)
+    a = Almacen(tmp_path / "datos" / "responselab.db")
+    a.auditar("lab", "sistema", "uno", {})
+    a.cerrar()
+    fichero = tmp_path / "datos" / "responselab.db.clave-auditoria"
+    assert fichero.exists() and (fichero.stat().st_mode & 0o077) == 0, "clave aparte y solo legible por el motor"
+    monkeypatch.setenv("RL_CLAVE_AUDITORIA", "otra-clave")
+    b = Almacen(tmp_path / "datos" / "responselab.db")
+    assert b.verificar_auditoria()["integra"] is False, "con otra clave la cadena no verifica"
+    b.cerrar()
 
 
 def test_auditoria_por_cliente_mas_reciente_primero(almacen):

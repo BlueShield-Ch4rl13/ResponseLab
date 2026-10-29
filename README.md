@@ -1,14 +1,14 @@
 # 🛡️ ResponseLab — respuesta a incidentes como código, multi-SIEM y multi-SOAR
 
-![Reglas](https://img.shields.io/badge/reglas-235-4FD6C4)
+![Reglas](https://img.shields.io/badge/reglas-239-4FD6C4)
 ![Playbooks](https://img.shields.io/badge/playbooks-16%20familias%20%C2%B7%2054%20acciones-34d399)
 ![SIEM](https://img.shields.io/badge/SIEM-Wazuh%20%C2%B7%20Splunk%20%C2%B7%20Sentinel%20%C2%B7%20Elastic-2ee6f0)
 ![SOAR](https://img.shields.io/badge/SOAR-Shuffle%20%C2%B7%20TheHive%20%C2%B7%20Splunk%20SOAR%20%C2%B7%20n8n%20%C2%B7%20Logic%20Apps%20%C2%B7%20XSOAR-a78bfa)
-![Pruebas](https://img.shields.io/badge/pruebas-1183%20%C2%B7%2010%20ataques-E0A34A)
+![Pruebas](https://img.shields.io/badge/pruebas-1205%20%C2%B7%2010%20ataques-E0A34A)
 ![CI](https://github.com/BlueShield-Ch4rl13/ResponseLab/actions/workflows/ci.yml/badge.svg)
 ![Licencia](https://img.shields.io/badge/licencia-MIT-blue)
 
-**Los playbooks de [DetectionLab](https://github.com/BlueShield-Ch4rl13/Detection-lab), ejecutados.**
+**Los playbooks de [DetectionLab](https://github.com/BlueShield-Ch4rl13/DetectionLab), ejecutados.**
 DetectionLab dice qué hacer con cada alerta y por qué. ResponseLab convierte eso en
 decisiones que una máquina puede tomar sin romper nada. Es un motor multi-cliente
 (pensado para un MSSP) que recibe las alertas de cualquier SIEM, decide con la misma
@@ -61,7 +61,7 @@ puede deshacer. Hay tres reglas que ningún catálogo ni ningún perfil pueden s
 - Un fichero del sistema operativo o un almacén de credenciales nunca se toca solo.
 
 Están en el código, y el CI las comprueba simulando una alerta crítica de cada una de
-las 235 reglas. [`docs/POLITICA.md`](docs/POLITICA.md) cuenta el modelo entero.
+las 239 reglas. [`docs/POLITICA.md`](docs/POLITICA.md) cuenta el modelo entero.
 
 **Lo que no se sabe es "no se sabe".** Cada pregunta de triaje y cada excepción
 contesta *sí*, *no* o *no lo sé*. «No lo sé» nunca se convierte en «sí» por
@@ -106,9 +106,12 @@ distintos para ingerir alertas, para los agentes, para las listas EDL de los
 cortafuegos y para cada aprobador. El token de un cliente nunca sirve para otro.
 
 **El ecosistema se sincroniza solo, pero no a ciegas.** Copiar en vez de leer en
-caliente hace que cada cambio aguas arriba llegue como un diff revisable. Si
+caliente hace que cada cambio aguas arriba llegue como un diff revisable: el bot
+abre un pull request (`sincronizacion/auto`), no empuja a `main`. Si
 DetectionLab cambia una acción de contención y deja de estar mapeada a algo
-ejecutable, el CI se pone en rojo antes de que la vea un motor.
+ejecutable, el CI se pone en rojo antes de que la vea un motor. Con
+`RL_CATALOGO_CLAVE`, los motores solo aceptan un catálogo firmado por quien lo
+revisó (`tools/firmar_catalogo.py`).
 
 ---
 
@@ -116,7 +119,7 @@ ejecutable, el CI se pone en rojo antes de que la vea un motor.
 
 | | |
 |---|---|
-| **Reglas** | 235: 207 de DetectionLab (Sigma y Wazuh), 7 de Infra-SocAnalyst, 21 de SplunkLab |
+| **Reglas** | 239: 207 de DetectionLab (Sigma y Wazuh), 11 de Infra-SocAnalyst, 21 de SplunkLab |
 | **Familias de playbook** | 16: AD, cloud, contenedores, correo, credenciales, cumplimiento, endpoint, exfiltración, inteligencia, Linux, macOS, red, web, XDR, Zero Trust y genérica |
 | **Acciones ejecutables** | 54, cada una con radio, reversibilidad, capacidad e inversa |
 | **SIEM de entrada** | Wazuh (integración y active response), Splunk (alerta webhook), Microsoft Sentinel (regla de automatización), Elastic Security (conector webhook) |
@@ -168,7 +171,7 @@ python -m pip install -r requirements-dev.txt
 
 python tools/validar.py                            # catálogo, contratos e invariantes
 python tools/simular.py --detalle ransomware-puesto  # un ataque, con el plan de cada alerta
-python -m pytest -q                                # las 1183 pruebas
+python -m pytest -q                                # las 1205 pruebas
 ```
 
 **Decidir una alerta sin ejecutar nada:**
@@ -201,10 +204,24 @@ docker compose -f docker-compose.yml -f docker-compose.lab.yml up -d --build
 docker compose -f docker-compose.yml -f docker-compose.lab.yml run --rm escenarios
 ```
 
+**En el servidor del laboratorio**, junto a Infra-SocAnalyst y SplunkLab
+([`docs/SERVIDOR.md`](docs/SERVIDOR.md)):
+
+```bash
+python3 tools/preparar_servidor.py --motor 10.0.30.20 \
+    --dominio motor.lab.carlosvillalbalagos.com --tls cloudflare
+docker compose up -d --build --wait        # motor, proxy TLS y copias cada 6 h
+python3 tools/comprobar_despliegue.py --url https://motor.lab.carlosvillalbalagos.com:8443 --conectividad
+```
+
+`preparar_servidor.py` genera los tokens y la clave de la auditoría en `.env`, y
+deja en `despliegue/generado/` la configuración ya rellena para el manager de
+Wazuh, las búsquedas de Splunk y las listas de pfSense. `comprobar_despliegue.py`
+mira el motor desde fuera: certificado, salud, catálogo, autenticación, auditoría,
+listas EDL y que llega a Wazuh y TheHive.
+
 Desplegarlo para clientes reales, con TLS, tokens, copias de seguridad y el paso de
-simulación a producción, está en [`docs/PRODUCCION.md`](docs/PRODUCCION.md). El
-despliegue en el servidor propio del laboratorio, junto a Infra-SocAnalyst y
-SplunkLab, está en [`docs/SERVIDOR.md`](docs/SERVIDOR.md).
+simulación a producción, está en [`docs/PRODUCCION.md`](docs/PRODUCCION.md).
 
 ---
 
@@ -241,8 +258,10 @@ soar/                  lo que se importa en cada SOAR (generado)
 siem/                  integración de Wazuh, Splunk y Elastic; scripts de active response
 ecosistema/            lo que se trae de los otros repositorios (sincronizado)
 escenarios/            ataques de extremo a extremo
-tools/                 sincronizar, compilar, validar, simular, importar en TheHive
-tests/                 1183 pruebas
+tools/                 sincronizar, compilar, validar, simular, importar en TheHive,
+                         preparar y comprobar un servidor
+despliegue/            proxy TLS (CA propia o Let's Encrypt por DNS en Cloudflare)
+tests/                 1205 pruebas
 ```
 
 ---
@@ -251,7 +270,7 @@ tests/                 1183 pruebas
 
 | Proyecto | Qué aporta a ResponseLab |
 |---|---|
-| [Detection-lab](https://github.com/BlueShield-Ch4rl13/Detection-lab) | Los 15 playbooks de respuesta (qué hacer y por qué), las reglas Sigma y sus traducciones a Wazuh y Splunk |
+| [DetectionLab](https://github.com/BlueShield-Ch4rl13/DetectionLab) | Los 15 playbooks de respuesta (qué hacer y por qué), las reglas Sigma y sus traducciones a Wazuh y Splunk |
 | [Infra-SocAnalyst](https://github.com/BlueShield-Ch4rl13/Infra-SocAnalyst) | La plataforma del laboratorio (Wazuh, Falco, Tetragon, Suricata, Shuffle, TheHive) y sus reglas 110xxx |
 | [SplunkLab](https://github.com/BlueShield-Ch4rl13/SplunkLab) | Las búsquedas DET-* del laboratorio de Splunk |
 | [ScriptNewsCTI](https://github.com/BlueShield-Ch4rl13/ScriptNewsCTI) | IOCs priorizados por explotación activa y CVE del catálogo KEV, consultados en cada decisión |
@@ -284,10 +303,33 @@ propio diseño es parte del producto:
 - tokens separados por cliente y por función;
 - secretos fuera de los perfiles;
 - límites de tamaño y de frecuencia en la entrada;
-- auditoría encadenada;
+- auditoría encadenada con HMAC (la clave no está en la base de datos);
+- acuses que solo cierran la ejecución del equipo al que se mandó la orden;
+- active response que rechaza rutas con `..` y comprueba la ruta real, no el texto;
+- `/salud` sin token solo dice si el motor está vivo;
 - contenedor sin privilegios y con el sistema de ficheros en solo lectura.
 
 Para informar de una vulnerabilidad, mira [`SECURITY.md`](SECURITY.md).
+
+---
+
+## 🧾 Cómo está probado
+
+Lo que se ejecuta en cada cambio (`.github/workflows/ci.yml`):
+
+| Qué | Cómo |
+|---|---|
+| Motor, API, conectores, almacén | `pytest` (más de 1.200 pruebas) en Linux y Windows |
+| Active response de Linux | El script real contra una instalación de Wazuh falsa en un directorio temporal, con `RL_AR_SIMULACION=1`: los comandos (`nft`, `iptables`, `systemctl`, `kill`) se registran y no se ejecutan; los ficheros sí se mueven, solo dentro del temporal |
+| Catálogo y contratos | `tools/validar.py` |
+| Diez ataques de extremo a extremo | `tools/simular.py` contra el motor en simulación |
+| Estilo | `ruff` |
+| Despliegue de servidor | Job *Despliegue de servidor*: `preparar_servidor.py`, los tres contenedores de verdad (motor, Caddy con su CA y copias), `comprobar_despliegue.py` por HTTPS con los escenarios, una copia, su restauración y otra comprobación. Y que el Caddy con el módulo de Cloudflare compila |
+
+Lo que **no** cubre el CI: agentes de Wazuh reales, ni los SOAR y EDR de verdad
+(los conectores se prueban con respuestas HTTP simuladas), ni el certificado de
+Let's Encrypt por DNS (necesita un token de Cloudflare). Eso se comprueba en el
+servidor del laboratorio con la lista de [`docs/SERVIDOR.md`](docs/SERVIDOR.md#lista-para-dar-el-despliegue-por-bueno).
 
 ---
 

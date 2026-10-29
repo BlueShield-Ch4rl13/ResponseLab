@@ -140,10 +140,18 @@ def crear_app(config: Config | None = None, motor: Motor | None = None, arrancar
 
     # ── salud y metricas ──
     @app.get("/salud")
-    async def salud(request: Request):
+    async def salud(request: Request, authorization: str | None = Header(None)):
+        """Sin token: solo si el motor esta vivo (para healthchecks y balanceadores).
+        El detalle (clientes, perfiles con error, origen del catalogo) pide el token
+        de administracion: los nombres de los clientes no se publican."""
         mo = m(request)
         cat = mo.catalogo.estado()
-        return {"estado": "ok" if cat["version"] else "degradado", "version": __version__,
+        basico = {"estado": "ok" if cat["version"] else "degradado", "version": __version__,
+                  "cola": mo.almacen.pendientes()}
+        t = _token(authorization, None)
+        if not (config.token_admin and t and iguales(t, config.token_admin)):
+            return basico
+        return {**basico,
                 "catalogo": {"version": cat["version"], "origen": cat["origen"], "error": cat["ultimo_error"]},
                 "cti": {"disponible": mo.cti.disponible, "generado": mo.cti.generado},
                 "clientes": len(mo.clientes.todos()), "perfiles_con_error": sorted(mo.clientes.errores),

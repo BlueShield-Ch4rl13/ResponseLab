@@ -84,12 +84,12 @@
       "title": "La desviacion aparece en un unico activo y no en el resto de su grupo"
     },
     {
-      "description": "Fuente: evento. Si es afirmativa, sube la severidad.\nResponseLab la contesta sola si hay datos; si queda pendiente, contestarla aqui.\nEs la unica regla de la familia que se tria como incidente y no como desviacion. El apagado ordenado posterior lo comprueba el analista.",
+      "description": "Fuente: evento. Si es afirmativa, sube la severidad.\nResponseLab la contesta sola si hay datos; si queda pendiente, contestarla aqui.\nEs la unica regla de la familia que se tria como incidente y no como desviacion. La regla ya descarta el apagado (1100) y el refresco de GPO (4719 de SYSTEM); la cuenta que retira la auditoria la confirma el analista.",
       "flag": false,
       "group": "2. Triaje",
       "mandatory": false,
       "order": 9,
-      "title": "La alerta es borrado del registro de auditoria sin apagado ordenado posterior"
+      "title": "La alerta es borrado del registro de auditoria o retirada de auditoria por una cuenta de usuario"
     },
     {
       "description": "Alcance: Una tarea en el ITSM. No toca ningun sistema.\nRadio: objeto · Reversible: si\nAutomatica en clase auto_contener si la politica del cliente lo permite.\nAccion de ResponseLab: caso.tarea_desviacion\nPor que: En esta familia la accion util no toca el activo. El fallo tipico aqui\nno es contener de menos sino cerrar la alerta y que la desviacion siga\nexactamente igual el trimestre siguiente, disparando la misma regla.\nEncolar es barato y es lo unico que corrige algo.\n",
@@ -100,7 +100,7 @@
       "title": "Abrir o actualizar la tarea de desviacion contra el propietario del activo, con la evidencia y el plazo del plan"
     },
     {
-      "description": "Alcance: El equipo afectado, y solo en el caso de zta_vis_001. No aplica al resto de reglas de la familia.\nRadio: objeto · Reversible: si\nAutomatica en clase auto_contener si la politica del cliente lo permite.\nAccion de ResponseLab: endpoint.aislar · se deshace con endpoint.liberar\nExcepcion: Si el inventario marca el equipo como servidor de produccion, NO se\naisla: se prepara la accion y se pide aprobacion.\n\nPor que: Es la unica regla de la familia con un adversario probable detras:\nborrar el registro no es deriva de configuracion, y el apagado ordenado\nque la explicaria se distingue porque va seguido del arranque. El resto\nde la familia no llega a este nivel de automatizacion ni deberia, y por\neso la accion lleva la restriccion escrita en el alcance.\n",
+      "description": "Alcance: El equipo afectado, y solo en el caso de zta_vis_001 (registro borrado, o auditoria retirada por una cuenta que no es SYSTEM). No aplica al resto de reglas de la familia.\nRadio: equipo · Reversible: si\nAutomatica en clase auto_contener si la politica del cliente lo permite.\nAccion de ResponseLab: endpoint.aislar · se deshace con endpoint.liberar\nExcepcion: Si el inventario marca el equipo como servidor de produccion, NO se\naisla: se prepara la accion y se pide aprobacion.\n\nPor que: Es la unica regla de la familia con un adversario probable detras:\nborrar el registro no es deriva de configuracion. La regla ya no salta\ncon el apagado (1100) ni con el refresco de GPO (4719 de SYSTEM), que\nantes aislaban equipos sin motivo. El resto\nde la familia no llega a este nivel de automatizacion ni deberia, y por\neso la accion lleva la restriccion escrita en el alcance.\n",
       "flag": false,
       "group": "3. Contencion",
       "mandatory": false,

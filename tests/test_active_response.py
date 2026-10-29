@@ -457,8 +457,15 @@ def test_cuarentena_y_restauracion_de_ida_y_vuelta(wazuh, tmp_path):
     assert r.acuse["datos"] == {"custodia": str(custodia), "sha256": sha, "ruta": str(victima)}
     assert not victima.exists()
     guardado = custodia / "fichero"
-    assert guardado.read_bytes() == b"MZ\x90\x00 contenido de prueba"
     assert stat.S_IMODE(guardado.stat().st_mode) == 0, "en custodia el fichero no se puede ejecutar ni leer"
+    # Con permisos 000 solo root puede leerlo (wazuh-execd corre como root),
+    # pero el CI no corre como root: se abre un momento para comprobar el
+    # contenido y se deja exactamente como estaba antes de restaurar.
+    os.chmod(guardado, 0o400)
+    try:
+        assert guardado.read_bytes() == b"MZ\x90\x00 contenido de prueba"
+    finally:
+        os.chmod(guardado, 0)
     assert stat.S_IMODE((wazuh / "var" / "responselab" / "custodia").stat().st_mode) == 0o700
     meta = json.loads((custodia / "meta.json").read_text(encoding="utf-8"))
     assert meta["ruta"] == str(victima) and meta["sha256"] == sha and meta["modo"] == 0o640
@@ -567,7 +574,8 @@ def test_persistencia_de_fichero_y_su_restauracion(wazuh, tmp_path):
     lanzador.parent.mkdir()
     lanzador.write_text("[Desktop Entry]\nExec=/tmp/.x/upd\n", encoding="utf-8")
     os.chmod(lanzador, 0o644)
-    r = ejecutar_ar(wazuh, "persistencia", {"ejecucion_id": "ej-1", "ruta": str(lanzador)})
+    r = ejecutar_ar(wazuh, "persistencia", {"ejecucion_id": "ej-1", "ruta": str(lanzador)},
+                    env={"RL_AR_BINARIOS": "nft,dpkg"})
     assert r.acuse["estado"] == "aplicada", r.acuse
     assert r.acuse["datos"]["tipo"] == "fichero"
     assert not lanzador.exists()
@@ -611,6 +619,104 @@ def test_persistencia_no_borra_un_fichero_de_cron_entero(wazuh, tmp_path, monkey
     detalle, datos = ar.persistencia({"ruta": str(cron), "nombre": "198.51.100.9"})
     assert datos["tipo"] == "crontab" and "1 linea" in detalle
     assert cron.read_text(encoding="utf-8") == legitima
+
+
+def test_persistencia_rechaza_rutas_con_puntos(wazuh, tmp_path, monkeypatch):
+    """/etc/cron.d/../ssh/sshd_config empieza por /etc/cron como texto: no puede pasar por un cron."""
+    ar = cargar_modulo_ar(monkeypatch, wazuh)
+    cron = tmp_path / "etc" / "cron.d"
+    ssh = tmp_path / "etc" / "ssh" / "sshd_config"
+    cron.mkdir(parents=True)
+    ssh.parent.mkdir(parents=True)
+    ssh.write_text("PermitRootLogin no\nPort 22\n", encoding="utf-8")
+    monkeypatch.setattr(ar, "DIRS_CRON", (str(tmp_path / "etc" / "cron"),))
+    with pytest.raises(ar.Fallo, match=r"'\.\.'"):
+        ar.persistencia({"ruta": str(cron) + "/../ssh/sshd_config", "nombre": "PermitRootLogin"})
+    assert ssh.read_text(encoding="utf-8") == "PermitRootLogin no\nPort 22\n"
+
+
+def test_persistencia_comprueba_la_ruta_real_y_no_el_texto(wazuh, tmp_path, monkeypatch):
+    """Un directorio enlazado dentro de cron.d no convierte otro fichero en un cron."""
+    ar = cargar_modulo_ar(monkeypatch, wazuh)
+    monkeypatch.setenv("RL_AR_BINARIOS", "nft,dpkg")
+    cron = tmp_path / "etc" / "cron.d"
+    otro = tmp_path / "otro"
+    cron.mkdir(parents=True)
+    otro.mkdir()
+    (otro / "config").write_text("linea legitima con 198.51.100.9\n", encoding="utf-8")
+    (cron / "atajo").symlink_to(otro)
+    monkeypatch.setattr(ar, "DIRS_CRON", (str(tmp_path / "etc" / "cron"),))
+    detalle, datos = ar.persistencia({"ruta": str(cron / "atajo" / "config"), "nombre": "198.51.100.9"})
+    assert datos["tipo"] == "fichero" and datos["ruta"] == str(otro / "config"), \
+        "la ruta real no esta en cron: se trata como fichero (con copia en custodia), no como cron"
+
+
+def test_persistencia_no_borra_lineas_con_un_patron_corto(wazuh, tmp_path, monkeypatch):
+    """nombre="a" casaria con media /etc/crontab."""
+    ar = cargar_modulo_ar(monkeypatch, wazuh)
+    cron = tmp_path / "etc" / "crontab"
+    cron.parent.mkdir(parents=True)
+    contenido = "SHELL=/bin/sh\n17 * * * * root cd / && run-parts --report /etc/cron.hourly\n"
+    cron.write_text(contenido, encoding="utf-8")
+    monkeypatch.setattr(ar, "DIRS_CRON", (str(tmp_path / "etc" / "cron"),))
+    with pytest.raises(ar.Fallo, match="demasiado corto"):
+        ar.persistencia({"ruta": str(cron), "nombre": "a"})
+    assert cron.read_text(encoding="utf-8") == contenido
+
+
+def test_persistencia_no_borra_lineas_con_un_patron_amplio(wazuh, tmp_path, monkeypatch):
+    ar = cargar_modulo_ar(monkeypatch, wazuh)
+    cron = tmp_path / "etc" / "crontab"
+    cron.parent.mkdir(parents=True)
+    contenido = "".join("%d * * * * root run-parts /etc/cron.tarea%d\n" % (i, i) for i in range(5))
+    cron.write_text(contenido, encoding="utf-8")
+    monkeypatch.setattr(ar, "DIRS_CRON", (str(tmp_path / "etc" / "cron"),))
+    with pytest.raises(ar.Fallo, match="demasiado amplio"):
+        ar.persistencia({"ruta": str(cron), "nombre": "root run-parts"})
+    assert cron.read_text(encoding="utf-8") == contenido
+
+
+def test_persistencia_sin_gestor_de_paquetes_pasa_a_aprobacion(wazuh, tmp_path):
+    """Alpine/Arch sin dpkg ni rpm: no se puede saber si el fichero es del sistema, no se borra."""
+    fichero = tmp_path / "autostart" / "algo.desktop"
+    fichero.parent.mkdir()
+    fichero.write_text("[Desktop Entry]\n", encoding="utf-8")
+    r = ejecutar_ar(wazuh, "persistencia", {"ejecucion_id": "ej-1", "ruta": str(fichero)},
+                    env={"RL_AR_BINARIOS": "nft"})
+    assert r.acuse["estado"] == "fallida" and "gestor de paquetes" in r.acuse["detalle"], r.acuse
+    assert fichero.exists()
+
+
+def test_persistencia_no_retira_ficheros_de_un_paquete(wazuh, tmp_path):
+    fichero = tmp_path / "autostart" / "del-paquete.desktop"
+    fichero.parent.mkdir()
+    fichero.write_text("[Desktop Entry]\n", encoding="utf-8")
+    r = ejecutar_ar(wazuh, "persistencia", {"ejecucion_id": "ej-1", "ruta": str(fichero)},
+                    env={"RL_AR_BINARIOS": "nft,apk", "RL_AR_PAQUETES": json.dumps({str(fichero): "xdg-utils"})})
+    assert r.acuse["estado"] == "fallida" and "xdg-utils" in r.acuse["detalle"], r.acuse
+    assert fichero.exists()
+
+
+def test_simulacion_no_toca_ficheros_fuera_del_temporal(wazuh, tmp_path, monkeypatch):
+    """RL_AR_SIMULACION=1 activada por error en un equipo real no puede borrar nada fuera de /tmp."""
+    ar = cargar_modulo_ar(monkeypatch, wazuh)
+    monkeypatch.setattr(ar, "RAIZ_SIMULACION", str(tmp_path / "solo-aqui"))
+    fichero = tmp_path / "fuera" / "x.desktop"
+    fichero.parent.mkdir()
+    fichero.write_text("x", encoding="utf-8")
+    with pytest.raises(ar.Fallo, match="en simulacion"):
+        ar.persistencia({"ruta": str(fichero)})
+    with pytest.raises(ar.Fallo, match="en simulacion"):
+        ar.cuarentena({"ruta": str(fichero)})
+    assert fichero.exists()
+
+
+def test_ssh_clave_solo_en_ficheros_authorized_keys(wazuh, tmp_path):
+    otro = tmp_path / "sudoers"
+    otro.write_text(f"ssh-ed25519 {CLAVE_SSH} x\n", encoding="utf-8")
+    r = ejecutar_ar(wazuh, "ssh-clave", {"ejecucion_id": "ej-1", "ruta": str(otro), "clave": f"ssh-ed25519 {CLAVE_SSH}"})
+    assert r.acuse["estado"] == "fallida" and "authorized_keys" in r.acuse["detalle"], r.acuse
+    assert CLAVE_SSH in otro.read_text(encoding="utf-8")
 
 
 def test_persistencia_sin_ruta_ni_unidad(wazuh):

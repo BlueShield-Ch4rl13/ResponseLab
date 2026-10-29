@@ -116,8 +116,7 @@ def peticion(alerta: dict, conf: dict) -> tuple:
     tokens = (conf.get("clientes") or {}).get(cliente) or {}
     if es_acuse(alerta):
         d = alerta["data"]["responselab_ar"]
-        detalle = {"detalle": d.get("detalle", ""), "accion": d.get("accion", ""), "equipo": d.get("equipo", ""),
-                   "agente": (alerta.get("agent") or {}).get("name", ""), "alerta_wazuh": alerta.get("id", "")}
+        detalle = {}
         datos = d.get("datos")
         if isinstance(datos, str) and datos:
             try:
@@ -126,6 +125,12 @@ def peticion(alerta: dict, conf: dict) -> tuple:
                 datos = {"texto": datos[:2000]}
         if isinstance(datos, dict):
             detalle.update(datos)
+        # Despues de los datos del script: lo que dice Wazuh sobre quien envio el
+        # acuse (agent.*) no lo puede pisar un "datos" con claves "agente" o "equipo".
+        agente = alerta.get("agent") or {}
+        detalle.update({"detalle": d.get("detalle", ""), "accion": d.get("accion", ""), "equipo": d.get("equipo", ""),
+                        "agente": agente.get("name", ""), "agente_id": agente.get("id", ""),
+                        "alerta_wazuh": alerta.get("id", "")})
         cuerpo = {"ejecucion_id": d.get("ejecucion_id", ""), "estado": d.get("estado", ""), "detalle": detalle}
         return "/v1/%s/acuses" % cliente, cuerpo, tokens.get("token_agentes", "")
     return "/v1/%s/alertas/wazuh" % cliente, alerta, tokens.get("token_ingesta", "")
