@@ -324,6 +324,7 @@ Lo que se ejecuta en cada cambio (`.github/workflows/ci.yml`):
 | Catálogo y contratos | `tools/validar.py` |
 | Diez ataques de extremo a extremo | `tools/simular.py` contra el motor en simulación |
 | Estilo | `ruff` |
+| Seguridad del código | **CodeQL** (`.github/workflows/codeql.yml`): Python, el JavaScript del panel y los workflows, en cada PR y una vez por semana |
 | Despliegue de servidor | Job *Despliegue de servidor*: `preparar_servidor.py`, los tres contenedores de verdad (motor, Caddy con su CA y copias), `comprobar_despliegue.py` por HTTPS con los escenarios, una copia, su restauración y otra comprobación. Y que el Caddy con el módulo de Cloudflare compila |
 
 Lo que **no** cubre el CI: agentes de Wazuh reales, ni los SOAR y EDR de verdad
