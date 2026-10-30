@@ -1,15 +1,24 @@
-# Actualizaciones automaticas: dependencias de Python, GitHub Actions y la imagen Docker base.
+# Actualizaciones automáticas de dependencias de Python, GitHub Actions y la
+# imagen Docker base. Una vez al mes y un solo PR por ecosistema (antes eran
+# semanales y uno por paquete), igual que en Malpipe. El CI tiene que pasar
+# antes de fusionar.
 version: 2
 updates:
   - package-ecosystem: pip
     directory: /
     schedule:
-      interval: weekly
+      interval: monthly
+    groups:
+      python:
+        patterns: ["*"]
   - package-ecosystem: github-actions
     directory: /
     schedule:
-      interval: weekly
+      interval: monthly
+    groups:
+      actions:
+        patterns: ["*"]
   - package-ecosystem: docker
     directory: /
     schedule:
-      interval: weekly
+      interval: monthly
