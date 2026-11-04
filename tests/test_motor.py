@@ -683,15 +683,18 @@ async def test_acuses_actualizan_el_estado_de_la_ejecucion(motor):
     ejs = {e["accion"]: e for e in ejecuciones_de(motor, "lab", recibidas[1]["alerta_id"])}
     aislar, matar, triage = ejs["endpoint.aislar"], ejs["proceso.matar"], ejs["evidencia.triage_forense"]
 
-    assert motor.acuse("lab", aislar["id"], "ok", {"reglas": 3}) == {"ejecucion": aislar["id"], "estado": "confirmada"}
+    def de(ej, detalle):        # el acuse dice de que agente viene (la integracion de Wazuh lo pone)
+        return dict(detalle, agente_id=(ej.get("datos_deshacer") or {}).get("agente", ""))
+
+    assert motor.acuse("lab", aislar["id"], "ok", de(aislar, {"reglas": 3})) == {"ejecucion": aislar["id"], "estado": "confirmada"}
     confirmada = motor.almacen.ejecucion(aislar["id"])
     assert confirmada["estado"] == "confirmada" and confirmada["confirmada"]
-    assert confirmada["resultado"]["confirmacion"] == {"reglas": 3}
+    assert confirmada["resultado"]["confirmacion"]["reglas"] == 3
 
-    assert motor.acuse("lab", matar["id"], "ERROR", {"motivo": "el PID ya no existe"})["estado"] == "fallida"
+    assert motor.acuse("lab", matar["id"], "ERROR", de(matar, {"motivo": "el PID ya no existe"}))["estado"] == "fallida"
     assert motor.almacen.ejecucion(matar["id"])["estado"] == "fallida"
 
-    progreso = motor.acuse("lab", triage["id"], "en_curso", {"fase": "memoria"})
+    progreso = motor.acuse("lab", triage["id"], "en_curso", de(triage, {"fase": "memoria"}))
     assert progreso == {"ejecucion": triage["id"], "estado": "simulada", "progreso": "en_curso"}
     assert motor.almacen.ejecucion(triage["id"])["estado"] == "simulada", "el progreso solo se audita"
     assert {"accion.confirmada", "accion.fallida", "accion.progreso"} <= set(eventos(motor, "lab"))
@@ -711,15 +714,24 @@ async def test_acuse_de_otro_agente_se_rechaza(motor):
         motor.acuse("lab", ej["id"], "ok", {"agente": "OTRO-EQUIPO", "agente_id": "099"})
     assert motor.almacen.ejecucion(ej["id"])["estado"] == ej["estado"], "no cambia"
     assert "acuse.rechazado" in eventos(motor, "lab")
-    assert motor.acuse("lab", ej["id"], "ok", {"agente": equipo.lower() + ".corp.local"})["estado"] == "confirmada"
+    # Sin agente_id tampoco: antes bastaba con no mandarlo para cerrar la orden de otro equipo
+    with pytest.raises(AlertaRechazada, match="no dice de que agente"):
+        motor.acuse("lab", ej["id"], "ok", {"agente": equipo})
+    assert motor.acuse("lab", ej["id"], "ok", {"agente": equipo.lower() + ".corp.local",
+                                               "agente_id": agente_de(ej)})["estado"] == "confirmada"
+
+
+def agente_de(ej: dict) -> str:
+    return (ej.get("datos_deshacer") or {}).get("agente", "")
 
 
 async def test_acuse_no_permite_cualquier_transicion(motor):
     ej = await aislamiento(motor)
-    assert motor.acuse("lab", ej["id"], "ok", {})["estado"] == "confirmada"
-    assert motor.acuse("lab", ej["id"], "ok", {}).get("repetido") is True, "el mismo acuse repetido no cambia nada"
+    yo = {"agente_id": agente_de(ej)}
+    assert motor.acuse("lab", ej["id"], "ok", yo)["estado"] == "confirmada"
+    assert motor.acuse("lab", ej["id"], "ok", yo).get("repetido") is True, "el mismo acuse repetido no cambia nada"
     with pytest.raises(AlertaRechazada, match="un acuse no la pasa"):
-        motor.acuse("lab", ej["id"], "fallida", {})
+        motor.acuse("lab", ej["id"], "fallida", yo)
     assert motor.almacen.ejecucion(ej["id"])["estado"] == "confirmada"
 
 
@@ -736,7 +748,7 @@ async def test_acuse_con_informe_ftriage_del_equipo_se_incorpora(motor):
     informe = {"host": {"hostname": "CORP-FIN-07"},
                "assessment": {"verdict": "Compromiso", "verdict_key": "alto", "risk_score": 70,
                               "attack_techniques": [{"attack": "T1486"}]}}
-    salida = motor.acuse("lab", ej["id"], "ok", {"informe_ftriage": informe})
+    salida = motor.acuse("lab", ej["id"], "ok", {"informe_ftriage": informe, "agente_id": agente_de(ej)})
     assert salida["estado"] == "confirmada"
     assert salida["evidencia"]["incidente"] == ej["incidente_id"]
     assert salida["evidencia"]["tecnicas"] == ["T1486"]
@@ -746,7 +758,7 @@ async def test_acuse_con_informe_ftriage_se_asocia_al_incidente_de_la_ejecucion(
     ej = await aislamiento(motor)
     # El resumen que manda el agente cuando no puede subir el informe entero: sin nombre de equipo
     informe = {"assessment": {"verdict": "Compromiso confirmado", "verdict_key": "critico", "risk_score": 88}}
-    salida = motor.acuse("lab", ej["id"], "ok", {"informe_ftriage": informe})
+    salida = motor.acuse("lab", ej["id"], "ok", {"informe_ftriage": informe, "agente_id": agente_de(ej)})
     assert salida["evidencia"]["incidente"] == ej["incidente_id"]
     assert any(t["grupo"] == "Evidencia" for t in motor.almacen.tareas(ej["incidente_id"]))
 

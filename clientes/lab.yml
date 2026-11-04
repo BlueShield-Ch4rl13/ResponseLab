@@ -17,8 +17,10 @@ marcos: [rgpd, nis2]
 
 autenticacion:
   token_env: RL_LAB_TOKEN
-  agentes:
+  agentes:                  # manager de Wazuh: acuses de active response
     token_env: RL_LAB_TOKEN_AGENTES
+  evidencias:               # equipos: solo suben informes de FtriageDFIR
+    token_env: RL_LAB_TOKEN_EVIDENCIAS
   edl:
     token_env: RL_LAB_TOKEN_EDL
 
@@ -63,6 +65,8 @@ politica:
 inventario:
   completo: true
   protegidos: ["^DC\\d+$"]
+  # Nunca se bloquean en el perimetro, ni con aprobacion (dominio propio, DNS)
+  nunca_bloquear: [lab.test, 149.112.112.112]
   activos:
     - {nombre: DC01, etiquetas: [controlador_dominio, servidor_produccion]}
     - {nombre: FS01, etiquetas: [servidor_ficheros, servidor_produccion, datos_personales]}

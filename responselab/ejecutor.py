@@ -515,7 +515,11 @@ class Motor:
         """
         enviado = str((ej.get("datos_deshacer") or {}).get("agente") or "")
         recibido = str(detalle.get("agente_id") or "")
-        if enviado and recibido and enviado.zfill(3) != recibido.zfill(3):
+        if enviado and not recibido:
+            # Antes, sin agente_id no se comprobaba nada: bastaba con no mandarlo
+            # para confirmar o dar por fallida la orden de otro equipo.
+            return f"la orden se entrego al agente {enviado} y el acuse no dice de que agente viene"
+        if enviado and enviado.zfill(3) != recibido.zfill(3):
             return f"llega del agente {recibido} y la orden se entrego al {enviado}"
         equipo = str((ej.get("objetivo") or {}).get("equipo.nombre") or "")
         agente = str(detalle.get("agente") or "")
@@ -602,7 +606,9 @@ class Motor:
         if inc and cliente and veredicto == "malicioso" and hashes.get("sha256"):
             meta = self.catalogo.actual.acciones["flota.bloquear_hash"]
             paso = {"id": f"malpipe-{hashes['sha256'][:12]}", "accion": "flota.bloquear_hash", "nombre": meta["nombre"],
-                    "capacidad": meta["capacidad"], "radio": meta["radio"], "reversible": meta["reversible"],
+                    "capacidad": meta["capacidad"],
+                    "radio": nucleo.radio_efectivo(meta["radio"], nucleo.minimos_de("flota.bloquear_hash")[0]),
+                    "reversible": nucleo.reversible_efectivo(meta["reversible"], nucleo.minimos_de("flota.bloquear_hash")[1]),
                     "objetivo": {"fichero.sha256": hashes["sha256"]}, "parametros": {},
                     "motivo": f"Malpipe: {veredicto} ({informe.get('score')}/100) {resumen['familia']}".strip(),
                     "modo": "aprobacion", "origen": "Veredicto de Malpipe"}

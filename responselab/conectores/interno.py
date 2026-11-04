@@ -139,8 +139,16 @@ class Edl(Conector):
             raise NoSoportada("sin IP, dominio ni URL que bloquear")
         return salida
 
+    def _comprobar_nunca(self, entradas):
+        from ..nucleo import motivo_nunca_bloquear
+        for tipo, valor in entradas:
+            motivo = motivo_nunca_bloquear(self.cliente, tipo, valor)
+            if motivo:
+                raise NoSoportada(motivo + ": no se bloquea")
+
     async def _poner(self, objetivo, contexto, campos):
         entradas = self._entradas(objetivo, contexto, campos)
+        self._comprobar_nunca(entradas)
         caduca = self._ttl()
         if self.motor and not self.simulacion:
             for tipo, valor in entradas:

@@ -33,6 +33,7 @@ POSIX = os.name == "posix"
 def raiz_falsa(tmp_path: Path) -> Path:
     r = tmp_path / "repo"
     for rel in (".env.example", "clientes/lab.yml", "siem/wazuh/responselab.json.ejemplo",
+                "siem/wazuh/responselab.conf.ejemplo",
                 "siem/splunk/savedsearches-detectionlab.conf", "siem/splunk/savedsearches-splunklab.conf",
                 "siem/splunk/alert_actions.conf"):
         (r / rel).parent.mkdir(parents=True, exist_ok=True)
@@ -59,7 +60,7 @@ def test_preparar_genera_los_secretos_y_la_configuracion(tmp_path):
     r = raiz_falsa(tmp_path)
     res = preparar_servidor.preparar(argumentos(), r)
     env = env_de(r / ".env")
-    secretos = ["RL_ADMIN_TOKEN", "RL_LAB_TOKEN", "RL_LAB_TOKEN_AGENTES", "RL_LAB_TOKEN_EDL",
+    secretos = ["RL_ADMIN_TOKEN", "RL_LAB_TOKEN", "RL_LAB_TOKEN_AGENTES", "RL_LAB_TOKEN_EVIDENCIAS", "RL_LAB_TOKEN_EDL",
                 "RL_LAB_TOKEN_APROBADOR", "RL_CLAVE_AUDITORIA"]
     assert all(len(env[s]) >= 32 for s in secretos)
     assert len({env[s] for s in secretos}) == len(secretos), "cada funcion con su propio token"
@@ -72,6 +73,10 @@ def test_preparar_genera_los_secretos_y_la_configuracion(tmp_path):
     assert wazuh["motor"] == "https://10.0.30.20:8443" and wazuh["ca"].endswith("responselab-ca.pem")
     assert wazuh["clientes"]["lab"] == {"token_ingesta": env["RL_LAB_TOKEN"],
                                         "token_agentes": env["RL_LAB_TOKEN_AGENTES"]}
+    # Los equipos llevan el token de evidencias, nunca el de agentes (que confirma acciones)
+    equipos = json.loads((gen / "wazuh" / "responselab.conf").read_text(encoding="utf-8"))
+    assert equipos["token_evidencias"] == env["RL_LAB_TOKEN_EVIDENCIAS"] and "token_agentes" not in equipos
+    assert equipos["motor"] == "https://10.0.30.20:8443" and equipos["cliente"] == "lab"
     for f in (gen / "splunk").iterdir():
         texto = f.read_text(encoding="utf-8")
         for marcador in ("https://MOTOR", "/v1/CLIENTE/", "TOKEN_DE_INGESTA"):
@@ -95,6 +100,29 @@ def test_preparar_otra_vez_no_cambia_los_tokens(tmp_path):
     assert all(despues[k] == antes[k] for k in antes if k.endswith(("TOKEN", "_AGENTES", "_EDL", "_APROBADOR"))
                or k == "RL_CLAVE_AUDITORIA")
     assert despues["RL_URL_PUBLICA"] == "https://motor.soc.lab:8443"
+
+
+@pytest.mark.skipif(not POSIX, reason="permisos POSIX")
+def test_preparar_nunca_deja_secretos_legibles(tmp_path, monkeypatch):
+    """Ni un instante: el .env y los ficheros generados nacen con 0600, y un .env
+    que ya existia con 0644 se corrige antes de escribir los tokens."""
+    r = raiz_falsa(tmp_path)
+    (r / ".env").write_text("RL_DOMINIO=viejo\n", encoding="utf-8")
+    os.chmod(r / ".env", 0o644)
+    vistos = []
+    real = os.fdopen
+
+    def fdopen(fd, *a, **k):
+        vistos.append(stat.S_IMODE(os.fstat(fd).st_mode))
+        return real(fd, *a, **k)
+
+    monkeypatch.setattr(preparar_servidor.os, "fdopen", fdopen)
+    preparar_servidor.preparar(argumentos(), r)
+    assert vistos and set(vistos) == {0o600}
+    assert stat.S_IMODE((r / ".env").stat().st_mode) == 0o600
+    for f in (r / "despliegue" / "generado").rglob("*"):
+        if f.is_file():
+            assert stat.S_IMODE(f.stat().st_mode) == 0o600, f
 
 
 def test_preparar_avisa_si_el_perfil_apunta_a_otras_ip(tmp_path):

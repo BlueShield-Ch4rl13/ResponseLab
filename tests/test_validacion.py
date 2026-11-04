@@ -228,6 +228,15 @@ def test_validar_perfil_rechaza_otros_secretos_en_claro(perfil_acme, ruta, valor
     assert any(ruta.rsplit(".", 1)[-1] in e and "en claro" in e for e in errores), errores
 
 
+def test_validar_perfil_comprueba_nunca_bloquear(perfil_lab):
+    perfil_lab["inventario"]["nunca_bloquear"] = ["203.0.113.10", "198.51.100.0/24", "midominio.es", "http://x.es"]
+    assert clientes.validar_perfil(perfil_lab) == [
+        "inventario.nunca_bloquear: 'http://x.es' no es una IP, una red (CIDR) ni un dominio"]
+    perfil_lab["inventario"]["nunca_bloquear"] = "midominio.es"
+    assert clientes.validar_perfil(perfil_lab) == [
+        "inventario.nunca_bloquear: debe ser una lista de IPs, redes o dominios"]
+
+
 def test_validar_perfil_rechaza_horas_de_ventana_sin_comillas():
     perfil = yaml.safe_load("id: planta\nventanas:\n  - {tipo: mantenimiento, dias: [do], desde: 06:00, hasta: 14:00}\n")
     assert perfil["ventanas"][0]["hasta"] == 840

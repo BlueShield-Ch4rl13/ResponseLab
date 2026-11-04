@@ -7,8 +7,11 @@ Autenticacion, por quien llama
   ``Authorization: Bearer <token>``, Basic con el token como contrasena (el
   conector Webhook de Kibana) o, para la accion webhook de Splunk que no
   admite cabeceras, ``?token=``. Solo sirve para enviar alertas de su cliente.
-* Agentes (acuses de active response, informes de FtriageDFIR y Malpipe):
-  token de agentes del cliente.
+* Manager de Wazuh (acuses de active response): token de agentes del cliente.
+  No se reparte a los equipos.
+* Equipos (informes completos de FtriageDFIR y Malpipe): token de evidencias,
+  que solo sirve para subir evidencias. Antes los equipos llevaban el de
+  agentes y uno comprometido podia confirmar acciones de otros.
 * Personas (aprobar, rechazar, deshacer, acciones a demanda, ver incidentes):
   token personal del aprobador, guardado como huella en el perfil.
 * Administracion (recargar catalogo, metricas, auditoria): RL_ADMIN_TOKEN.
@@ -24,7 +27,7 @@ from contextlib import asynccontextmanager
 from pathlib import Path
 
 from fastapi import Body, Depends, FastAPI, Header, HTTPException, Query, Request
-from fastapi.responses import HTMLResponse, JSONResponse, PlainTextResponse
+from fastapi.responses import HTMLResponse, JSONResponse, PlainTextResponse, Response
 
 from . import __version__
 from .clientes import iguales
@@ -33,6 +36,10 @@ from .ejecutor import AlertaRechazada, Motor
 
 log = logging.getLogger("responselab.api")
 PANEL = Path(__file__).resolve().parent / "panel.html"
+PANEL_JS = PANEL.with_name("panel.js")
+# El panel aprueba contenciones con el token del aprobador: sin scripts en linea.
+CSP_PANEL = ("default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; connect-src 'self'; "
+             "img-src 'self'; base-uri 'none'; form-action 'none'; frame-ancestors 'none'; object-src 'none'")
 
 
 class LimiteCuerpo:
@@ -124,6 +131,11 @@ def crear_app(config: Config | None = None, motor: Motor | None = None, arrancar
     def agente(cliente: str, request: Request, authorization: str | None = Header(None)):
         if not m(request).clientes.token_agente_valido(cliente, _token(authorization, None)):
             raise HTTPException(401, "token de agente no valido para este cliente")
+        return cliente
+
+    def evidencia(cliente: str, request: Request, authorization: str | None = Header(None)):
+        if not m(request).clientes.token_evidencias_valido(cliente, _token(authorization, None)):
+            raise HTTPException(401, "token de evidencias no valido para este cliente")
         return cliente
 
     def persona(cliente: str, request: Request, authorization: str | None = Header(None)):
@@ -292,12 +304,12 @@ def crear_app(config: Config | None = None, motor: Motor | None = None, arrancar
             _err(e)
 
     @app.post("/v1/{cliente}/evidencias/ftriage")
-    async def evidencia_ftriage(cliente: str, request: Request, informe: dict = Body(...), _=Depends(agente)):
+    async def evidencia_ftriage(cliente: str, request: Request, informe: dict = Body(...), _=Depends(evidencia)):
         return m(request).ingerir_ftriage(cliente, informe)
 
     @app.post("/v1/{cliente}/evidencias/malpipe")
     async def evidencia_malpipe(cliente: str, request: Request, informe: dict = Body(...),
-                                incidente: str = Query(""), _=Depends(agente)):
+                                incidente: str = Query(""), _=Depends(evidencia)):
         return m(request).ingerir_malpipe(cliente, informe, incidente)
 
     # ── EDL para el perimetro ──
@@ -358,9 +370,13 @@ def crear_app(config: Config | None = None, motor: Motor | None = None, arrancar
     @app.get("/panel", response_class=HTMLResponse)
     async def panel():
         return HTMLResponse(PANEL.read_text(encoding="utf-8"),
-                            headers={"Content-Security-Policy": "default-src 'self'; style-src 'unsafe-inline'; "
-                                     "script-src 'unsafe-inline'; connect-src 'self'; frame-ancestors 'none'",
+                            headers={"Content-Security-Policy": CSP_PANEL,
                                      "X-Content-Type-Options": "nosniff", "Referrer-Policy": "no-referrer"})
+
+    @app.get("/panel.js")
+    async def panel_js():
+        return Response(PANEL_JS.read_text(encoding="utf-8"), media_type="text/javascript",
+                        headers={"X-Content-Type-Options": "nosniff", "Cache-Control": "no-cache"})
 
     @app.exception_handler(HTTPException)
     async def errores(request: Request, exc: HTTPException):

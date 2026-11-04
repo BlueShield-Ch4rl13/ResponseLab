@@ -120,6 +120,12 @@ class Defender(_Microsoft):
         return Resultado("ok", "paquete de investigacion solicitado", {"maquina": mid, "accion_mde": r.json().get("id")})
 
     async def _indicador(self, http, valor, tipo, accion, contexto) -> Resultado:
+        clase = {"IpAddress": "ip", "DomainName": "dominio", "Url": "url"}.get(tipo)
+        if clase:
+            from ..nucleo import motivo_nunca_bloquear
+            motivo = motivo_nunca_bloquear(self.cliente, clase, valor)
+            if motivo:
+                raise NoSoportada(motivo + ": no se bloquea")
         cab = await self._cab(http)
         horas = int((self.cliente.get("politica") or {}).get("bloqueo_perimetro_horas", 72))
         caduca = (datetime.now(timezone.utc) + timedelta(hours=horas)).strftime("%Y-%m-%dT%H:%M:%SZ")

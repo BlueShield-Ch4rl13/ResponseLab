@@ -37,9 +37,25 @@ Write-Host ("{0} ficheros copiados a {1}" -f $ficheros.Count, $bin)
 
 $estado = Join-Path $env:ProgramData 'ResponseLab'
 foreach ($carpeta in @($estado)) {
-    if (-not (Test-Path -LiteralPath $carpeta)) { New-Item -ItemType Directory -Path $carpeta -Force | Out-Null }
-    if ($PSCmdlet.ShouldProcess($carpeta, 'permisos solo SYSTEM y Administradores')) {
+    if (Test-Path -LiteralPath $carpeta) {
+        # Cualquier usuario puede crear carpetas en ProgramData. Si esta ya existia
+        # y no la creo un administrador, o es un enlace, no se reutiliza: quien la
+        # creo seria su propietario y podria preparar dentro donde escribe SYSTEM.
+        $item = Get-Item -LiteralPath $carpeta -Force
+        if ($item.Attributes -band [IO.FileAttributes]::ReparsePoint) { throw "$carpeta es un enlace o una union: borrala y vuelve a ejecutar" }
+        $sid = (Get-Acl -LiteralPath $carpeta).GetOwner([Security.Principal.SecurityIdentifier]).Value
+        $admins = @('S-1-5-18', 'S-1-5-32-544')
+        try { $admins += @(Get-LocalGroupMember -SID 'S-1-5-32-544' -ErrorAction Stop | ForEach-Object { $_.SID.Value }) } catch { }
+        if ($admins -notcontains $sid) {
+            throw "$carpeta ya existe y es de $sid, que no es administrador: revisa su contenido, borrala y vuelve a ejecutar"
+        }
+    } else {
+        New-Item -ItemType Directory -Path $carpeta -Force | Out-Null
+    }
+    if ($PSCmdlet.ShouldProcess($carpeta, 'propietario SYSTEM y permisos solo SYSTEM y Administradores')) {
+        & icacls.exe $carpeta /setowner '*S-1-5-18' /T /C | Out-Null
         & icacls.exe $carpeta /inheritance:r /grant:r '*S-1-5-18:(OI)(CI)F' '*S-1-5-32-544:(OI)(CI)F' | Out-Null
+        if ($LASTEXITCODE -ne 0) { throw "icacls no pudo proteger $carpeta" }
     }
 }
 foreach ($f in Get-ChildItem -LiteralPath $bin -Filter 'responselab*') {

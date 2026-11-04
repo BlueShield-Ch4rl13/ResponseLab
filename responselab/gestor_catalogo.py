@@ -21,6 +21,11 @@ con su firma (<url>.firma: HMAC-SHA256 del fichero en hexadecimal) hecha con
 esa clave. La clave la tiene la persona que revisa y publica el catalogo
 (tools/firmar_catalogo.py), no el bot de GitHub: un catalogo que nadie ha
 revisado, o un repositorio comprometido, no llega a produccion.
+
+Sin RL_CATALOGO_CLAVE no se acepta ningun catalogo remoto, salvo que se pida a
+sabiendas con RL_CATALOGO_SIN_FIRMA=1 (laboratorio). Antes se aceptaba: quien
+pudiera escribir en la rama main del repositorio cambiaba la politica del motor
+en menos de 30 minutos.
 """
 from __future__ import annotations
 
@@ -107,6 +112,11 @@ class GestorCatalogo:
     async def actualizar_remoto(self, transporte=None) -> dict:
         if not self.url:
             return {"estado": "desactivado"}
+        if not self.clave_firma and os.environ.get("RL_CATALOGO_SIN_FIRMA") != "1":
+            self.ultimo_error = ("catalogo remoto rechazado: falta RL_CATALOGO_CLAVE para comprobar su firma "
+                                 "(RL_CATALOGO_SIN_FIRMA=1 lo acepta sin firma, solo en laboratorio)")
+            log.error(self.ultimo_error)
+            return {"estado": "rechazado", "errores": ["sin clave de firma"]}
         cab = {"If-None-Match": self.etag} if self.etag else {}
         try:
             async with httpx.AsyncClient(timeout=60, transport=transporte) as c:

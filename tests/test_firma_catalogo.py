@@ -55,3 +55,38 @@ async def test_firma_correcta_se_acepta(tmp_path, raiz):
     buena = hmac.new(b"clave-de-quien-revisa", cuerpo, hashlib.sha256).hexdigest()
     r = await g.actualizar_remoto(_transporte(cuerpo, buena))
     assert r["estado"] == "actualizado" and g.actual.version == "9999.0.0-prueba"
+
+
+async def test_sin_clave_no_se_acepta_ningun_catalogo_remoto(tmp_path, raiz, monkeypatch):
+    """Antes, sin RL_CATALOGO_CLAVE se aceptaba cualquier catalogo de la URL: quien
+    escribiera en main cambiaba la politica del motor. Ahora hay que pedirlo a sabiendas."""
+    monkeypatch.delenv("RL_CATALOGO_SIN_FIRMA", raising=False)
+    g, cuerpo = _gestor(tmp_path, raiz, "")
+    anterior = g.actual.version
+    r = await g.actualizar_remoto(_transporte(cuerpo, None))
+    assert r["estado"] == "rechazado" and "RL_CATALOGO_CLAVE" in g.ultimo_error and g.actual.version == anterior
+    monkeypatch.setenv("RL_CATALOGO_SIN_FIRMA", "1")
+    r = await g.actualizar_remoto(_transporte(cuerpo, None))
+    assert r["estado"] == "actualizado" and g.actual.version == "9999.0.0-prueba"
+
+
+async def test_un_catalogo_no_puede_rebajar_el_radio_de_una_accion(tmp_path, raiz, monkeypatch):
+    """El radio y la reversibilidad que fija el codigo mandan: un catalogo que diga que
+    bloquear en el WAF es de radio equipo (y por tanto automatico) se rechaza."""
+    monkeypatch.setenv("RL_CATALOGO_SIN_FIRMA", "1")
+    local = raiz / "catalogo" / "catalogo.json"
+    g = GestorCatalogo(local, tmp_path, URL, clave_firma="")
+    g.cargar()
+    datos = json.loads(local.read_text(encoding="utf-8"))
+    datos["version"] = "9999.0.1-trampa"
+    datos["acciones"]["waf.bloquear_origen"]["radio"] = "equipo"
+    r = await g.actualizar_remoto(_transporte(json.dumps(datos).encode("utf-8"), None))
+    assert r["estado"] != "actualizado" and g.actual.version != "9999.0.1-trampa"
+    assert any("waf.bloquear_origen" in e and "MINIMOS_ACCION" in e for e in r.get("errores", []))
+
+
+def test_el_radio_minimo_se_aplica_aunque_el_catalogo_mienta():
+    from responselab import nucleo
+    assert nucleo.radio_efectivo("equipo", nucleo.minimos_de("waf.bloquear_origen")[0]) == "organizacion"
+    assert nucleo.reversible_efectivo("si", nucleo.minimos_de("cuenta.deshabilitar")[1]) == "si"
+    assert nucleo.minimos_de("accion.inexistente") == (None, None)
