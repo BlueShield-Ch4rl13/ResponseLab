@@ -833,7 +833,7 @@ def _triage_en_segundo_plano(argumentos: str):
                  "sha256_manifiesto": sha256(salida / "manifest.json") if (salida / "manifest.json").is_file() else "",
                  "informe_ftriage": resumen_ftriage(informe)}
         conf = configuracion()
-        if conf.get("motor") and conf.get("token_agentes") and conf.get("cliente"):
+        if conf.get("motor") and _token_evidencias(conf) and conf.get("cliente"):
             try:
                 _subir(conf, "/v1/%s/evidencias/ftriage" % conf["cliente"], informe)
                 datos["subido"] = True
@@ -847,12 +847,19 @@ def _triage_en_segundo_plano(argumentos: str):
         acuse("triage", "fallida", "el triage no termino: %s" % e, a.get("ejecucion_id", ""), {"salida": str(salida)})
 
 
+def _token_evidencias(conf: dict) -> str:
+    """El token que sube informes. Antes era token_agentes, que tambien confirma
+    acciones y no deberia estar en los equipos: se acepta aun (configuraciones
+    viejas), pero token_evidencias va primero."""
+    return str(conf.get("token_evidencias") or conf.get("token_agentes") or "")
+
+
 def _subir(conf: dict, ruta: str, cuerpo: dict):
     import ssl
     contexto = ssl.create_default_context(cafile=conf.get("ca") or None)
     peticion = urllib.request.Request(conf["motor"].rstrip("/") + ruta, method="POST",
                                       data=json.dumps(cuerpo).encode("utf-8"),
-                                      headers={"Authorization": "Bearer " + conf["token_agentes"],
+                                      headers={"Authorization": "Bearer " + _token_evidencias(conf),
                                                "Content-Type": "application/json"})
     with urllib.request.urlopen(peticion, context=contexto, timeout=60) as r:
         if r.status >= 300:

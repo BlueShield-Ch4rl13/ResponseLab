@@ -138,6 +138,13 @@ async def test_panel_con_cabeceras_de_seguridad(api):
     assert "frame-ancestors 'none'" in r.headers["content-security-policy"]
     assert r.headers["x-content-type-options"] == "nosniff"
     assert r.headers["referrer-policy"] == "no-referrer"
+    # Sin scripts en linea: el panel aprueba contenciones con el token del aprobador
+    script_src = r.headers["content-security-policy"].split("script-src", 1)[1].split(";", 1)[0]
+    assert "'self'" in script_src and "unsafe-inline" not in script_src
+    assert '<script src="/panel.js"></script>' in r.text and "<script>" not in r.text
+    js = await api.get("/panel.js")
+    assert js.status_code == 200 and js.headers["content-type"].startswith("text/javascript")
+    assert "const esc = " in js.text
 
 
 # ====================================================================
@@ -505,8 +512,21 @@ async def test_acuses_y_deshacer_por_la_api(api, motor):
 
     assert (await api.post("/v1/lab/acuses", headers=APR, json={"ejecucion_id": aislar["id"], "estado": "ok"})
             ).status_code == 401
+    # Sin decir de que agente viene, el acuse de una orden entregada a un agente no vale:
+    # antes bastaba con no mandar agente_id para confirmar la orden de otro equipo
+    agente = (aislar.get("datos_deshacer") or {}).get("agente")
+    assert agente, "la orden simulada de aislar se entrega a un agente de Wazuh"
+    anonimo = await api.post("/v1/lab/acuses", headers=AGE, json={"ejecucion_id": aislar["id"], "estado": "ok"})
+    assert anonimo.status_code == 409 and "no dice de que agente" in anonimo.json()["error"]
+    otro = await api.post("/v1/lab/acuses", headers=AGE,
+                          json={"ejecucion_id": aislar["id"], "estado": "ok", "detalle": {"agente_id": "999"}})
+    assert otro.status_code == 409
+    # Y el token de evidencias (el de los equipos) no confirma nada
+    assert (await api.post("/v1/lab/acuses", headers={"Authorization": "Bearer token-evidencias-lab"},
+                           json={"ejecucion_id": aislar["id"], "estado": "ok",
+                                 "detalle": {"agente_id": agente}})).status_code == 401
     r = await api.post("/v1/lab/acuses", headers=basic("agente", "token-agentes-lab"),
-                       json={"ejecucion_id": aislar["id"], "estado": "ok", "detalle": {"reglas": 2}})
+                       json={"ejecucion_id": aislar["id"], "estado": "ok", "detalle": {"reglas": 2, "agente_id": agente}})
     assert r.status_code == 200 and r.json() == {"ejecucion": aislar["id"], "estado": "confirmada"}
     desconocida = await api.post("/v1/lab/acuses", headers=AGE, json={"ejecucion_id": "ej-no", "estado": "ok"})
     assert desconocida.status_code == 409
@@ -528,6 +548,18 @@ async def test_evidencias_de_ftriage_y_malpipe_con_token_de_agente(api, motor):
     assert r.status_code == 200 and r.json()["sha256"] == "cd" * 32
     assert any(a["paso"]["accion"] == "flota.bloquear_hash" for a in motor.almacen.aprobaciones("lab"))
     assert (await api.post("/v1/lab/evidencias/ftriage", headers=APR, json=informe)).status_code == 401
+
+
+async def test_los_equipos_suben_evidencias_con_su_token_y_nada_mas(api, motor):
+    """El token de evidencias va en todos los equipos: sube informes y no sirve para nada mas."""
+    await enviar(api, motor, "lab", "wazuh", alerta_local(equipo="PC-0042"))
+    EVI = {"Authorization": "Bearer token-evidencias-lab"}
+    informe = {"host": {"hostname": "PC-0042"}, "assessment": {"verdict": "Sospechoso", "risk_score": 55}}
+    assert (await api.post("/v1/lab/evidencias/ftriage", headers=EVI, json=informe)).status_code == 200
+    assert (await api.post("/v1/lab/acuses", headers=EVI, json={"ejecucion_id": "x", "estado": "ok"})).status_code == 401
+    assert (await api.get("/v1/lab/incidentes", headers=EVI)).status_code == 401
+    assert (await api.post("/v1/lab/alertas/wazuh", headers=EVI, json=alerta_local())).status_code == 401
+    assert (await api.get("/v1/lab/edl/ip", headers=EVI)).status_code == 401
 
 
 async def test_accion_a_demanda_por_la_api(api, acme_con_tokens):

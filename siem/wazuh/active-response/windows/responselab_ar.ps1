@@ -110,10 +110,13 @@ function Orden([string] $Descripcion, [scriptblock] $Bloque) {
     if (-not $Simulacion) { $null = & $Bloque }
 }
 
+$script:EstadoProtegido = $false
 function Guardar([string] $Nombre, $Datos) {
-    if (-not (Test-Path -LiteralPath $Estado)) {
-        New-Item -ItemType Directory -Path $Estado -Force | Out-Null
+    if (-not (Test-Path -LiteralPath $Estado)) { New-Item -ItemType Directory -Path $Estado -Force | Out-Null }
+    if (-not $script:EstadoProtegido) {
+        # Tambien si ya existia: puede haberla creado otro usuario antes que el agente
         Proteger-Carpeta $Estado
+        $script:EstadoProtegido = $true
     }
     Set-Content -LiteralPath (Join-Path $Estado $Nombre) -Value (ConvertTo-Json -InputObject $Datos -Depth 6) -Encoding UTF8
 }
@@ -124,10 +127,33 @@ function Leer-Estado([string] $Nombre) {
     try { return (Get-Content -LiteralPath $ruta -Raw | ConvertFrom-Json) } catch { return $null }
 }
 
+function Propietario-Confiable([string] $Ruta) {
+    # SYSTEM, el grupo Administradores o un miembro de ese grupo
+    $sid = (Get-Acl -LiteralPath $Ruta).GetOwner([Security.Principal.SecurityIdentifier]).Value
+    if ($sid -in @('S-1-5-18', 'S-1-5-32-544')) { return $true }
+    try {
+        $admins = @(Get-LocalGroupMember -SID 'S-1-5-32-544' -ErrorAction Stop | ForEach-Object { $_.SID.Value })
+        return ($admins -contains $sid)
+    } catch { return $false }
+}
+
 function Proteger-Carpeta([string] $Ruta) {
-    # Solo SYSTEM y Administradores: la custodia no la lee un usuario del equipo
+    # Solo SYSTEM y Administradores: la custodia no la lee un usuario del equipo.
+    # En ProgramData cualquier usuario puede crear la carpeta antes que el agente:
+    # quedaria de propietario (y el propietario puede volver a abrir los permisos)
+    # y podria dejar dentro enlaces para que SYSTEM escriba donde el quiera. Una
+    # carpeta asi, o una union/enlace en su lugar, no se usa: se para y se avisa.
     if ($Simulacion) { return }
+    $item = Get-Item -LiteralPath $Ruta -Force
+    if ($item.Attributes -band [IO.FileAttributes]::ReparsePoint) {
+        throw "$Ruta es un enlace o una union: no se usa. Borrala y vuelve a ejecutar instalar-agente-windows.ps1"
+    }
+    if (-not (Propietario-Confiable $Ruta)) {
+        throw "$Ruta no es de SYSTEM ni de Administradores: la creo otro usuario. Revisala, borrala y vuelve a ejecutar instalar-agente-windows.ps1"
+    }
+    & icacls.exe $Ruta /setowner '*S-1-5-18' | Out-Null
     & icacls.exe $Ruta /inheritance:r /grant:r '*S-1-5-18:(OI)(CI)F' '*S-1-5-32-544:(OI)(CI)F' | Out-Null
+    if ($LASTEXITCODE -ne 0) { throw "icacls no pudo proteger $Ruta" }
 }
 
 function Hash-Fichero([string] $Ruta, [string] $Algoritmo = 'SHA256') {
@@ -314,6 +340,11 @@ function Cuarentena($P) {
     $sha = Fichero-Objetivo $ruta (Texto (Leer-Campo $P 'sha256'))
     $item = Get-Item -LiteralPath $ruta
     $destino = Carpeta-Custodia $sha $ruta
+    if (-not $Simulacion -and -not $script:EstadoProtegido) {
+        if (-not (Test-Path -LiteralPath $Estado)) { New-Item -ItemType Directory -Path $Estado -Force | Out-Null }
+        Proteger-Carpeta $Estado
+        $script:EstadoProtegido = $true
+    }
     New-Item -ItemType Directory -Path $destino -Force | Out-Null
     Proteger-Carpeta $Custodia
     $sddl = ''
@@ -639,7 +670,7 @@ function Triage-EnSegundoPlano([string] $Codificado) {
         $informe = Get-Content -LiteralPath $informeRuta -Raw | ConvertFrom-Json
         $datos = @{ salida = $a.salida; sha256_informe = (Hash-Fichero $informeRuta); informe_ftriage = (Resumen-Ftriage $informe) }
         $conf = Configuracion
-        $motor = Texto (Leer-Campo $conf 'motor'); $token = Texto (Leer-Campo $conf 'token_agentes'); $cliente = Texto (Leer-Campo $conf 'cliente')
+        $motor = Texto (Leer-Campo $conf 'motor'); $token = Texto (Leer-Campo $conf 'token_evidencias'); if (-not $token) { $token = Texto (Leer-Campo $conf 'token_agentes') }; $cliente = Texto (Leer-Campo $conf 'cliente')
         if ($motor -and $token -and $cliente) {
             try {
                 [Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tls12

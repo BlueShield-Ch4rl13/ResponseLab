@@ -10,7 +10,8 @@ Cada token sirve para una función y un cliente:
 | Función | Token | Cómo se envía | Rutas |
 |---|---|---|---|
 | Ingesta | `autenticacion.token_sha256` del cliente | `Authorization: Bearer`, básica (token como contraseña) o `?token=` | `alertas`, `decidir` |
-| Agentes | `autenticacion.agentes` | `Authorization: Bearer` | `acuses`, `evidencias/*` |
+| Agentes | `autenticacion.agentes` | `Authorization: Bearer` | `acuses` (lo usa el manager de Wazuh), `evidencias/*` |
+| Evidencias | `autenticacion.evidencias` | `Authorization: Bearer` | Solo `evidencias/*`. Es el token que va a los equipos (`responselab.conf`): con él no se puede confirmar ni negar ninguna acción |
 | Listas EDL | `autenticacion.edl` | `Authorization`, básica o `?token=` | `edl/*` |
 | Aprobador | `aprobadores[].token_sha256` | `Authorization: Bearer` | Incidentes, aprobaciones, ejecuciones, acciones, auditoría |
 | Administración | `RL_ADMIN_TOKEN` | `Authorization: Bearer` | `/metricas`, `/v1/admin/*`; también vale como aprobador de cualquier cliente |
@@ -83,8 +84,9 @@ cortafuegos. Las entradas caducan solas según `politica.bloqueo_perimetro_horas
 
 ## Panel
 
-`GET /panel` es una página sin dependencias externas. Con el cliente y un token de
-aprobador muestra:
+`GET /panel` es una página sin dependencias externas (su código está en
+`GET /panel.js`, con una CSP que no admite scripts en línea). Con el cliente y un
+token de aprobador muestra:
 - los incidentes y sus alertas;
 - lo que se ejecutó o se habría ejecutado;
 - las aprobaciones pendientes, con botones para aprobar, rechazar y deshacer.

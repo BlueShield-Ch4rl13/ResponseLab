@@ -108,8 +108,14 @@ pierde el contacto. Añade a `permitidos` (en el perfil del cliente,
 
 **Triage.** Con `responselab.conf` repartido por la configuración centralizada
 (`/var/ossec/etc/shared/<grupo>/responselab.conf`), el agente sabe dónde está
-FtriageDFIR y puede subir el informe completo al motor con el token de agentes. Sin
-él, el resumen vuelve en el acuse.
+FtriageDFIR y puede subir el informe completo al motor con el token de
+**evidencias** (`token_evidencias`). Ese token solo sube informes: el de agentes, que
+confirma acciones, se queda en el manager. `preparar_servidor.py` deja el fichero ya
+relleno en `despliegue/generado/wazuh/responselab.conf`. Sin él, el resumen vuelve en
+el acuse.
+
+Un acuse tiene que decir de qué agente viene (`agente_id`), y tiene que ser el mismo
+al que se mandó la orden: un acuse anónimo o de otro equipo no cierra la acción.
 
 ---
 

@@ -324,6 +324,15 @@ async def test_defender_bloquear_destino_no_usa_ips_privadas():
     assert (indicador["indicatorType"], indicador["indicatorValue"]) == ("DomainName", "malo.example")
 
 
+@pytest.mark.parametrize("objetivo", [{"red.ip_destino": "149.112.112.112"}, {"red.dominio": "mx.proveedor-correo.example"},
+                                      {"red.url": "https://proveedor-correo.example/owa"}])
+async def test_defender_no_crea_indicadores_contra_lo_intocable(objetivo):
+    red = Red(lambda r: token_oauth(r) or httpx.Response(200, json={"id": "ind-1"}))
+    r = await ejecutar(construir("defender", CFG_MS, red=red, **NUNCA), "perimetro.bloquear_destino", objetivo, alerta={})
+    assert r.estado == "omitida" and "nunca_bloquear" in r.detalle
+    assert not [p for p in red.peticiones if p.url.path == "/api/indicators"]
+
+
 # ====================================================================
 # Entra ID y Exchange Online
 # ====================================================================
@@ -431,6 +440,28 @@ async def test_el_perimetro_no_bloquea_ips_internas(nombre, cfg, accion, campo, 
     assert r.estado == "omitida"
     assert "interna" in r.detalle
     assert red.peticiones == []
+
+
+NUNCA = {"inventario": {"nunca_bloquear": ["149.112.112.112", "185.199.108.0/22", "proveedor-correo.example"]}}
+
+
+@pytest.mark.parametrize("ip", ["149.112.112.112", "185.199.110.153"])
+@pytest.mark.parametrize("nombre, cfg, accion, campo", PERIMETRALES, ids=[f"{p[0]}-{p[2]}" for p in PERIMETRALES])
+async def test_el_perimetro_no_bloquea_lo_que_el_cliente_marca_como_intocable(nombre, cfg, accion, campo, ip):
+    red = Red(lambda r: httpx.Response(200, text='<response status="success"/>'))
+    r = await ejecutar(construir(nombre, cfg, red=red, **NUNCA), accion, {campo: ip}, alerta={})
+    assert r.estado == "omitida"
+    assert "nunca_bloquear" in r.detalle
+    assert red.peticiones == []
+
+
+async def test_desbloquear_lo_intocable_si_se_puede():
+    """Si alguien lo bloqueo a mano antes de anadirlo a la lista, deshacer tiene que seguir funcionando."""
+    red = Red(lambda r: httpx.Response(200, text='<response status="success"/>'))
+    con = construir("paloalto", {"url": "https://fw.test", "api_key_env": "RLT_TOKEN"}, red=red, **NUNCA)
+    r = await ejecutar(con, "perimetro.desbloquear_destino", {"red.ip_destino": "149.112.112.112"},
+                       datos_deshacer={"ip": "149.112.112.112", "etiqueta": "responselab-bloqueo"})
+    assert r.estado == "ok" and len(red.peticiones) == 1
 
 
 async def test_paloalto_etiqueta_la_ip_publica_con_caducidad_y_sin_guardar_la_clave():
@@ -551,6 +582,28 @@ async def test_edl_rechaza_lo_que_no_debe_bloquear(motor_falso, objetivo, motivo
     r = await ejecutar(construir("edl", motor=motor_falso), "perimetro.bloquear_destino", objetivo, alerta={})
     assert r.estado == "omitida" and motivo in r.detalle
     assert motor_falso.almacen.edl("prueba", "ip") == [] and motor_falso.almacen.edl("prueba", "dominio") == []
+
+
+@pytest.mark.parametrize("objetivo", [
+    {"red.ip_destino": "149.112.112.112"},
+    {"red.dominio": "smtp.proveedor-correo.example"},
+    {"red.url": "https://proveedor-correo.example/login"},
+    {"red.ip_destino": "8.8.8.8", "red.dominio": "proveedor-correo.example"},
+])
+async def test_edl_no_bloquea_lo_que_el_cliente_marca_como_intocable(motor_falso, objetivo):
+    r = await ejecutar(construir("edl", motor=motor_falso, **NUNCA), "perimetro.bloquear_destino", objetivo, alerta={})
+    assert r.estado == "omitida" and "nunca_bloquear" in r.detalle
+    al = motor_falso.almacen
+    assert al.edl("prueba", "ip") == [] and al.edl("prueba", "dominio") == [] and al.edl("prueba", "url") == []
+
+
+def test_nunca_bloquear_no_confunde_dominios_parecidos():
+    from responselab.nucleo import motivo_nunca_bloquear
+    assert motivo_nunca_bloquear(NUNCA, "dominio", "proveedor-correo.example.malo.test") == ""
+    assert motivo_nunca_bloquear(NUNCA, "dominio", "otroproveedor-correo.example") == ""
+    assert motivo_nunca_bloquear(NUNCA, "ip", "185.199.112.1") == ""
+    assert motivo_nunca_bloquear({}, "ip", "149.112.112.112") == ""
+    assert motivo_nunca_bloquear(NUNCA, "dominio", "Proveedor-Correo.Example")
 
 
 async def test_interno_nota_y_marca_de_inventario(motor_falso):

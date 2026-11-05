@@ -102,16 +102,20 @@ simulación en el acto.
 
 **Multi-cliente de verdad.** Hay un perfil YAML por cliente, sin secretos: solo
 nombres de variables de entorno y huellas SHA-256 de los tokens. Hay tokens
-distintos para ingerir alertas, para los agentes, para las listas EDL de los
-cortafuegos y para cada aprobador. El token de un cliente nunca sirve para otro.
+distintos para ingerir alertas, para los agentes, para que los equipos suban
+evidencias, para las listas EDL de los cortafuegos y para cada aprobador. El token
+de un cliente nunca sirve para otro. Lo que el cliente marca en
+`inventario.nunca_bloquear` (su IP pública, sus dominios, los DNS) no se bloquea
+en el perímetro ni con aprobación.
 
 **El ecosistema se sincroniza solo, pero no a ciegas.** Copiar en vez de leer en
 caliente hace que cada cambio aguas arriba llegue como un diff revisable: el bot
 abre un pull request (`sincronizacion/auto`), no empuja a `main`. Si
 DetectionLab cambia una acción de contención y deja de estar mapeada a algo
-ejecutable, el CI se pone en rojo antes de que la vea un motor. Con
-`RL_CATALOGO_CLAVE`, los motores solo aceptan un catálogo firmado por quien lo
-revisó (`tools/firmar_catalogo.py`).
+ejecutable, el CI se pone en rojo antes de que la vea un motor. Los motores solo
+aceptan un catálogo remoto firmado con `RL_CATALOGO_CLAVE` por quien lo revisó
+(`tools/firmar_catalogo.py`), y ni siquiera uno firmado puede rebajar el radio de
+una acción por debajo de lo fijado en el código.
 
 ---
 
@@ -324,6 +328,7 @@ Lo que se ejecuta en cada cambio (`.github/workflows/ci.yml`):
 | Catálogo y contratos | `tools/validar.py` |
 | Diez ataques de extremo a extremo | `tools/simular.py` contra el motor en simulación |
 | Estilo | `ruff` |
+| Seguridad del código | **CodeQL** (`.github/workflows/codeql.yml`): Python, el JavaScript del panel y los workflows, en cada PR y una vez por semana |
 | Despliegue de servidor | Job *Despliegue de servidor*: `preparar_servidor.py`, los tres contenedores de verdad (motor, Caddy con su CA y copias), `comprobar_despliegue.py` por HTTPS con los escenarios, una copia, su restauración y otra comprobación. Y que el Caddy con el módulo de Cloudflare compila |
 
 Lo que **no** cubre el CI: agentes de Wazuh reales, ni los SOAR y EDR de verdad

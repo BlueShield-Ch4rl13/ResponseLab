@@ -17,6 +17,7 @@ from __future__ import annotations
 
 import hashlib
 import hmac
+import ipaddress
 import logging
 import os
 import re
@@ -81,6 +82,18 @@ def _regex_invalida(patron) -> str:
         return str(e)
 
 
+RE_DOMINIO = re.compile(r"^\.?(?=.{1,253}$)([a-z0-9](?:[a-z0-9-]{0,61}[a-z0-9])?\.)+[a-z][a-z0-9-]{0,62}$")
+
+
+def _ip_red_o_dominio(valor) -> bool:
+    v = str(valor).strip().lower()
+    try:
+        ipaddress.ip_network(v, strict=False)
+        return True
+    except ValueError:
+        return bool(RE_DOMINIO.match(v))
+
+
 def validar_perfil(p: dict) -> list[str]:
     errores = []
     if not p.get("id"):
@@ -92,6 +105,13 @@ def validar_perfil(p: dict) -> list[str]:
     patrones = [("inventario.protegidos", x) for x in inv.get("protegidos") or []]
     patrones += [("inventario.activos.patron", a.get("patron")) for a in inv.get("activos") or []
                  if isinstance(a, dict) and a.get("patron")]
+    nunca = inv.get("nunca_bloquear") or []
+    if not isinstance(nunca, list):
+        errores.append("inventario.nunca_bloquear: debe ser una lista de IPs, redes o dominios")
+        nunca = []
+    for x in nunca:
+        if not _ip_red_o_dominio(x):
+            errores.append(f"inventario.nunca_bloquear: {x!r} no es una IP, una red (CIDR) ni un dominio")
     for i, v in enumerate(p.get("ventanas") or []):
         if not isinstance(v, dict):
             errores.append(f"ventanas[{i}]: debe ser un diccionario")
@@ -203,6 +223,19 @@ class Clientes:
         # podria confirmar acciones o inyectar informes de triage.
         agentes = (p.get("autenticacion") or {}).get("agentes") or {}
         return self._casa_token(token, agentes)
+
+    def token_evidencias_valido(self, cliente_id: str, token: str) -> bool:
+        """Informes completos de FtriageDFIR y Malpipe subidos desde los equipos.
+
+        Va en cada equipo (responselab.conf repartido por Wazuh), así que solo sirve
+        para subir evidencias: no confirma ni da por fallida ninguna acción. El de
+        agentes (lo tiene el manager de Wazuh) también vale, para no romper
+        integraciones que ya suben con él."""
+        p = self.get(cliente_id)
+        if not p:
+            return False
+        aut = p.get("autenticacion") or {}
+        return self._casa_token(token, aut.get("evidencias") or {}) or self._casa_token(token, aut.get("agentes") or {})
 
     def token_edl_valido(self, cliente_id: str, token: str) -> bool:
         p = self.get(cliente_id)

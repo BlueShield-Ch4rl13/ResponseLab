@@ -23,7 +23,9 @@ marcos: [rgpd]
 autenticacion:
   token_sha256: ""                # token de ingesta (SIEM -> motor)
   agentes:
-    token_sha256: ""              # token de los agentes (acuses, informes de triage)
+    token_sha256: ""              # token del manager de Wazuh (acuses de active response); no va a los equipos
+  evidencias:
+    token_sha256: ""              # token de los equipos: solo sube informes de FtriageDFIR y Malpipe
   edl:
     token_sha256: ""              # token de lectura de las listas EDL (cortafuegos)
 
@@ -85,6 +87,11 @@ inventario:
   # significa "no tiene esa etiqueta". Con false, no aparecer es "no se sabe".
   completo: false
   protegidos: []                  # patrones de nombre sobre los que nada es automatico
+  # IPs, redes (CIDR) o dominios (con sus subdominios) que NUNCA se bloquean en
+  # el perimetro ni en la EDL, ni con aprobacion: tu IP publica, tus dominios,
+  # los DNS, el proveedor de correo y el de identidad. Una alerta con una IP
+  # falsificada no puede acabar cortando lo tuyo.
+  nunca_bloquear: []              # p. ej. [203.0.113.10, 198.51.100.0/24, midominio.es, login.microsoftonline.com]
   activos:
     - {nombre: DC01, etiquetas: [controlador_dominio, servidor_produccion]}
     - {patron: "^SRV-PRD-", etiquetas: [servidor_produccion]}

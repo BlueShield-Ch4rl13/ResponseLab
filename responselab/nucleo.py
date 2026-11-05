@@ -27,6 +27,7 @@ from __future__ import annotations
 
 import hashlib
 import ipaddress
+from urllib.parse import urlsplit
 import json
 import re
 import unicodedata
@@ -52,6 +53,75 @@ SEVERIDAD_POR_NIVEL = {"informational": 1, "low": 1, "medium": 2, "high": 3, "cr
 ORDEN_RADIO = ["proceso", "objeto", "sesion", "equipo", "cuenta", "organizacion"]
 # Lo que afecta a gente que no es el atacante no lo decide una maquina.
 RADIOS_AMPLIOS = ("cuenta", "organizacion")
+
+# Radio y reversibilidad de cada accion conocida, fijados en el codigo. El
+# catalogo (que se puede actualizar en caliente desde el repositorio) puede
+# hacerlos MAS estrictos, nunca menos: si dijera que waf.bloquear_origen es de
+# radio "equipo", o que un borrado es reversible, la volveria automatica. Las
+# invariantes miran la etiqueta; esto impide que una etiqueta mentirosa pase.
+# Una accion nueva que no este aqui usa lo que diga el catalogo (la validacion
+# lo avisa). Valores tomados del catalogo 2026-10-29.
+MINIMOS_ACCION = {
+    "aplicacion.invalidar_sesion": ("objeto", "si"),
+    "caso.nota": ("objeto", "si"),
+    "caso.tarea_desviacion": ("objeto", "si"),
+    "caso.tarea_obligacion": ("objeto", "si"),
+    "correo.bloquear_remitente": ("organizacion", "si"),
+    "correo.bloquear_url": ("organizacion", "si"),
+    "correo.desbloquear_remitente": ("organizacion", "si"),
+    "correo.desbloquear_url": ("organizacion", "si"),
+    "correo.deshabilitar_regla": ("objeto", "si"),
+    "correo.habilitar_regla": ("objeto", "si"),
+    "correo.restaurar_mensaje": ("objeto", "si"),
+    "correo.retirar_mensaje": ("objeto", "si"),
+    "credenciales.marcar_rotacion": ("objeto", "si"),
+    "cuenta.deshabilitar": ("cuenta", "si"),
+    "cuenta.habilitar": ("cuenta", "si"),
+    "cuenta.restaurar_clave_ssh": ("cuenta", "si"),
+    "cuenta.retirar_clave_ssh": ("cuenta", "si"),
+    "endpoint.aislar": ("equipo", "si"),
+    "endpoint.liberar": ("equipo", "si"),
+    "evidencia.conservar_fichero": ("objeto", "si"),
+    "evidencia.instantanea_ad": ("objeto", "si"),
+    "evidencia.paquete_investigacion": ("objeto", "si"),
+    "evidencia.retener": ("objeto", "si"),
+    "evidencia.triage_forense": ("objeto", "si"),
+    "fichero.cuarentena": ("objeto", "si"),
+    "fichero.restaurar": ("objeto", "si"),
+    "flota.bloquear_hash": ("organizacion", "si"),
+    "flota.desbloquear_hash": ("organizacion", "si"),
+    "identidad.descartar_riesgo": ("sesion", "si"),
+    "identidad.marcar_riesgo": ("sesion", "si"),
+    "identidad.restaurar_consentimiento": ("cuenta", "si"),
+    "identidad.retirar_consentimiento": ("cuenta", "si"),
+    "identidad.revocar_sesiones": ("sesion", "si"),
+    "inventario.marcar_no_fiable": ("equipo", "si"),
+    "itsm.ticket": ("objeto", "si"),
+    "k8s.acordonar_nodo": ("equipo", "si"),
+    "k8s.aislar_pod": ("objeto", "si"),
+    "k8s.desacordonar_nodo": ("equipo", "si"),
+    "k8s.escalar_cero": ("equipo", "si"),
+    "k8s.liberar_pod": ("objeto", "si"),
+    "k8s.restaurar_replicas": ("equipo", "si"),
+    "k8s.restaurar_rolebinding": ("objeto", "si"),
+    "k8s.retirar_rolebinding": ("objeto", "si"),
+    "perimetro.bloquear_destino": ("organizacion", "si"),
+    "perimetro.desbloquear_destino": ("organizacion", "si"),
+    "persistencia.deshabilitar": ("objeto", "si"),
+    "persistencia.restaurar": ("objeto", "si"),
+    "proceso.matar": ("proceso", "no"),
+    "red.aislar_equipo": ("equipo", "si"),
+    "red.bloquear_destino_equipo": ("equipo", "si"),
+    "red.desbloquear_destino_equipo": ("equipo", "si"),
+    "red.liberar_equipo": ("equipo", "si"),
+    "waf.bloquear_origen": ("organizacion", "si"),
+    "waf.desbloquear_origen": ("organizacion", "si"),
+}
+
+
+def minimos_de(accion: str) -> tuple[str | None, str | None]:
+    """(radio minimo, reversible maximo) que el codigo fija para una accion."""
+    return MINIMOS_ACCION.get(accion or "", (None, None))
 ORDEN_ESCALADO = ["L1", "L2", "L3", "guardia"]
 # Acciones cuyo objetivo es un fichero: nunca automaticas sobre rutas del
 # sistema, venga lo que venga de configuracion.
@@ -217,6 +287,36 @@ def es_ip(valor) -> bool:
         return True
     except ValueError:
         return False
+
+
+def motivo_nunca_bloquear(cliente: dict, tipo: str, valor) -> str:
+    """'' si se puede bloquear; si no, por que no.
+
+    inventario.nunca_bloquear del perfil: IPs, redes (CIDR) o dominios (valen
+    tambien sus subdominios) que no se bloquean nunca en el perimetro, ni con
+    aprobacion: la IP publica propia, los resolvedores DNS, el proveedor de
+    correo, el de identidad... Una alerta con una IP falsificada (X-Forwarded-For)
+    no puede llevar a que alguien, con prisa, apruebe cortar lo propio."""
+    lista = [str(x).strip().lower() for x in ((cliente or {}).get("inventario") or {}).get("nunca_bloquear") or []]
+    if not lista or not valor:
+        return ""
+    v = str(valor).strip().lower()
+    if tipo == "url":
+        v = (urlsplit(v).hostname or "") if "://" in v else v.split("/", 1)[0]
+    try:
+        ip = ipaddress.ip_address(v.strip("[]"))
+    except ValueError:
+        ip = None
+    for entrada in lista:
+        if ip is not None:
+            try:
+                if ip in ipaddress.ip_network(entrada, strict=False):
+                    return f"{valor} esta en inventario.nunca_bloquear ({entrada})"
+            except ValueError:
+                continue
+        elif v == entrada.lstrip(".") or v.endswith("." + entrada.lstrip(".")):
+            return f"{valor} esta en inventario.nunca_bloquear ({entrada})"
+    return ""
 
 
 def ip_privada(valor) -> bool:
@@ -1866,8 +1966,8 @@ def _paso(ident, c: dict, catalogo, alerta, clase, escalada, cliente, capacidade
         return paso
     ok, objetivo, falta = requisito(alerta, meta.get("requiere"))
     paso.update({
-        "radio": radio_efectivo(c.get("radio"), meta.get("radio")),
-        "reversible": reversible_efectivo(c.get("reversible", "si"), meta.get("reversible")),
+        "radio": radio_efectivo(c.get("radio"), meta.get("radio"), minimos_de(accion)[0]),
+        "reversible": reversible_efectivo(c.get("reversible", "si"), meta.get("reversible"), minimos_de(accion)[1]),
         "requiere_aprobacion_origen": str(c.get("requiere_aprobacion", "no")),
         "capacidad": meta.get("capacidad", ""),
         "deshacer": meta.get("deshacer", ""),

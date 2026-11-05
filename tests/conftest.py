@@ -28,6 +28,7 @@ from responselab.config import Config  # noqa: E402
 TOKENS = {
     "RL_LAB_TOKEN": "token-ingesta-lab",
     "RL_LAB_TOKEN_AGENTES": "token-agentes-lab",
+    "RL_LAB_TOKEN_EVIDENCIAS": "token-evidencias-lab",
     "RL_LAB_TOKEN_EDL": "token-edl-lab",
     "RL_LAB_TOKEN_APROBADOR": "token-aprobador-lab",
 }

@@ -257,7 +257,7 @@ en el acto.
 | Restaurar | `make restaurar COPIA=responselab-AAAAMMDDTHHMMSSZ.db`: para el motor, pone la copia en el volumen y arranca. Luego `comprobar_despliegue.py` |
 | La clave de la auditoría | Está en `.env` (`RL_CLAVE_AUDITORIA`), fuera del volumen de datos. Guarda `.env` aparte: sin esa clave, una copia restaurada no se puede verificar |
 | Actualizar | `git pull && docker compose up -d --build --wait`, o sube `RL_IMAGEN` a la nueva versión. Volver atrás: la versión anterior en `RL_IMAGEN` |
-| Catálogo | Se actualiza solo cada 30 minutos desde `RL_ACTUALIZACION_URL`, y solo si pasa la validación. Con `RL_CATALOGO_CLAVE`, además tiene que venir firmado (`tools/firmar_catalogo.py`) |
+| Catálogo | Se actualiza solo cada 30 minutos desde `RL_ACTUALIZACION_URL`, si pasa la validación y viene firmado con `RL_CATALOGO_CLAVE` (`tools/firmar_catalogo.py`). Sin clave, la actualización remota se rechaza; `RL_CATALOGO_SIN_FIRMA=1` la permite solo en un laboratorio. El catálogo tampoco puede rebajar el radio ni la reversibilidad de una acción conocida: esos mínimos están fijados en el código (`MINIMOS_ACCION`) |
 | Rotar un token | Vacía su variable en `.env`, repite `preparar_servidor.py` (solo genera los vacíos), vuelve a copiar lo de `despliegue/generado/` y `docker compose up -d` |
 | Integridad | `comprobar_despliegue.py`, o `curl -H "Authorization: Bearer $RL_ADMIN_TOKEN" https://.../v1/admin/auditoria/verificar` |
 

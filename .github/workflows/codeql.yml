@@ -1,0 +1,47 @@
+name: CodeQL
+
+# Análisis estático de seguridad de GitHub. Los resultados salen en la
+# pestaña Security > Code scanning (solo los ve quien tiene acceso de escritura).
+on:
+  push:
+    branches: [main]
+    paths-ignore:
+      - '**/*.md'
+      - 'ecosistema/**'
+      - 'docs/**'
+  pull_request:
+    branches: [main]
+  schedule:
+    - cron: "11 5 * * 4"   # semanal: detecta fallos nuevos aunque no cambie el código
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  analizar:
+    name: CodeQL (${{ matrix.lenguaje }})
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      security-events: write
+    strategy:
+      fail-fast: false
+      matrix:
+        lenguaje: [python, javascript-typescript, actions]
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1  # v7.0.1
+        with:
+          persist-credentials: false
+
+      - uses: github/codeql-action/init@9b3254085494b55a0f7c4c2b3d2d52cc712ce370  # v4.39.1
+        with:
+          languages: ${{ matrix.lenguaje }}
+          build-mode: none
+          config: |
+            paths-ignore:
+              - 'ecosistema/**'
+
+      - uses: github/codeql-action/analyze@9b3254085494b55a0f7c4c2b3d2d52cc712ce370  # v4.39.1
+        with:
+          category: /language:${{ matrix.lenguaje }}

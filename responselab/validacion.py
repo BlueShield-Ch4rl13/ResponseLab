@@ -130,6 +130,16 @@ def validar(catalogo: dict, contratos: dict | None = None) -> tuple[list, list, 
     for nombre, a in sorted(acciones.items()):
         if a.get("radio") not in nucleo.ORDEN_RADIO:
             errores.append(f"accion {nombre}: radio '{a.get('radio')}' no valido")
+        radio_min, reversible_max = nucleo.minimos_de(nombre)
+        if radio_min and a.get("radio") in nucleo.ORDEN_RADIO \
+                and nucleo.ORDEN_RADIO.index(a["radio"]) < nucleo.ORDEN_RADIO.index(radio_min):
+            errores.append(f"accion {nombre}: el catalogo la rebaja a radio {a['radio']}; el codigo fija "
+                           f"{radio_min} como minimo (MINIMOS_ACCION). Se aplicaria {radio_min} igualmente")
+        if reversible_max == "no" and str(a.get("reversible")) == "si":
+            errores.append(f"accion {nombre}: el catalogo la da por reversible y el codigo la fija como irreversible")
+        if radio_min is None:
+            avisos.append(f"accion {nombre}: nueva, sin minimos en el codigo (nucleo.MINIMOS_ACCION): "
+                          "se usa el radio y la reversibilidad que declara el catalogo")
         if str(a.get("reversible")) not in ("si", "no"):
             errores.append(f"accion {nombre}: reversible={a.get('reversible')!r}; debe ir entrecomillado como \"si\" o \"no\"")
         if a.get("capacidad") not in CAPACIDADES:

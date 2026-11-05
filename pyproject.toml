@@ -45,7 +45,7 @@ responselab = "responselab.__main__:main"
 packages = ["responselab", "responselab.conectores", "responselab.exportadores"]
 
 [tool.setuptools.package-data]
-responselab = ["panel.html"]
+responselab = ["panel.html", "panel.js"]
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]

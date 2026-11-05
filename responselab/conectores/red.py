@@ -33,6 +33,15 @@ def _ip_publica(valor) -> str:
     return str(ip)
 
 
+def _bloqueable(cliente: dict, ip: str) -> str:
+    """La IP publica que se va a bloquear, si no esta en inventario.nunca_bloquear."""
+    from ..nucleo import motivo_nunca_bloquear
+    motivo = motivo_nunca_bloquear(cliente, "ip", ip)
+    if motivo:
+        raise NoSoportada(motivo + ": no se bloquea")
+    return ip
+
+
 def _ip_interna(valor) -> str:
     try:
         return str(ipaddress.ip_address(str(valor)))
@@ -79,7 +88,7 @@ class PaloAlto(Conector):
         ip = _campo(objetivo, contexto, "red.ip_destino")
         if not ip:
             raise NoSoportada("PAN-OS etiqueta IP; dominios y URL van por la EDL")
-        ip = _ip_publica(ip)
+        ip = _bloqueable(self.cliente, _ip_publica(ip))
         etiqueta = self.cfg.get("etiqueta_bloqueo", "responselab-bloqueo")
         await self._uid(http, "register", ip, etiqueta, self._ttl())
         return Resultado("ok", f"{ip} etiquetada {etiqueta} durante {self._ttl() // 3600} h", {"ip": ip, "etiqueta": etiqueta})
@@ -91,7 +100,7 @@ class PaloAlto(Conector):
         return Resultado("ok", f"etiqueta retirada de {ip}")
 
     async def bloquear_origen(self, http, objetivo, parametros, contexto):
-        ip = _ip_publica(_campo(objetivo, contexto, "red.ip_origen"))
+        ip = _bloqueable(self.cliente, _ip_publica(_campo(objetivo, contexto, "red.ip_origen")))
         etiqueta = self.cfg.get("etiqueta_bloqueo", "responselab-bloqueo")
         await self._uid(http, "register", ip, etiqueta, self._ttl())
         return Resultado("ok", f"origen {ip} etiquetado {etiqueta}", {"ip": ip, "etiqueta": etiqueta})
@@ -157,7 +166,7 @@ class Fortinet(Conector):
         await http.peticion("DELETE", f"{base}/address/{nombre}", cabeceras=self._cab(), params=self._p(), esperado=(200, 404))
 
     async def bloquear(self, http, objetivo, parametros, contexto):
-        ip = _ip_publica(_campo(objetivo, contexto, "red.ip_destino"))
+        ip = _bloqueable(self.cliente, _ip_publica(_campo(objetivo, contexto, "red.ip_destino")))
         grupo = self.cfg.get("grupo_bloqueo", "ResponseLab-Bloqueo")
         await self._anadir(http, ip, grupo)
         return Resultado("ok", f"{ip} anadida a {grupo}", {"ip": ip, "grupo": grupo})
@@ -169,7 +178,7 @@ class Fortinet(Conector):
         return Resultado("ok", "bloqueo retirado")
 
     async def bloquear_origen(self, http, objetivo, parametros, contexto):
-        ip = _ip_publica(_campo(objetivo, contexto, "red.ip_origen"))
+        ip = _bloqueable(self.cliente, _ip_publica(_campo(objetivo, contexto, "red.ip_origen")))
         grupo = self.cfg.get("grupo_bloqueo", "ResponseLab-Bloqueo")
         await self._anadir(http, ip, grupo)
         return Resultado("ok", f"origen {ip} anadido a {grupo}", {"ip": ip, "grupo": grupo})
@@ -219,7 +228,7 @@ class Cloudflare(Conector):
         return {"Authorization": f"Bearer {self.secreto('api_token')}", "Content-Type": "application/json"}
 
     async def bloquear_origen(self, http, objetivo, parametros, contexto):
-        ip = _ip_publica(_campo(objetivo, contexto, "red.ip_origen"))
+        ip = _bloqueable(self.cliente, _ip_publica(_campo(objetivo, contexto, "red.ip_origen")))
         r = await http.peticion("POST", self._base(), cabeceras=self._cab(), json_={
             "mode": "block", "configuration": {"target": "ip", "value": ip},
             "notes": f"ResponseLab {contexto.get('incidente_id', '')}"[:500]},

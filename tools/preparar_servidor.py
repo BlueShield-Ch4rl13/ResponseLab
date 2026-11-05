@@ -68,7 +68,7 @@ def tokens_del_perfil(perfil: dict) -> dict[str, str]:
     salida = {}
     if aut.get("token_env"):
         salida["ingesta"] = aut["token_env"]
-    for funcion in ("agentes", "edl"):
+    for funcion in ("agentes", "evidencias", "edl"):
         if (aut.get(funcion) or {}).get("token_env"):
             salida[funcion] = aut[funcion]["token_env"]
     for n, ap in enumerate(perfil.get("aprobadores") or []):
@@ -81,17 +81,33 @@ def regex_dominio(dominio: str) -> str:
     return re.sub(r"([.\-])", r"\\\1", dominio)
 
 
+def escribir_privado(ruta: Path, texto: str) -> None:
+    """Escribe con permisos 0600 desde el primer byte: con write_text + chmod,
+    entre una llamada y otra el fichero con los secretos queda legible para
+    cualquiera segun la umask. Si ya existia con otros permisos, se corrigen
+    antes de escribir."""
+    fd = os.open(ruta, os.O_WRONLY | os.O_CREAT | os.O_TRUNC | getattr(os, "O_NOFOLLOW", 0), 0o600)
+    try:
+        if hasattr(os, "fchmod"):
+            os.fchmod(fd, 0o600)
+        with os.fdopen(fd, "w", encoding="utf-8") as f:
+            fd = -1
+            f.write(texto)
+    finally:
+        if fd != -1:
+            os.close(fd)
+
+
 def escribir(ruta: Path, texto: str) -> None:
     ruta.parent.mkdir(parents=True, exist_ok=True)
     os.chmod(ruta.parent, 0o700)
-    ruta.write_text(texto, encoding="utf-8")
-    os.chmod(ruta, 0o600)
+    escribir_privado(ruta, texto)
 
 
 def preparar(args: argparse.Namespace, raiz: Path = RAIZ) -> dict:
     env = raiz / args.env
     if not env.exists():
-        env.write_text((raiz / ".env.example").read_text(encoding="utf-8"), encoding="utf-8")
+        escribir_privado(env, (raiz / ".env.example").read_text(encoding="utf-8"))
     lineas = leer_env(env)
 
     perfil_ruta = raiz / "clientes" / f"{args.cliente}.yml"
@@ -128,8 +144,7 @@ def preparar(args: argparse.Namespace, raiz: Path = RAIZ) -> dict:
     if args.tls == "cloudflare" and not valor(lineas, "CLOUDFLARE_API_TOKEN"):
         avisos.append("--tls cloudflare: pon en .env CLOUDFLARE_API_TOKEN (token de Cloudflare con permiso "
                       "Zone > DNS > Edit solo sobre tu zona) antes de arrancar")
-    env.write_text("\n".join(lineas) + "\n", encoding="utf-8")
-    os.chmod(env, 0o600)
+    escribir_privado(env, "\n".join(lineas) + "\n")
 
     def secreto(variable: str) -> str:
         return valor(lineas, variable) or ""
@@ -153,6 +168,16 @@ def preparar(args: argparse.Namespace, raiz: Path = RAIZ) -> dict:
                                     "token_agentes": secreto(tokens.get("agentes", tokens["ingesta"]))}},
     })
     escribir(salida / "wazuh" / "responselab.json", json.dumps(ejemplo, indent=2, ensure_ascii=False) + "\n")
+
+    # Equipos (opcional): para subir el informe completo de FtriageDFIR. Llevan el
+    # token de evidencias, que no sirve para confirmar acciones: el de agentes
+    # se queda solo en el manager.
+    if "evidencias" in tokens:
+        agentes = json.loads((raiz / "siem/wazuh/responselab.conf.ejemplo").read_text(encoding="utf-8"))
+        agentes.pop("_comentario", None)
+        agentes.update({"motor": motor_url, "cliente": args.cliente, "token_evidencias": secreto(tokens["evidencias"]),
+                        "ca": "/var/ossec/etc/shared/responselab-ca.pem" if tls_interna else ""})
+        escribir(salida / "wazuh" / "responselab.conf", json.dumps(agentes, indent=2, ensure_ascii=False) + "\n")
 
     # Splunk
     for nombre in ("savedsearches-detectionlab.conf", "savedsearches-splunklab.conf"):
@@ -247,6 +272,11 @@ carpeta cuando termines (se puede volver a generar: los tokens no cambian).
     sudo sh siem/wazuh/instalar-manager.sh
     sudo install -o root -g wazuh -m 640 wazuh/responselab.json /var/ossec/etc/responselab.json
     sudo systemctl restart wazuh-manager
+
+Opcional, para que los equipos suban el informe completo de FtriageDFIR:
+wazuh/responselab.conf a /var/ossec/etc/shared/<grupo>/responselab.conf. Lleva el
+token de evidencias (solo sube informes). El de agentes no sale nunca del manager:
+con el se confirman acciones.
 
 ## 2. Splunk (SplunkLab)
 
